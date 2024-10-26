@@ -6,6 +6,8 @@ import torch
 
 @hydra.main(config_path="conf", config_name="config.yaml", version_base="1.3")
 def train_classifier(config):
+
+    
     if config.wandb.track:
         try:
             with open("secret.txt", "r") as f:
