@@ -1,0 +1,10 @@
+# conf/config.yaml
+defaults:
+  - model: cnn   # Default to CNN model
+  - dataset: CIFAR10  # Default to CIFAR10
+  - wandb: default
+  - training: default
+
+evaluate_freq: 1  # How often to evaluate on validation set
+save_as: "model.pth"
+verbose: 2  # 0: silent, 1: progress bar, 2: one line per epoch

@@ -1,0 +1,11 @@
+optimizer: "adam"
+criterion: "crossentropy"
+hotstart_model: False # Else give path to model
+hyper:
+  lr: 0.001
+  epochs: 100
+  batch_size: 35
+  n_neurons: 64  
+  n_depth: 3
+  kernel_size: 3
+  patience: 100
