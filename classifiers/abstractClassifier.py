@@ -8,21 +8,22 @@ class AbstractClassifier(nn.Module):
     This is an abstract class for the classifiers. It contains the train, forward, predict, save_model, load_model methods. It should not be used directly. 
     """
     
-    def train_model(self, train_loader, val_loader, track:bool, optimizer:str, criterion:str, 
-            lr:float, epochs:int, evaluate_freq:int, patience:int, save_as:str, verbose:int, device:str):
-        
-        self.to(device)
-    
-        if optimizer == "adam":
-            self.optimizer = torch.optim.Adam(self.parameters(), lr=lr)
+    def train_model(self, train_loader, val_loader):
 
-        if criterion == "crossentropy":
+        self.to(self.device)
+        config = self.config
+
+    
+        if config.model.optimizer == "adam":
+            self.optimizer = torch.optim.Adam(self.parameters(), lr=config.model.hyper.lr)
+
+        if config.model.criterion == "crossentropy":
             self.criterion = nn.CrossEntropyLoss()
         
         best_loss = np.inf
         no_improve_epochs = 0
         
-        for epoch in range(epochs):
+        for epoch in range(config.model.hyper.epochs):
             self.train()
             total_loss = 0
             loss_calculated = 0
@@ -34,7 +35,7 @@ class AbstractClassifier(nn.Module):
                 total_loss += loss.item()
                 loss_calculated += 1
 
-                if verbose == 2:
+                if config.training.verbose == 2:
                     print("loss: ", loss.item())
 
                 loss.backward()
@@ -67,7 +68,18 @@ class AbstractClassifier(nn.Module):
         self.load_model(f"saved_models/{save_as}", map_location=self.device)
         
     def get_avg_loss(self, loader):
-        pass
+        self.eval()
+        total_loss = 0
+        total_instances = 0
+        for batch_idx, (data, target) in enumerate(loader):
+            data, target = data.to(self.device), target.to(self.device)
+            output = self.model(data)
+            total_loss += self.criterion(output, target, reduction='sum') # reduction='sum' because we will average over all instances later
+            total_instances += len(data)
+        
+        avg_loss = total_loss / total_instances
+        
+        return avg_loss
 
     def forward(self, X):
         self.model(X)
