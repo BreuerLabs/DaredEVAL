@@ -8,6 +8,10 @@ class AbstractClassifier(nn.Module):
     This is an abstract class for the classifiers. It contains the train, forward, predict, save_model, load_model methods. It should not be used directly. 
     """
     
+    def init_model(self, config):
+        model = None
+        return model
+
     def train_model(self, train_loader, val_loader):
 
         self.to(self.device)

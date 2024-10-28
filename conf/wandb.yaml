@@ -1,4 +1,0 @@
-# conf/wandb.yaml
-track: False
-project: "ionbeam"
-entity: "rasmustorp-ai"
