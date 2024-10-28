@@ -34,10 +34,13 @@ def train_classifier(config):
     # Load the data
     train_loader, val_loader, test_loader = get_data_loaders(config)
     
-    model = CNN(config)
+    if config.model == "CNN":
+        model = CNN(config)
+
     
     
-    print(model)
+    model.init_model(config)
+    model.train_model(train_loader, val_loader)
     
     
 if __name__ == "__main__":
