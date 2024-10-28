@@ -10,6 +10,7 @@ class AbstractClassifier(nn.Module):
     
     def init_model(self, config):
         model = None
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         return model
 
     def train_model(self, train_loader, val_loader):
@@ -45,31 +46,31 @@ class AbstractClassifier(nn.Module):
                 loss.backward()
                 self.optimizer.step()
 
-            if verbose:
+            if config.training.verbose:
                 print(f'Train Epoch: {epoch + 1}, Loss: {total_loss / loss_calculated}')
             
-            if track:
+            if config.training.wandb.track:
                 wandb.log({"train_loss": total_loss / loss_calculated})
 
-            if val_loader and epoch % evaluate_freq == 0:
+            if val_loader and epoch % config.training.evaluate_freq == 0:
                 val_loss = self.get_avg_loss(val_loader)
                 print(f'Validation loss: {val_loss}')
                 
-                if track:
+                if config.training.wandb.track:
                     wandb.log({"val_loss": val_loss})
                 
                 if val_loss < best_loss:
                     best_loss = val_loss
-                    self.save_model(save_as)
+                    self.save_model(config.training.save_as)
                     no_improve_epochs = 0
                 else:
                     no_improve_epochs += 1
-                    if no_improve_epochs >= patience:
+                    if no_improve_epochs >= config.model.hyper.patience:
                         print("Early stopping")
                         return
                     
         # Load the best model
-        self.load_model(f"saved_models/{save_as}", map_location=self.device)
+        self.load_model(f"saved_models/{config.training.save_as}", map_location=self.device)
         
     def get_avg_loss(self, loader):
         self.eval()
@@ -78,7 +79,8 @@ class AbstractClassifier(nn.Module):
         for batch_idx, (data, target) in enumerate(loader):
             data, target = data.to(self.device), target.to(self.device)
             output = self.model(data)
-            total_loss += self.criterion(output, target, reduction='sum') # reduction='sum' because we will average over all instances later
+            # reduction='sum' because we will average over all instances later
+            total_loss += self.criterion(output, target, reduction='sum')
             total_instances += len(data)
         
         avg_loss = total_loss / total_instances

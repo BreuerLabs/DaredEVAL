@@ -32,6 +32,7 @@ class CNN(AbstractClassifier, nn.Module):
         self.model = self.init_model(config)
         
     def init_model(self, config):
+        super(CNN, self).init_model()
         self.n_channels = config.dataset.input_size[0]
         
         first_conv = ConvBlock(self.n_channels, config.model.hyper.n_neurons, config.model.hyper.kernel_size, config.model.hyper.stride)
