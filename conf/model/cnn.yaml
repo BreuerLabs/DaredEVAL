@@ -7,5 +7,8 @@ hyper:
   batch_size: 35
   n_neurons: 64  
   n_depth: 3
+  dropout: 0.3
+  stride: 1
   kernel_size: 3
   patience: 100
+  linear_output_size: 512

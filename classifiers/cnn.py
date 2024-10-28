@@ -4,7 +4,6 @@ from classifiers.abstractClassifier import AbstractClassifier
 import torchvision
 from torchvision import transforms
 
-
 class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride):
         super(ConvBlock, self).__init__()
@@ -30,17 +29,25 @@ class CNN(AbstractClassifier, nn.Module):
     def __init__(self, config):
         super(CNN, self).__init__()
         self.config = config
+        self.model = self.init_model(config)
         
-        first_conv = ConvBlock(config.n_channels, config.n_neurons, config.kernel_size, config.stride)
+    def init_model(self, config):
+        self.n_channels = config.dataset.input_size[0]
         
-        conv_layers = [ConvBlock(config.n_neurons * 2**i, config.n_neurons * 2**(i+1), config.kernel_size, config.stride) for i in range(n_depth)]
+        first_conv = ConvBlock(self.n_channels, config.model.hyper.n_neurons, config.model.hyper.kernel_size, config.model.hyper.stride)
         
-        self.model = nn.Sequential(
+        conv_layers = [ConvBlock(config.model.hyper.n_neurons * 2**i, config.model.hyper.n_neurons * 2**(i+1), 
+                                config.model.hyper.kernel_size, config.model.hyper.stride) for i in range(config.model.hyper.n_depth)]
+        
+        model = nn.Sequential(
             first_conv,
             *conv_layers,
             nn.Flatten(),
-            nn.Linear(config.n_neurons * 2**config.n_depth * 2 * 2, 512), 
+            nn.Linear(config.model.hyper.n_neurons * 2**config.model.hyper.n_depth * 2 * 2, config.model.hyper.linear_output_size), 
             nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(512, config.n_classes)
+            nn.Dropout(config.model.hyper.dropout),
+            nn.Linear(512, config.dataset.n_classes)
             )
+
+        return model
+    
