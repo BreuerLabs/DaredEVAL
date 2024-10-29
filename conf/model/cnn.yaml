@@ -4,7 +4,7 @@ criterion: "crossentropy"
 hotstart_model: False # Else give path to model
 hyper:
   lr: 0.001
-  epochs: 100
+  epochs: 20
   batch_size: 256
   n_neurons: 64  
   n_depth: 2

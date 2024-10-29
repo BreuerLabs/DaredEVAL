@@ -3,5 +3,5 @@ save_as: "model.pth"
 verbose: 1  # 0: silent, 1: progress bar, 2: one line per epoch
 wandb:
   track: False
-  project: "ionbeam"
-  entity: "rasmustorp-ai"
+  project: "ModelInversion"
+  entity: "BreuerLab"
