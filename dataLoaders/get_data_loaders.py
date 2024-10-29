@@ -42,7 +42,7 @@ def get_data_loaders(config):
         raise ValueError(f"Unknown dataset: {config.dataset.dataset}")
 
     # Split the full training dataset into training and validation sets
-    train_size = int(0.8 * len(full_train_dataset))
+    train_size = int((1 - config.training.validation_size) * len(full_train_dataset))
     val_size = len(full_train_dataset) - train_size
     train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
 

@@ -11,5 +11,5 @@ hyper:
   dropout: 0.3
   stride: 1
   kernel_size: 3
-  patience: 100
+  patience: 20
   linear_output_size: 256
