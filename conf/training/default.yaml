@@ -1,6 +1,6 @@
 evaluate_freq: 1  # Evaluation frequency
 save_as: "model.pth"
-verbose: 2  # 0: silent, 1: progress bar, 2: one line per epoch
+verbose: 1  # 0: silent, 1: progress bar, 2: one line per epoch
 wandb:
   track: False
   project: "ionbeam"

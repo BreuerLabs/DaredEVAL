@@ -1,14 +1,15 @@
+name: "CNN"
 optimizer: "adam"
 criterion: "crossentropy"
 hotstart_model: False # Else give path to model
 hyper:
   lr: 0.001
   epochs: 100
-  batch_size: 35
+  batch_size: 256
   n_neurons: 64  
-  n_depth: 3
+  n_depth: 2
   dropout: 0.3
   stride: 1
   kernel_size: 3
   patience: 100
-  linear_output_size: 512
+  linear_output_size: 256
