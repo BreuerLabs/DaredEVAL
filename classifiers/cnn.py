@@ -40,14 +40,26 @@ class CNN(AbstractClassifier, nn.Module):
         conv_layers = [ConvBlock(config.model.hyper.n_neurons * 2**i, config.model.hyper.n_neurons * 2**(i+1), 
                                 config.model.hyper.kernel_size, config.model.hyper.stride) for i in range(config.model.hyper.n_depth)]
         
+        # Calculate the output size after the convolutional layers
+        input_height, input_width = config.dataset.input_size[1], config.dataset.input_size[2]
+        num_layers = config.model.hyper.n_depth + 1  # Including the first conv layer
+        
+        # Keep track of the output size after each layer
+        for _ in range(num_layers):
+            input_height = (input_height - 2) // 2 + 1
+            input_width = (input_width - 2) // 2 + 1
+        
+        # Calculate the output size after the convolutional layers
+        conv_output_size = config.model.hyper.n_neurons * 2**config.model.hyper.n_depth * input_height * input_width
+        
         model = nn.Sequential(
             first_conv,
             *conv_layers,
             nn.Flatten(),
-            nn.Linear(config.model.hyper.n_neurons * 2**config.model.hyper.n_depth * 2 * 2, config.model.hyper.linear_output_size), 
+            nn.Linear(conv_output_size , config.model.hyper.linear_output_size), 
             nn.ReLU(),
             nn.Dropout(config.model.hyper.dropout),
-            nn.Linear(512, config.dataset.n_classes)
+            nn.Linear(config.model.hyper.linear_output_size, config.dataset.n_classes)
             )
 
         return model

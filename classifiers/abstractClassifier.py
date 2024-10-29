@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import wandb
+from tqdm import tqdm
 
 class AbstractClassifier(nn.Module):
     """ 
@@ -24,11 +25,12 @@ class AbstractClassifier(nn.Module):
 
         if config.model.criterion == "crossentropy":
             self.criterion = nn.CrossEntropyLoss()
+            self.criterionSum = nn.CrossEntropyLoss(reduction='sum')
         
         best_loss = np.inf
         no_improve_epochs = 0
         
-        for epoch in range(config.model.hyper.epochs):
+        for epoch in tqdm(range(config.model.hyper.epochs), desc="Training", total=config.model.hyper.epochs):
             self.train()
             total_loss = 0
             loss_calculated = 0
@@ -37,8 +39,8 @@ class AbstractClassifier(nn.Module):
                 self.optimizer.zero_grad()
                 output = self.model(data)
                 loss = self.criterion(output, target)
-                total_loss += loss.item()
-                loss_calculated += 1
+                total_loss += loss.item() * len(data)
+                loss_calculated += len(data)
 
                 if config.training.verbose == 2:
                     print("loss: ", loss.item())
@@ -46,18 +48,22 @@ class AbstractClassifier(nn.Module):
                 loss.backward()
                 self.optimizer.step()
 
+            train_loss = total_loss / loss_calculated
             if config.training.verbose:
-                print(f'Train Epoch: {epoch + 1}, Loss: {total_loss / loss_calculated}')
+                print(f'Epoch: {epoch + 1}') 
+                print(f"Train loss: {train_loss}")
             
             if config.training.wandb.track:
-                wandb.log({"train_loss": total_loss / loss_calculated})
+                wandb.log({"train_loss": train_loss})
 
             if val_loader and epoch % config.training.evaluate_freq == 0:
-                val_loss = self.get_avg_loss(val_loader)
-                print(f'Validation loss: {val_loss}')
+                val_loss, accuracy = self.evaluate(val_loader)
+                print(f'Validation loss: {val_loss}') 
+                print(f'Accuracy: {accuracy}')
                 
                 if config.training.wandb.track:
                     wandb.log({"val_loss": val_loss})
+                    wandb.log({"accuracy": accuracy})
                 
                 if val_loss < best_loss:
                     best_loss = val_loss
@@ -79,13 +85,34 @@ class AbstractClassifier(nn.Module):
         for batch_idx, (data, target) in enumerate(loader):
             data, target = data.to(self.device), target.to(self.device)
             output = self.model(data)
-            # reduction='sum' because we will average over all instances later
-            total_loss += self.criterion(output, target, reduction='sum')
+            total_loss += self.criterionSum(output, target).item()
             total_instances += len(data)
         
         avg_loss = total_loss / total_instances
         
         return avg_loss
+    
+    def evaluate(self, loader):
+        self.eval()
+        
+        correct = 0
+        total_loss = 0
+        total_instances = 0
+        
+        with torch.no_grad():
+            for batch_idx, (data, target) in enumerate(loader):
+                data, target = data.to(self.device), target.to(self.device)
+                output = self.model(data)
+                total_loss += self.criterionSum(output, target).item()
+                total_instances += len(data)
+                
+                pred = torch.argmax(output, dim=1)
+                correct += (pred == target).sum().item()
+        
+        avg_loss = total_loss / total_instances
+        accuracy = correct / total_instances
+        
+        return avg_loss, accuracy
 
     def forward(self, X):
         self.model(X)

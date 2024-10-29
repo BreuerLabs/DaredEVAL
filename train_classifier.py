@@ -34,11 +34,12 @@ def train_classifier(config):
     # Load the data
     train_loader, val_loader, test_loader = get_data_loaders(config)
     
-    if config.model == "CNN":
+    if config.model.name == "CNN":
         model = CNN(config)
+        
+    else:
+        raise ValueError(f"Unknown model: {config.model.name}")
 
-    
-    
     model.init_model(config)
     model.train_model(train_loader, val_loader)
     
