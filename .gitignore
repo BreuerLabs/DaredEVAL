@@ -2,7 +2,6 @@
 *.pth
 *.pdf
 .pt
-/data
 **__pycache__**
 secret.txt
 /outputs
