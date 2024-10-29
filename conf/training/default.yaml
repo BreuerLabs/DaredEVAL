@@ -1,8 +1,8 @@
 evaluate_freq: 1  # Evaluation frequency
-save_as: "model.pth"
+save_as: False # What to save the model as, if False, then it is saved as the wandb run name
 verbose: 1  # 0: silent, 1: progress bar, 2: one line per epoch
 device: "cpu"  # Options: "cuda", "mps", "cpu"
-validation_size: 0.1  # Fraction of the training set to use as validation
+validation_size: 0.2  # Fraction of the training set to use as validation
 wandb:
   track: False
   project: "ModelInversion"

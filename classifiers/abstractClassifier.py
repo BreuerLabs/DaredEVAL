@@ -12,7 +12,16 @@ class AbstractClassifier(nn.Module):
     def init_model(self, config):
         model = None
         self.device = config.training.device
-        #self.device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+        
+        if config.training.save_as:
+            self.save_as = config.training.save_as
+            
+        elif config.training.wandb.track:
+            self.save_as = wandb.run.name + ".pth"
+            
+        else:
+            raise ValueError("Please provide a name to save the model when not using wandb tracking")
+        
         return model
 
     def train_model(self, train_loader, val_loader):
@@ -68,7 +77,7 @@ class AbstractClassifier(nn.Module):
                 
                 if val_loss < best_loss:
                     best_loss = val_loss
-                    self.save_model(config.training.save_as)
+                    self.save_model(self.save_as)
                     no_improve_epochs = 0
                 else:
                     no_improve_epochs += 1
@@ -77,7 +86,7 @@ class AbstractClassifier(nn.Module):
                         return
                     
         # Load the best model
-        self.load_model(f"classifiers/saved_models/{config.training.save_as}", map_location=self.device)
+        self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
         
     def get_avg_loss(self, loader):
         self.eval()
