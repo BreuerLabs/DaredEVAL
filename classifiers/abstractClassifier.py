@@ -76,7 +76,7 @@ class AbstractClassifier(nn.Module):
                         return
                     
         # Load the best model
-        self.load_model(f"saved_models/{config.training.save_as}", map_location=self.device)
+        self.load_model(f"classifiers/saved_models/{config.training.save_as}", map_location=self.device)
         
     def get_avg_loss(self, loader):
         self.eval()
@@ -120,7 +120,8 @@ class AbstractClassifier(nn.Module):
     def predict(self, X):
         return torch.argmax(self.forward(X), dim=1)
     
-    def save_model(self, path):
+    def save_model(self, name):
+        path = f"classifiers/saved_models/{name}"
         torch.save(self.state_dict(), path)
         
     def load_model(self, file_path, map_location = None):
