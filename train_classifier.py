@@ -43,6 +43,10 @@ def train_classifier(config):
     model.init_model(config)
     model.train_model(train_loader, val_loader)
     
+    test_loss, test_accuracy = model.evaluate(test_loader)
+    wandb.log({"test_loss": test_loss})
+    wandb.log({"test_accuracy": test_accuracy})
+    
     
 if __name__ == "__main__":
     train_classifier()

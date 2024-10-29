@@ -1,6 +1,7 @@
 evaluate_freq: 1  # Evaluation frequency
 save_as: "model.pth"
 verbose: 1  # 0: silent, 1: progress bar, 2: one line per epoch
+device: "cpu"  # Options: "cuda", "mps", "cpu"
 wandb:
   track: False
   project: "ModelInversion"

@@ -11,7 +11,8 @@ class AbstractClassifier(nn.Module):
     
     def init_model(self, config):
         model = None
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = config.training.device
+        #self.device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
         return model
 
     def train_model(self, train_loader, val_loader):
