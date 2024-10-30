@@ -3,7 +3,7 @@ import hydra
 import wandb
 import os
 import torch
-from dataLoaders.get_data_loaders import get_data_loaders
+from dataloaders.get_data_loaders import get_data_loaders
 
 @hydra.main(config_path="confModelInversion", config_name="config.yaml", version_base="1.3")
 def run_model_inversion(config):
