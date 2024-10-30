@@ -3,10 +3,10 @@ import hydra
 import wandb
 import os
 import torch
-from dataLoaders.get_data_loaders import get_data_loaders
+from dataloaders.get_data_loaders import get_data_loaders
 from classifiers.cnn import CNN
 
-@hydra.main(config_path="confClassifier", config_name="config.yaml", version_base="1.3")
+@hydra.main(config_path="conf_classifier", config_name="config.yaml", version_base="1.3")
 def train_classifier(config):
 
     if config.training.wandb.track:

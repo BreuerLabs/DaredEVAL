@@ -14,13 +14,13 @@ class AbstractClassifier(nn.Module):
         self.device = config.training.device
         
         if config.training.save_as:
-            self.save_as = config.training.save_as
+            self.save_as = config.training.save_as + ".pth"
             
         elif config.training.wandb.track:
             self.save_as = wandb.run.name + ".pth"
             
         else:
-            raise ValueError("Please provide a name to save the model when not using wandb tracking")
+            raise ValueError("Please provide a name to save the model when not uing wandb tracking")
         
         return model
 
