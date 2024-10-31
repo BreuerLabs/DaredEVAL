@@ -5,7 +5,6 @@ import os
 import torch
 from dataloaders.get_data_loaders import get_data_loaders
 from classifiers.cnn import CNN
-from classifiers.lasso_net import LassoNet
 
 @hydra.main(config_path="conf_classifier", config_name="config.yaml", version_base="1.3")
 def train_classifier(config):
