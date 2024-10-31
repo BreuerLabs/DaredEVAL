@@ -133,11 +133,11 @@ class AbstractClassifier(nn.Module):
         
     def load_model(self, file_path, map_location = None):
         if map_location is None:
-            state_dict = torch.load(file_path)
+            state_dict = torch.load(file_path, weights_only=True)
             self.load_state_dict(state_dict)
             
         else:
-            state_dict = torch.load(file_path, map_location=map_location)
+            state_dict = torch.load(file_path, map_location=map_location, weights_only=True)
 
             self.load_state_dict(state_dict)
         
