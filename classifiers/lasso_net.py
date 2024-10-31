@@ -20,10 +20,21 @@ class LassoNet(AbstractClassifier):
         return model
     
     def train_model(self, train_loader, val_loader):
-        train_set = train_loader.dataset
-        val_set = val_loader.dataset
+        X_train = torch.Tensor([])
+        y_train = torch.Tensor([])
 
-        # import pdb; pdb.set_trace()
+        X_val = torch.Tensor([])
+        y_val = torch.Tensor([])
+
+        for bidx, (data, target) in enumerate(train_loader):
+            X_train = torch.cat((X_train, data))
+            y_train = torch.cat((y_train, data))
+
+        for bidx, (data, target) in enumerate(val_loader):
+            X_val = torch.cat((X_val, data))
+            y_val = torch.cat((y_val, data))
+
+        import pdb; pdb.set_trace()
         print("Best model scored", self.model.score(val_set))
 
         
