@@ -47,7 +47,7 @@ class AbstractClassifier(nn.Module):
             for batch_idx, (data, target) in enumerate(train_loader):
                 data, target = data.to(self.device), target.to(self.device)
                 self.optimizer.zero_grad()
-                output = self.model(data)
+                output = self(data)
                 loss = self.criterion(output, target)
                 total_loss += loss.item() * len(data)
                 loss_calculated += len(data)
@@ -125,7 +125,7 @@ class AbstractClassifier(nn.Module):
         return avg_loss, accuracy
 
     def forward(self, X):
-        self.model(X)
+        return self.model(X)
 
     def predict(self, X):
         return torch.argmax(self.forward(X), dim=1)
