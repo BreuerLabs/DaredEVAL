@@ -17,11 +17,21 @@ class SGLNN(AbstractClassifier, nn.Module):
     def init_model(self, config):
         super(SGLNN, self).init_model(config)
 
-        first_layer = nn.Linear(config.input_size, config.hidden_size)
+        bsz, n_channels, height, width = config.dataset.input_size
 
-        hidden_layer = nn.Linear(config.input_size, config.hidden_size)
+        self.first_layer = nn.Linear(n_channels*height*width, config.hyper.hidden_size) # inputs are flattened along channels and height/width before being passed in
+        self.hidden_layer = nn.Linear(config.hyper.hidden_size, config.dataset.n_classes)
+        
+        model = nn.Sequential(
+            self.first_layer,
+            nn.Tanh(),
+            self.hidden_layer,
+            # TODO add a 'log sigmoid' activation? 
+        )
 
         return model
+    
+    
     
     def forward(self, x): # (batch_size, channel, height, width)
         bsz, n_channels, height, width = x.shape
