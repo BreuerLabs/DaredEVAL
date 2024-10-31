@@ -36,9 +36,6 @@ def train_classifier(config):
     
     if config.model.name == "CNN":
         model = CNN(config)
-    
-    if config.model.name == "LassoNet":
-        model = LassoNet(config)
 
     else:
         raise ValueError(f"Unknown model: {config.model.name}")
