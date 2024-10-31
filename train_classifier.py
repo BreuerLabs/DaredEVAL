@@ -5,7 +5,8 @@ import os
 import torch
 from dataloaders.get_data_loaders import get_data_loaders
 from classifiers.cnn import CNN
-from classifiers.lasso_net import LassoNet
+from classifiers.mlp import MLP
+from classifiers.bitnet import BitNet 
 
 @hydra.main(config_path="conf_classifier", config_name="config.yaml", version_base="1.3")
 def train_classifier(config):
@@ -37,9 +38,12 @@ def train_classifier(config):
     
     if config.model.name == "CNN":
         model = CNN(config)
-    
-    if config.model.name == "LassoNet":
-        model = LassoNet(config)
+        
+    elif config.model.name == "MLP":
+        model = MLP(config)
+        
+    elif config.model.name == "BitNet":
+        model = BitNet(config)
 
     else:
         raise ValueError(f"Unknown model: {config.model.name}")
