@@ -6,6 +6,7 @@ import torch
 from dataloaders.get_data_loaders import get_data_loaders
 from classifiers.cnn import CNN
 from classifiers.lasso_net import LassoNet
+from classifiers.sglnn import SGLNN
 
 @hydra.main(config_path="conf_classifier", config_name="config.yaml", version_base="1.3")
 def train_classifier(config):
@@ -41,6 +42,8 @@ def train_classifier(config):
     if config.model.name == "LassoNet":
         model = LassoNet(config)
 
+    if config.model.name == "SGLNN":
+        model = SGLNN(config)
     else:
         raise ValueError(f"Unknown model: {config.model.name}")
 
