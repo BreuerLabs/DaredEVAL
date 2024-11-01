@@ -42,11 +42,8 @@ class MLP(AbstractClassifier, nn.Module):
 
         return model
 
-    def forward(self, X):
-        # Print the shape before flattening for debugging
-        print(f"Input shape before flattening: {X.shape}")
+    def forward(self, x):
+        batch_size = x.shape[0]
+        x = torch.reshape(x, (batch_size, -1))
         
-        # Ensure the input tensor is flattened correctly
-        X = X.view(X.size(0), -1)  # Flatten the input tensor
-        print(f"Input shape after flattening: {X.shape}")
-        return self.model(X)
+        return self.model(x)
