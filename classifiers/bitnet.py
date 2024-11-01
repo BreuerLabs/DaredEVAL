@@ -39,7 +39,7 @@ class BitNet(AbstractClassifier, nn.Module):
         
         middle_layers = [FullyBitConnectedBlock(config.model.hyper.n_neurons, config.model.hyper.n_neurons, config.model.hyper.dropout) for _ in range(config.model.hyper.n_depth)]
         
-        last_layer = BitLinear(config.model.hyper.n_neurons, config.model.hyper.output_size)
+        last_layer = BitLinear(config.model.hyper.n_neurons, config.dataset.n_classes)
         
         model = nn.Sequential(
                             first_layer,
