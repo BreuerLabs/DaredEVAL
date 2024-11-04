@@ -17,10 +17,10 @@ class SGLNN(AbstractClassifier, nn.Module):
     def init_model(self, config):
         super(SGLNN, self).init_model(config)
 
-        bsz, n_channels, height, width = config.dataset.input_size
+        n_channels, height, width = config.dataset.input_size
 
-        self.first_layer = nn.Linear(n_channels*height*width, config.hyper.hidden_size) # inputs are flattened along channels and height/width before being passed in
-        self.hidden_layer = nn.Linear(config.hyper.hidden_size, config.dataset.n_classes)
+        self.first_layer = nn.Linear(n_channels*height*width, config.model.hyper.hidden_size) # inputs are flattened along channels and height/width before being passed in
+        self.hidden_layer = nn.Linear(config.model.hyper.hidden_size, config.dataset.n_classes)
         
         model = nn.Sequential(
             self.first_layer,
@@ -31,8 +31,18 @@ class SGLNN(AbstractClassifier, nn.Module):
 
         return model
     
-    def GL_penalty(self): # Group lasso
-        pass
+    def SGL_penalty(self): # Smoothed Group Lasso penalty
+        alpha = self.config.model.hyper.sgl_alpha
+        w_first = self.first_layer.weight # (n_hidden, input_dim)
+        w_norms = torch.linalg.norm(w_first, dim=0) # (1, input_dim)
+        smoothed_norms = (w_norms**2 / (2*alpha)) + (alpha/2) # see eqn. (15) in SGLasso paper
+        final_smoothed_norms = torch.zeros_like(w_norms)
+        final_smoothed_norms[w_norms < alpha] = smoothed_norms[w_norms < alpha]
+        final_smoothed_norms[w_norms >= alpha] = w_norms[w_norms >= alpha] # only use smoothed norms if less than alpha
+        gl_pen = final_smoothed_norms.sum()
+        return gl_pen
+    
+    
     
     def train_one_epoch(self, train_loader, val_loader, epoch):
         config = self.config
@@ -43,7 +53,7 @@ class SGLNN(AbstractClassifier, nn.Module):
             data, target = data.to(self.device), target.to(self.device)
             self.optimizer.zero_grad()
             output = self(data)
-            loss = self.criterion(output, target)
+            loss = self.criterion(output, target) + config.model.hyper.gl_lmbda * self.SGL_penalty() # group lasso - TODO add smoothing
             total_loss += loss.item() * len(data)
             loss_calculated += len(data)
 

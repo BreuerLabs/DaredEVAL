@@ -8,4 +8,6 @@ hyper:
   batch_size: 256
   hidden_size: 100
   patience: 100
+  gl_lmbda: 1
+  sgl_alpha: 0.04 # See SGLNN paper Eqn. (15)
 
