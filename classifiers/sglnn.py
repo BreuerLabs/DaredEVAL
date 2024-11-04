@@ -32,7 +32,7 @@ class SGLNN(AbstractClassifier, nn.Module):
         return model
     
     def GL_penalty(self): # Group lasso
-        
+        pass
     
     def train_one_epoch(self, train_loader, val_loader, epoch):
         config = self.config
