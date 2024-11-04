@@ -31,8 +31,33 @@ class SGLNN(AbstractClassifier, nn.Module):
 
         return model
     
+    def GL_penalty(self): # Group lasso
+        
     
+    def train_one_epoch(self, train_loader, val_loader, epoch):
+        config = self.config
+        self.train()
+        total_loss = 0
+        loss_calculated = 0
+        for batch_idx, (data, target) in enumerate(train_loader):
+            data, target = data.to(self.device), target.to(self.device)
+            self.optimizer.zero_grad()
+            output = self(data)
+            loss = self.criterion(output, target)
+            total_loss += loss.item() * len(data)
+            loss_calculated += len(data)
+
+            if config.training.verbose == 2:
+                print("loss: ", loss.item())
+
+            loss.backward()
+            self.optimizer.step()
+
+        train_loss = total_loss / loss_calculated
+
+        return train_loss
     
+
     def forward(self, x): # (batch_size, channel, height, width)
         bsz, n_channels, height, width = x.shape
         x = torch.reshape(x, (bsz, n_channels*height*width))
