@@ -5,6 +5,8 @@ import os
 import torch
 from dataloaders.get_data_loaders import get_data_loaders
 from classifiers.cnn import CNN
+from classifiers.mlp import MLP
+from classifiers.bitnet import BitNet 
 
 @hydra.main(config_path="conf_classifier", config_name="config.yaml", version_base="1.3")
 def train_classifier(config):
@@ -37,6 +39,12 @@ def train_classifier(config):
     if config.model.name == "CNN":
         model = CNN(config)
         
+    elif config.model.name == "MLP":
+        model = MLP(config)
+        
+    elif config.model.name == "BitNet":
+        model = BitNet(config)
+
     else:
         raise ValueError(f"Unknown model: {config.model.name}")
 
@@ -44,8 +52,10 @@ def train_classifier(config):
     model.train_model(train_loader, val_loader)
     
     test_loss, test_accuracy = model.evaluate(test_loader)
-    wandb.log({"test_loss": test_loss})
-    wandb.log({"test_accuracy": test_accuracy})
+    
+    if config.training.wandb.track:
+        wandb.log({"test_loss": test_loss})
+        wandb.log({"test_accuracy": test_accuracy})
     
     
 if __name__ == "__main__":

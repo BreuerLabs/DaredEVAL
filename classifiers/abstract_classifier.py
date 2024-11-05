@@ -23,6 +23,30 @@ class AbstractClassifier(nn.Module):
             raise ValueError("Please provide a name to save the model when not uing wandb tracking")
         
         return model
+    
+    def train_one_epoch(self, train_loader, val_loader, epoch):
+        config = self.config
+        self.train()
+        total_loss = 0
+        loss_calculated = 0
+        for batch_idx, (data, target) in enumerate(train_loader):
+            data, target = data.to(self.device), target.to(self.device)
+            self.optimizer.zero_grad()
+            output = self(data)
+            loss = self.criterion(output, target)
+            total_loss += loss.item() * len(data)
+            loss_calculated += len(data)
+
+            if config.training.verbose == 2:
+                print("loss: ", loss.item())
+
+            loss.backward()
+            self.optimizer.step()
+
+        train_loss = total_loss / loss_calculated
+
+        return train_loss
+
 
     def train_model(self, train_loader, val_loader):
 
@@ -41,24 +65,8 @@ class AbstractClassifier(nn.Module):
         no_improve_epochs = 0
         
         for epoch in tqdm(range(config.model.hyper.epochs), desc="Training", total=config.model.hyper.epochs):
-            self.train()
-            total_loss = 0
-            loss_calculated = 0
-            for batch_idx, (data, target) in enumerate(train_loader):
-                data, target = data.to(self.device), target.to(self.device)
-                self.optimizer.zero_grad()
-                output = self.model(data)
-                loss = self.criterion(output, target)
-                total_loss += loss.item() * len(data)
-                loss_calculated += len(data)
+            train_loss = self.train_one_epoch(train_loader, val_loader, epoch)
 
-                if config.training.verbose == 2:
-                    print("loss: ", loss.item())
-
-                loss.backward()
-                self.optimizer.step()
-
-            train_loss = total_loss / loss_calculated
             if config.training.verbose:
                 print(f'Epoch: {epoch + 1}') 
                 print(f"Train loss: {train_loss}")
@@ -68,8 +76,10 @@ class AbstractClassifier(nn.Module):
 
             if val_loader and epoch % config.training.evaluate_freq == 0:
                 val_loss, accuracy = self.evaluate(val_loader)
-                print(f'Validation loss: {val_loss}') 
-                print(f'Accuracy: {accuracy}')
+                
+                if config.training.verbose:
+                    print(f'Validation loss: {val_loss}') 
+                    print(f'Accuracy: {accuracy}')
                 
                 if config.training.wandb.track:
                     wandb.log({"val_loss": val_loss})
@@ -79,28 +89,15 @@ class AbstractClassifier(nn.Module):
                     best_loss = val_loss
                     self.save_model(self.save_as)
                     no_improve_epochs = 0
+
                 else:
                     no_improve_epochs += 1
                     if no_improve_epochs >= config.model.hyper.patience:
                         print("Early stopping")
-                        return
+                        break
                     
         # Load the best model
         self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
-        
-    def get_avg_loss(self, loader):
-        self.eval()
-        total_loss = 0
-        total_instances = 0
-        for batch_idx, (data, target) in enumerate(loader):
-            data, target = data.to(self.device), target.to(self.device)
-            output = self.model(data)
-            total_loss += self.criterionSum(output, target).item()
-            total_instances += len(data)
-        
-        avg_loss = total_loss / total_instances
-        
-        return avg_loss
     
     def evaluate(self, loader):
         self.eval()
@@ -112,7 +109,7 @@ class AbstractClassifier(nn.Module):
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(loader):
                 data, target = data.to(self.device), target.to(self.device)
-                output = self.model(data)
+                output = self(data)
                 total_loss += self.criterionSum(output, target).item()
                 total_instances += len(data)
                 
@@ -124,8 +121,8 @@ class AbstractClassifier(nn.Module):
         
         return avg_loss, accuracy
 
-    def forward(self, X):
-        self.model(X)
+    def forward(self, x):
+        return self.model(x)
 
     def predict(self, X):
         return torch.argmax(self.forward(X), dim=1)
@@ -136,11 +133,11 @@ class AbstractClassifier(nn.Module):
         
     def load_model(self, file_path, map_location = None):
         if map_location is None:
-            state_dict = torch.load(file_path)
+            state_dict = torch.load(file_path, weights_only=True)
             self.load_state_dict(state_dict)
             
         else:
-            state_dict = torch.load(file_path, map_location=map_location)
+            state_dict = torch.load(file_path, map_location=map_location, weights_only=True)
 
             self.load_state_dict(state_dict)
         
