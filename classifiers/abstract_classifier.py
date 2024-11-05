@@ -24,7 +24,7 @@ class AbstractClassifier(nn.Module):
         
         return model
     
-    def train_one_epoch(self, train_loader, val_loader, epoch):
+    def train_one_epoch(self, train_loader):
         config = self.config
         self.train()
         total_loss = 0
@@ -65,7 +65,7 @@ class AbstractClassifier(nn.Module):
         no_improve_epochs = 0
         
         for epoch in tqdm(range(config.model.hyper.epochs), desc="Training", total=config.model.hyper.epochs):
-            train_loss = self.train_one_epoch(train_loader, val_loader, epoch)
+            train_loss = self.train_one_epoch(train_loader)
 
             if config.training.verbose:
                 print(f'Epoch: {epoch + 1}') 
