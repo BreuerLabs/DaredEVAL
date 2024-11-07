@@ -34,7 +34,7 @@ class SGLNN(AbstractClassifier, nn.Module):
     def SGL_penalty(self): # Smoothed Group Lasso penalty
         
         alpha = self.config.model.hyper.sgl_alpha
-        w_first = self.model[0].weight # (n_hidden, input_dim)
+        w_first = self.model[0].weight.data # (n_hidden, input_dim)
         w_norms = torch.linalg.norm(w_first, dim=0) # (1, input_dim)
 
         if self.config.model.hyper.smooth:
@@ -68,7 +68,7 @@ class SGLNN(AbstractClassifier, nn.Module):
             output = self(data)
             gl_pen = config.model.hyper.gl_lambda * self.SGL_penalty()
             if config.model.criterion == "MSE":
-                target = F.one_hot(target, num_classes=10).float() # MSELoss expects one-hot encoded vectors
+                target = F.one_hot(target, num_classes=config.dataset.n_classes).float() # MSELoss expects one-hot encoded vectors
             loss = self.criterionSum(output, target) + gl_pen
             total_loss += loss.item()
             loss_calculated += len(data)

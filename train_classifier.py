@@ -48,11 +48,12 @@ def train_classifier(config):
         model = BitNet(config)
 
     
-    if config.model.name == "LassoNet":
+    elif config.model.name == "LassoNet":
         model = LassoNet(config)
 
-    if config.model.name == "SGLNN":
+    elif config.model.name == "SGLNN":
         model = SGLNN(config)
+        
     else:
         raise ValueError(f"Unknown model: {config.model.name}")
 

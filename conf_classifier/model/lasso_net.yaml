@@ -6,5 +6,10 @@ hyper:
   lr: 0.001
   epochs: 20
   batch_size: 256
-  patience: 100
-  linear_output_size: 256
+  n_neurons: 64  
+  n_depth: 2
+  dropout: 0.0
+  kernel_size: 3
+  patience: 20
+  skip_gl_lambda: 10
+  M: 1

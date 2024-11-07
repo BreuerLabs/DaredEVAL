@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 from classifiers.abstract_classifier import AbstractClassifier
-import torchvision
-from torchvision import transforms
-from lassonet import LassoNetClassifier
+import torch.nn.functional as F
+# from lassonet import LassoNetClassifier
+from .prox import inplace_prox, prox
 
 
 class FullyConnectedBlock(nn.Module):
@@ -26,7 +26,7 @@ class LassoNet(AbstractClassifier): # adapted from LassoNet Github model.py
         self.config = config
         super(LassoNet, self).__init__()
 
-        self.model, self.skip = self.init_model(config)
+        self.model, self.skip = self.init_model(config) # TODO change structure?
         
 
     def init_model(self, config):
@@ -58,23 +58,88 @@ class LassoNet(AbstractClassifier): # adapted from LassoNet Github model.py
 
         return self.model(x) + self.skip(x)
     
+    def prox(self, *, lambda_, lambda_bar=0, M=1): # not sure what this does
+        with torch.no_grad():
+            inplace_prox(
+                beta=self.skip,
+                theta=self.model[0].block[0],
+                lambda_=lambda_,
+                lambda_bar=lambda_bar,
+                M=M,
+            )
+    
+    def skip_GL_penalty(self): # Group Lasso penalty on skip connection [See LassoNet Github page]
+        
+        w_skip = self.skip.weight.data # (n_hidden, input_dim)
+        w_skip_norms = torch.linalg.norm(w_skip, dim=0) # (1, input_dim)
+        skip_gl_pen = w_skip_norms.sum()
+        return skip_gl_pen
+    
+    def train_one_epoch(self, train_loader):
+        config = self.config
+        self.train()
+        total_loss = 0
+        loss_calculated = 0
+        lambda_ = config.model.hyper.skip_gl_lambda
 
-    def train_model(self, train_loader, val_loader):
-        X_train = torch.Tensor([])
-        y_train = torch.Tensor([])
+        for batch_idx, (data, target) in enumerate(train_loader):
+            data, target = data.to(self.device), target.to(self.device)
+            self.optimizer.zero_grad()
+            output = self(data)
+            skip_gl_pen = lambda_ * self.skip_GL_penalty()
+            if config.model.criterion == "MSE":
+                target = F.one_hot(target, num_classes=config.dataset.n_classes).float() # MSELoss expects one-hot encoded vectors
+            loss = self.criterionSum(output, target) + skip_gl_pen
+            total_loss += loss.item()
+            loss_calculated += len(data)
 
-        X_val = torch.Tensor([])
-        y_val = torch.Tensor([])
+            if config.training.verbose == 2:
+                print("loss: ", loss.item())
 
-        for bidx, (data, target) in enumerate(train_loader):
-            X_train = torch.cat((X_train, data))
-            y_train = torch.cat((y_train, data))
+            loss.backward()
+            self.optimizer.step()
+            # Proximal stuff
+            self.prox(
+                    lambda_=lambda_ * self.optimizer.param_groups[0]["lr"],
+                    M=config.model.hyper.M,
+                )
 
-        for bidx, (data, target) in enumerate(val_loader):
-            X_val = torch.cat((X_val, data))
-            y_val = torch.cat((y_val, data))
+        train_loss = total_loss / loss_calculated
+        skip_norms = torch.linalg.norm(self.skip.weight.data, dim=0)
+        first_layer_norms = torch.linalg.norm(self.model[0].block[0].weight.data, dim=0)
+        print("Features remaining skip: ", len(skip_norms) - (skip_norms < 1e-7).sum())
+        print("Features remaining first: ", len(first_layer_norms) - (first_layer_norms < 1e-7).sum())
 
-        print("Best model scored", self.model.score(val_set))
+        return train_loss
+    
+
+    def evaluate(self, loader):
+        self.eval()
+        
+        correct = 0
+        total_loss = 0
+        total_instances = 0
+        
+        with torch.no_grad():
+            for batch_idx, (data, target) in enumerate(loader):
+                data, target = data.to(self.device), target.to(self.device)
+                output = self(data)
+
+                loss_target = target if self.config.model.criterion != "MSE" else F.one_hot(target, num_classes=self.config.dataset.n_classes).float() # MSELoss expects one-hot encoded vectors
+
+                skip_gl_pen = self.config.model.hyper.skip_gl_lambda * self.skip_GL_penalty()
+                loss = self.criterionSum(output, loss_target) + skip_gl_pen
+                
+                total_loss += loss.item()
+                total_instances += len(data)
+                
+                pred = torch.argmax(output, dim=1)
+                correct += (pred == target).sum().item()
+        
+        avg_loss = total_loss / total_instances
+        accuracy = correct / total_instances
+        
+        return avg_loss, accuracy
 
         
 
