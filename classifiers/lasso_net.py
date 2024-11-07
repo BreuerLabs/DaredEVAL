@@ -30,6 +30,10 @@ class LassoNet(AbstractClassifier): # adapted from LassoNet Github model.py
 
         self.model, self.skip = self.init_model(self.config) # TODO change structure?
         self.lambda_ = self.config.model.hyper.skip_gl_lambda
+        self.M = self.config.model.hyper.M
+        if self.config.training.wandb.track:
+            wandb.log({"skip_strength" : self.M})   
+
         
 
     def init_model(self, config):
@@ -99,9 +103,9 @@ class LassoNet(AbstractClassifier): # adapted from LassoNet Github model.py
             start *= factor
         return start
     
-    def get_feature_norm(self, feature_idx): # get L2 norm of weights in first layer coming from feature at feature_idx
-        w_feature = self.model[0].block[0].weight.data[:, feature_idx]
-        return torch.linalg.norm(w_feature) # L2 norm
+    def get_feature_norms(self, feature_idxs): # get L2 norm of weights in first layer coming from feature at feature_idx
+        w_features = [self.model[0].block[0].weight.data[:, feature_idx] for feature_idx in feature_idxs]
+        return [torch.linalg.norm(w_feature) for w_feature in w_features] # L2 norm
     
     def skip_GL_penalty(self): # Group Lasso penalty on skip connection [See LassoNet Github page]
         
@@ -134,16 +138,28 @@ class LassoNet(AbstractClassifier): # adapted from LassoNet Github model.py
             # Proximal stuff
             self.prox(
                     lambda_=self.lambda_ * self.optimizer.param_groups[0]["lr"],
-                    M=self.config.model.hyper.M,
+                    M=self.M,
                 )
+
+            track_features = self.config.model.hyper.track_features
+            if self.config.training.wandb.track and track_features:
+                feature_norms = self.get_feature_norms(track_features)
+                for idx, feature_norm in zip(track_features, feature_norms):
+                    wandb.log({f"feature_{idx}" : feature_norm.item()})
+
 
         train_loss = total_loss / loss_calculated
         skip_norms = torch.linalg.norm(self.skip.weight.data, dim=0)
         first_layer_norms = torch.linalg.norm(self.model[0].block[0].weight.data, dim=0)
-        print("\nFeatures remaining skip: ", len(skip_norms) - (skip_norms < 1e-7).sum())
-        print("Features remaining first: ", len(first_layer_norms) - (first_layer_norms < 1e-7).sum())
+
+        print("\nFeatures remaining skip: ", len(skip_norms) - (skip_norms < 1e-2).sum())
+        print("Features remaining first: ", len(first_layer_norms) - (first_layer_norms < 1e-2).sum())
         print("Lambda: ", self.lambda_)
 
+        if self.config.training.wandb.track:
+            wandb.log({"lambda": self.lambda_})
+            wandb.log({"skip_features": len(skip_norms) - (skip_norms < 1e-3).sum()})
+            wandb.log({"features": len(first_layer_norms) - (first_layer_norms < self.M*1e-3).sum()})
         # Update lambda
         self.lambda_ *= self.config.model.hyper.lambda_multiplier
 
