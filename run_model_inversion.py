@@ -5,7 +5,7 @@ import os
 import torch
 from dataloaders.get_data_loaders import get_data_loaders
 
-@hydra.main(config_path="confModelInversion", config_name="config.yaml", version_base="1.3")
+@hydra.main(config_path="configuration/model_inversion", config_name="config.yaml", version_base="1.3")
 def run_model_inversion(config):
 
     if config.training.wandb.track:
