@@ -24,7 +24,7 @@ class AbstractClassifier(nn.Module):
         
         return model
     
-    def train_one_epoch(self, train_loader, val_loader, epoch):
+    def train_one_epoch(self, train_loader):
         config = self.config
         self.train()
         total_loss = 0
