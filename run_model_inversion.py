@@ -4,8 +4,9 @@ import wandb
 import os
 import torch
 from dataloaders.get_data_loaders import get_data_loaders
+from model_inversion.plug_and_play.gan import GAN
 
-@hydra.main(config_path="confModelInversion", config_name="config.yaml", version_base="1.3")
+@hydra.main(config_path="conf_model_inversion", config_name="config.yaml", version_base="1.3")
 def run_model_inversion(config):
 
     if config.training.wandb.track:
@@ -30,8 +31,19 @@ def run_model_inversion(config):
         except Exception as e:
             print(f"\nCould not initiate wandb logger\nError: {e}")
             
-    # load the model
     
+    # Load data
+    train_loader, val_loader, test_loader = get_data_loaders(config)
+    
+    # load the model
+    gan = GAN(config)
+    
+    # Train model
+    gan.train(train_loader)
+    
+    
+    
+    print("done")
     
     
 if __name__ == "__main__":
