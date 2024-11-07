@@ -1,4 +1,4 @@
-# Copied from lassonet github
+# Copied and refactored from lassonet github prox.py and model.py
 
 import torch
 from torch.nn import functional as F
