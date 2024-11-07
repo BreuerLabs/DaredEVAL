@@ -3,12 +3,11 @@ import hydra
 import wandb
 import os
 import torch
-from dataloaders.get_data_loaders import get_data_loaders
-from classifiers.cnn import CNN
-from classifiers.mlp import MLP
-from classifiers.bitnet import BitNet 
 
-@hydra.main(config_path="conf_classifier", config_name="config.yaml", version_base="1.3")
+from dataloaders.get_data_loaders import get_data_loaders
+from classifiers.get_model import get_model
+
+@hydra.main(config_path="configuration/classifier", config_name="config.yaml", version_base="1.3")
 def train_classifier(config):
 
     if config.training.wandb.track:
@@ -36,19 +35,8 @@ def train_classifier(config):
     # Load the data
     train_loader, val_loader, test_loader = get_data_loaders(config)
     
-    if config.model.name == "CNN":
-        model = CNN(config)
-        
-    elif config.model.name == "MLP":
-        model = MLP(config)
-        
-    elif config.model.name == "BitNet":
-        model = BitNet(config)
-
-    else:
-        raise ValueError(f"Unknown model: {config.model.name}")
-
-    model.init_model(config)
+    model = get_model(config)
+    
     model.train_model(train_loader, val_loader)
     
     test_loss, test_accuracy = model.evaluate(test_loader)
