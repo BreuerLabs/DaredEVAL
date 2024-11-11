@@ -171,6 +171,7 @@ class GAN:
             sample_labels = Variable(torch.LongTensor(np.arange(9))).to(self.device)
             sample_images = self.generator(z, sample_labels).unsqueeze(1)
             # You can further use make_grid or similar here to visualize the sample_images
+            
         self.generator.train()
 
     @staticmethod
