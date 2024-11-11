@@ -6,3 +6,6 @@
 secret.txt
 /outputs
 /wandb
+*.DS_Store
+*.pkl
+config.yaml

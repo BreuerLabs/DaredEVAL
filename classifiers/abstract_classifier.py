@@ -21,10 +21,18 @@ class AbstractClassifier(nn.Module):
             
         else:
             raise ValueError("Please provide a name to save the model when not uing wandb tracking")
+
+        if config.model.criterion == "crossentropy":
+            self.criterion = nn.CrossEntropyLoss()
+            self.criterionSum = nn.CrossEntropyLoss(reduction='sum')
         
         return model
     
     def train_one_epoch(self, train_loader):
+        
+        if config.model.optimizer == "adam":
+            self.optimizer = torch.optim.Adam(self.parameters(), lr=config.model.hyper.lr)
+            
         config = self.config
         self.train()
         total_loss = 0
@@ -52,15 +60,7 @@ class AbstractClassifier(nn.Module):
 
         self.to(self.device)
         config = self.config
-
     
-        if config.model.optimizer == "adam":
-            self.optimizer = torch.optim.Adam(self.parameters(), lr=config.model.hyper.lr)
-
-        if config.model.criterion == "crossentropy":
-            self.criterion = nn.CrossEntropyLoss()
-            self.criterionSum = nn.CrossEntropyLoss(reduction='sum')
-        
         best_loss = np.inf
         no_improve_epochs = 0
         
@@ -100,6 +100,7 @@ class AbstractClassifier(nn.Module):
         self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
     
     def evaluate(self, loader):
+        self.to(self.device)
         self.eval()
         
         correct = 0
