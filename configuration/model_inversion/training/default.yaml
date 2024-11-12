@@ -5,6 +5,6 @@ verbose: 1  # 0: silent, 1: progress bar, 2: one line per epoch
 device: "mps"  # Options: "cuda", "mps", "cpu"
 validation_size: 0.2  # Fraction of the training set to use as validation
 wandb:
-  track: True
+  track: False
   project: "ModelInversion"
   entity: "BreuerLab"

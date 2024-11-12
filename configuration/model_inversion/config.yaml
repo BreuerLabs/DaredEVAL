@@ -4,5 +4,5 @@ defaults:
   - dataset: MNIST  # Yaml file with dateset specific parameters
   - training: default # Yaml file with training specific parameters
 
-target_wandb_id: po6xckc2 
-target_path: False
+target_wandb_id: False 
+target_config_path: "classifiers/saved_configs/local_config_test.yaml" 

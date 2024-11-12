@@ -3,29 +3,40 @@ import hydra
 import wandb
 import os
 import torch
+import sys
 
 from classifiers.get_model import get_model
 from dataloaders.get_data_loaders import get_data_loaders
-from model_inversion.plug_and_play.gan import GAN
-from model_inversion.plug_and_play.stylegan import load_discrimator, load_generator
+from model_inversion import plug_and_play
+
 from utils import wandb_helpers
 
 @hydra.main(config_path="configuration/model_inversion", config_name="config.yaml", version_base="1.3")
-def run_model_inversion(config):
+def run_model_inversion(attack_config):
 
-    if config.training.wandb.track:
-        wandb_helpers.wandb_init(config)
+    if attack_config.training.wandb.track:
+        wandb_helpers.wandb_init(attack_config)
     
     # Load data
-    train_loader, val_loader, test_loader = get_data_loaders(config)
+    train_loader, val_loader, test_loader = get_data_loaders(attack_config)
     
     # If targeting a model trained with wandb tracking
-    if config.target_wandb_id:
-        target_config, run_name = wandb_helpers.get_target_config(config)
+    if attack_config.target_wandb_id:
+        target_config, run_name = wandb_helpers.get_target_config(attack_config)
 
     # If targeting a local run
+    elif attack_config.target_config_path:
+        try:
+            target_config = OmegaConf.load(attack_config.target_config_path)
+            run_name = target_config.training.save_as
+            print("Configuration loaded successfully.")
+            
+        except Exception as e:
+            print(f"Error loading YAML file: {e}", file=sys.stderr)
+            raise
+        
     else:
-        return #! TODO: Implement for local runs
+        raise ValueError("Please provide either a wandb id or a path to a configuration file")
     
     target_model = get_model(target_config)
     
@@ -35,27 +46,27 @@ def run_model_inversion(config):
     
     test_loss, test_accuracy = target_model.evaluate(test_loader)
     
+    print("test_loss", test_loss)
+    print("test_accuracy", test_accuracy)
+    
     if target_config.training.wandb.track:
         wandb.log({"test_loss": test_loss})
         wandb.log({"test_accuracy": test_accuracy})
         
-        
     
+    # if attack_config.model == "plug_and_play":
+    #     plug_and_play.attack.run(target_model, target_config, attack_config)
 
-
+    # else:
+    #     raise ValueError(f"Unknown model: {attack_config.model.name}")
+    
+    
+    
     # # load the model
     # gan = GAN(config)
     
     # # Train model
     # gan.train(train_loader)
-    
-    # # Load pre-trained StyleGan2 components
-    # G = load_generator(config.stylegan_path)
-    # D = load_discrimator(config.stylegan_path)
-    # num_ws = G.num_ws
-    
-    # target_model
-    
     
     
     print("done")

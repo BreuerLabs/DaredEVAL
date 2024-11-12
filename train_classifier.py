@@ -3,6 +3,7 @@ import hydra
 import wandb
 import os
 import torch
+from omegaconf import OmegaConf
 
 from dataloaders.get_data_loaders import get_data_loaders
 from classifiers.get_model import get_model
@@ -26,6 +27,9 @@ def train_classifier(config):
     if config.training.wandb.track:
         wandb.log({"test_loss": test_loss})
         wandb.log({"test_accuracy": test_accuracy})
+        
+    # Save the configuration for later use   
+    OmegaConf.save(config, f"classifiers/saved_configs/{config.training.save_as}.yaml")
     
     
 if __name__ == "__main__":
