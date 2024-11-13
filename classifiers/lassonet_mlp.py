@@ -2,10 +2,8 @@ import torch
 import torch.nn as nn
 from classifiers.abstract_classifier import AbstractClassifier
 import torch.nn.functional as F
-from .lasso_net_helper import inplace_prox, prox
-import numpy as np
+from .lassonet_utils import inplace_prox, prox
 import wandb
-from tqdm import tqdm
 
 
 class FullyConnectedBlock(nn.Module):
@@ -22,11 +20,11 @@ class FullyConnectedBlock(nn.Module):
         return self.block(x)
 
 
-class LassoNet(AbstractClassifier): # adapted from LassoNet Github model.py
+class LassoNetMLP(AbstractClassifier): # adapted from LassoNet Github model.py
 
     def __init__(self, config):
         self.config = config
-        super(LassoNet, self).__init__()
+        super(LassoNetMLP, self).__init__()
 
         self.model, self.skip = self.init_model(self.config) # TODO change structure?
         self.lambda_ = self.config.model.hyper.skip_gl_lambda
@@ -37,11 +35,12 @@ class LassoNet(AbstractClassifier): # adapted from LassoNet Github model.py
         
 
     def init_model(self, config):
-        super(LassoNet, self).init_model(config)
+        super(LassoNetMLP, self).init_model(config)
         dropout = self.config.model.hyper.dropout
         in_features = self.config.dataset.input_size[1] * self.config.dataset.input_size[2] * self.config.dataset.input_size[0]
         n_neurons = self.config.model.hyper.n_neurons
         n_depth = self.config.model.hyper.n_depth
+
         first_layer = FullyConnectedBlock(in_features, n_neurons, dropout)
 
         middle_layers = [FullyConnectedBlock(n_neurons, n_neurons, dropout) for _ in range(n_depth)]
@@ -53,8 +52,6 @@ class LassoNet(AbstractClassifier): # adapted from LassoNet Github model.py
             *middle_layers,
             last_layer
         )
-
-
 
         skip = nn.Linear(in_features, self.config.dataset.n_classes, bias=False)
 
@@ -149,77 +146,29 @@ class LassoNet(AbstractClassifier): # adapted from LassoNet Github model.py
 
 
         train_loss = total_loss / loss_calculated
-        skip_norms = torch.linalg.norm(self.skip.weight.data, dim=0)
-        first_layer_norms = torch.linalg.norm(self.model[0].block[0].weight.data, dim=0)
 
-        print("\nFeatures remaining skip: ", len(skip_norms) - (skip_norms < 1e-2).sum())
-        print("Features remaining first: ", len(first_layer_norms) - (first_layer_norms < 1e-2).sum())
-        print("Lambda: ", self.lambda_)
+        zero_threshold = self.config.model.hyper.check_zero_threshold
+        w_skip = self.skip.weight.data
+        w_first = self.model[0].block[0].weight.data
+        skip_norms = torch.linalg.norm(w_skip, dim=0)
+        first_layer_norms = torch.linalg.norm(w_first, dim=0)
+        skip_remaining = len(skip_norms) - (skip_norms < zero_threshold*w_skip.shape[0]).sum() # multiply threshold by dim. of each skip_norm since a larger dim. means a larger norm
+        first_remaining = len(first_layer_norms) - (first_layer_norms < zero_threshold*w_first.shape[0]).sum() # same here for first_layer_norms
+
+        if self.config.training.verbose == 2:
+            print("\nLambda: ", self.lambda_)
+            print("Features remaining skip: ", skip_remaining) 
+            print("Features remaining first: ", first_remaining)
 
         if self.config.training.wandb.track:
             wandb.log({"lambda": self.lambda_})
-            wandb.log({"skip_features": len(skip_norms) - (skip_norms < 1e-3).sum()})
-            wandb.log({"features": len(first_layer_norms) - (first_layer_norms < self.M*1e-3).sum()})
+            wandb.log({"skip_features": skip_remaining})
+            wandb.log({"features": first_remaining})
+
         # Update lambda
-        self.lambda_ *= self.config.model.hyper.lambda_multiplier
+        self.lambda_ *= self.config.model.hyper.lambda_multiplier # default multiplier is 1.02, see 'dense-to-sparse' note in LassoNet paper
 
         return train_loss
-    
-    # def train_model(self, train_loader, val_loader):
-
-    #     self.to(self.device)
-    #     self.config = self.config
-
-    
-    #     if self.config.model.optimizer == "adam":
-    #         self.optimizer = torch.optim.Adam(self.parameters(), lr=self.config.model.hyper.lr)
-
-    #     if self.config.model.criterion == "crossentropy":
-    #         self.criterion = nn.CrossEntropyLoss()
-    #         self.criterionSum = nn.CrossEntropyLoss(reduction='sum')
-
-    #     if self.config.model.criterion == "MSE":
-    #         self.criterion = nn.MSELoss()
-    #         self.criterionSum = nn.MSELoss(reduction='sum')
-        
-    #     best_loss = np.inf
-    #     no_improve_epochs = 0
-        
-    #     for epoch in tqdm(range(self.config.model.hyper.epochs), desc="Training", total=self.config.model.hyper.epochs):
-    #         train_loss = self.train_one_epoch(train_loader)
-
-    #         if self.config.training.verbose:
-    #             print(f'Epoch: {epoch + 1}') 
-    #             print(f"Train loss: {train_loss}")
-            
-    #         if self.config.training.wandb.track:
-    #             wandb.log({"train_loss": train_loss})
-
-    #         if val_loader and epoch % self.config.training.evaluate_freq == 0:
-    #             val_loss, accuracy = self.evaluate(val_loader)
-                
-    #             if self.config.training.verbose:
-    #                 print(f'Validation loss: {val_loss}') 
-    #                 print(f'Accuracy: {accuracy}')
-                
-    #             if self.config.training.wandb.track:
-    #                 wandb.log({"val_loss": val_loss})
-    #                 wandb.log({"accuracy": accuracy})
-                
-    #             if val_loss < best_loss:
-    #                 best_loss = val_loss
-    #                 self.save_model(self.save_as)
-    #                 no_improve_epochs = 0
-
-    #             else:
-    #                 no_improve_epochs += 1
-    #                 if no_improve_epochs >= self.config.model.hyper.patience:
-    #                     print("Early stopping")
-    #                     break
-                    
-    #     # Load the best model
-    #     self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
-    
 
     def evaluate(self, loader):
         self.eval()

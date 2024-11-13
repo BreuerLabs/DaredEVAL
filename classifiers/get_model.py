@@ -2,7 +2,7 @@
 from classifiers.cnn import CNN
 from classifiers.mlp import MLP
 from classifiers.bitnet import BitNet 
-from classifiers.lasso_net import LassoNet
+from classifiers.lassonet_mlp import LassoNetMLP
 from classifiers.sglnn import SGLNN
 
 def get_model(config):
@@ -15,8 +15,8 @@ def get_model(config):
     elif config.model.name == "BitNet":
         model = BitNet(config)
     
-    elif config.model.name == "LassoNet":
-        model = LassoNet(config)
+    elif config.model.name == "LassoNetMLP":
+        model = LassoNetMLP(config)
 
     elif config.model.name == "SGLNN":
         model = SGLNN(config)

@@ -1,4 +1,4 @@
-name: "LassoNet"
+name: "LassoNetMLP"
 optimizer: "adam"
 criterion: "crossentropy"
 hotstart_model: False # Else give path to model
@@ -8,7 +8,7 @@ hyper:
   epochs: 20
   batch_size: 256
   n_neurons: 256  
-  n_depth: 2
+  n_depth: 2 # number of hidden layers (not including first and last layer)
   dropout: 0.0
   kernel_size: 3
   patience: 20
@@ -18,3 +18,4 @@ hyper:
   lambda_start_bar: 0
   lambda_start_factor: 2
   lambda_start_begin: 1e-6
+  check_zero_threshold: 1e-5
