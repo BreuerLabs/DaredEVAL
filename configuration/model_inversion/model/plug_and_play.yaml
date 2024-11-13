@@ -1,5 +1,19 @@
 name: "plug_and_play"
 stylegan_path: "stylegan2-ada-pytorch/ffhq.pkl"
+
+# From the pnp repo
+candidates:
+  num_candidates: 200
+  candidate_search:
+    search_space_size: 2000
+    center_crop: null
+    resize: 224
+    horizontal_flip: true
+    batch_size: 25
+    truncation_psi: 0.5
+    truncation_cutoff: 8
+
+# For GAN
 label_dim: 10
 hyper:
   epochs: 3
