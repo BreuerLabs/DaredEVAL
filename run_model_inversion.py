@@ -8,7 +8,7 @@ import sys
 from classifiers.get_model import get_model
 from dataloaders.get_data_loaders import get_data_loaders
 
-import model_inversion.plug_and_play.attack as pnp
+# import model_inversion.plug_and_play.attack as pnp
 
 from utils import wandb_helpers
 
@@ -55,8 +55,8 @@ def run_model_inversion(attack_config):
         wandb.log({"test_accuracy": test_accuracy})
         
     
-    if attack_config.model.name == "plug_and_play":
-        pnp.run(target_model, target_config, attack_config)
+    # if attack_config.model.name == "plug_and_play":
+    #     pnp.run(target_model, target_config, attack_config)
 
     # else:
     #     raise ValueError(f"Unknown model: {attack_config.model.name}")
