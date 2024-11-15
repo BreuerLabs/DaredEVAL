@@ -6,9 +6,12 @@ import torch
 import sys
 
 from classifiers.get_model import get_model
-from dataloaders.get_data_loaders import get_data_loaders
+from data_processing.get_data_loaders import get_data_loaders
 
 # import model_inversion.plug_and_play.attack as pnp
+
+from model_inversion.plug_and_play.modify_to_pnp_repo import convert_classifier
+
 
 from utils import wandb_helpers
 
@@ -53,7 +56,8 @@ def run_model_inversion(attack_config):
     if target_config.training.wandb.track:
         wandb.log({"test_loss": test_loss})
         wandb.log({"test_accuracy": test_accuracy})
-        
+
+    modified_model = convert_classifier(model = target_model, train_config = target_config)
     
     # if attack_config.model.name == "plug_and_play":
     #     pnp.run(target_model, target_config, attack_config)
