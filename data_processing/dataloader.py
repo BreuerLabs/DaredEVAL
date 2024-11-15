@@ -1,7 +1,7 @@
 from torchvision import datasets, transforms
 import torch
 from torch.utils.data import random_split
-from data_processing import get_datasets
+from data_processing.datasets import get_datasets
 
 def get_data_loaders(config):
     

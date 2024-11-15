@@ -2,7 +2,7 @@ from torchvision import datasets, transforms
 import torch
 from torch.utils.data import random_split
 
-def get_data_loaders(config):
+def get_datasets(config):
     """Dynamically loads datasets based on the configuration."""
     
     if config.dataset.dataset == "CIFAR10":
