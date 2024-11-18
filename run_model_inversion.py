@@ -64,8 +64,7 @@ def run_model_inversion(attack_config):
         wandb.log({"test_accuracy": test_accuracy})
 
     if attack_config.model.name == "plug_and_play":
-        modified_model = model_compatibility_wrapper(model = target_model, target_config = target_config)
-        
+        target_model = model_compatibility_wrapper(model = target_model, target_config = target_config)
         new_attack_config_path = convert_configs(target_config, attack_config)
         new_attack_config = AttackConfigParser(new_attack_config_path)
         
