@@ -7,10 +7,13 @@ import sys
 
 from classifiers.get_model import get_model
 from data_processing.dataloader import get_data_loaders
+from data_processing.datasets import get_datasets
 
 # import model_inversion.plug_and_play.attack as pnp
+from plug_and_play_attacks.utils.attack_config_parser import AttackConfigParser
+from plug_and_play_attacks.our_attack import attack
 
-from model_inversion.plug_and_play.modify_to_pnp_repo import model_compatability_wrapper
+from model_inversion.plug_and_play.modify_to_pnp_repo import model_compatibility_wrapper, convert_configs
 
 
 from utils import wandb_helpers
@@ -20,9 +23,7 @@ def run_model_inversion(attack_config):
 
     if attack_config.training.wandb.track:
         wandb_helpers.wandb_init(attack_config)
-    
-    # Load data
-    train_loader, val_loader, test_loader = get_data_loaders(attack_config)
+
     
     # If targeting a model trained with wandb tracking
     if attack_config.target_wandb_id:
@@ -42,6 +43,11 @@ def run_model_inversion(attack_config):
     else:
         raise ValueError("Please provide either a wandb id or a path to a configuration file")
     
+    
+    # Load data
+    train_dataset, val_dataset, test_dataset = get_datasets(target_config)
+    train_loader, val_loader, test_loader = get_data_loaders(target_config)
+    
     target_model = get_model(target_config)
     
     model_weights_path = f"classifiers/saved_models/{run_name}.pth" #! We can change this to save weights in wandb instead.
@@ -57,7 +63,17 @@ def run_model_inversion(attack_config):
         wandb.log({"test_loss": test_loss})
         wandb.log({"test_accuracy": test_accuracy})
 
-    modified_model = model_compatability_wrapper(model = target_model, target_config = target_config)
+    if attack_config.model.name == "plug_and_play":
+        modified_model = model_compatibility_wrapper(model = target_model, target_config = target_config)
+        
+        new_attack_config_path = convert_configs(target_config, attack_config)
+        new_attack_config = AttackConfigParser(new_attack_config_path)
+        
+        attack(config=new_attack_config,
+               target_dataset=train_dataset,
+               target_model=target_model,
+               evaluation_model=None)
+    
     # if attack_config.model.name == "plug_and_play":
     #     pnp.run(target_model, target_config, attack_config)
 
