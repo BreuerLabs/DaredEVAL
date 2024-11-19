@@ -6,7 +6,7 @@ import torch
 import sys
 
 from classifiers.get_model import get_model
-from data_processing.dataloader import get_data_loaders
+from data_processing.data_loaders import get_data_loaders
 from data_processing.datasets import get_datasets
 
 # import model_inversion.plug_and_play.attack as pnp
