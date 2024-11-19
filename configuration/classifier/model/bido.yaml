@@ -1,18 +1,31 @@
 # Peng et al. 2022 defense
 
-name: "bido"
+name: "BiDO"
 optimizer: "adam"
 criterion: "crossentropy"
-measure: "HSIC" # HSIC or COCO
-ktype: "linear" # linear, gaussian, IMQ
-hsic_training: True
-hotstart_model: False # Else give path to model
-root_path: "./"
-config_dir: './config'
-model_dir: './target_model'
+
+args:
+  measure: "HSIC" # HSIC or COCO
+  ktype: "linear" # linear, gaussian, IMQ
+  hsic_training: True
+  hotstart_model: False # Else give path to model
+  root_path: "./"
+  config_dir: './config'
+  model_dir: './target_model'
+
+loaded_args:
+  dataset:
+    model_name: "VGG16"
+    train_file: ""
+    test_file: ""
+    n_classes: None
+
 hyper:
   lr: 0.001
   epochs: 20
   batch_size: 256
   patience: 100
-  linear_output_size: 256
+  adjust_epochs: None
+  momentum: 0.9
+  weight_decay: 1e-4
+  gamma: 0.1
