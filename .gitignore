@@ -6,3 +6,6 @@
 secret.txt
 /outputs
 /wandb
+*.png
+.DS_store
+/classifiers/saved_configs

@@ -4,7 +4,7 @@ import wandb
 import os
 import torch
 
-from dataloaders.get_data_loaders import get_data_loaders
+from data_processing.data_loaders import get_data_loaders
 from classifiers.get_model import get_model
 
 @hydra.main(config_path="configuration/classifier", config_name="config.yaml", version_base="1.3")
