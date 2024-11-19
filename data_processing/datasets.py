@@ -2,7 +2,7 @@ from torchvision import datasets, transforms
 import torch
 from torch.utils.data import random_split
 
-def get_data_loaders(config):
+def get_datasets(config):
     """Dynamically loads datasets based on the configuration."""
     
     if config.dataset.dataset == "CIFAR10":
@@ -46,10 +46,4 @@ def get_data_loaders(config):
     val_size = len(full_train_dataset) - train_size
     train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=config.model.hyper.batch_size, shuffle=True)
-    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=config.model.hyper.batch_size, shuffle=False)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=config.model.hyper.batch_size, shuffle=False)
-    
-    print(f"Data loaders for {config.dataset.dataset} loaded successfully")
-    
-    return train_loader, val_loader, test_loader
+    return train_dataset, val_dataset, test_dataset
