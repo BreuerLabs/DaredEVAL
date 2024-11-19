@@ -5,7 +5,7 @@ import os
 import torch
 from omegaconf import OmegaConf
 
-from data_processing.dataloader import get_data_loaders
+from data_processing.data_loaders import get_data_loaders
 from classifiers.get_model import get_model
 from utils import wandb_helpers
 

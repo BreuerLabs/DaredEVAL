@@ -10,3 +10,6 @@ secret.txt
 *.pkl
 *.png
 config.yaml
+*.png
+.DS_store
+/classifiers/saved_configs

@@ -3,6 +3,7 @@ save_as: "test" # What to save the model as, if False, then it is saved as the w
 verbose: 1  # 0: silent, 1: progress bar, 2: one line per epoch
 device: "cpu"  # Options: "cuda", "mps", "cpu"
 validation_size: 0.2  # Fraction of the training set to use as validation
+dataloader_num_workers: 8
 wandb:
   track: False
   project: "ModelInversion"
