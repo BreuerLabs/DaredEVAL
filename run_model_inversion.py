@@ -43,7 +43,6 @@ def run_model_inversion(attack_config):
     else:
         raise ValueError("Please provide either a wandb id or a path to a configuration file")
     
-    
     # Load data
     train_dataset, val_dataset, test_dataset = get_datasets(target_config)
     train_loader, val_loader, test_loader = get_data_loaders(target_config)
@@ -68,10 +67,12 @@ def run_model_inversion(attack_config):
         new_attack_config_path = convert_configs(target_config, attack_config)
         new_attack_config = AttackConfigParser(new_attack_config_path)
         
-        attack(config=new_attack_config,
-               target_dataset=train_dataset,
-               target_model=target_model,
-               evaluation_model=None)
+        attack(
+            config = new_attack_config,
+            target_dataset = train_dataset,
+            target_model = target_model,
+            evaluation_model = None
+            )
     
     # if attack_config.model.name == "plug_and_play":
     #     pnp.run(target_model, target_config, attack_config)

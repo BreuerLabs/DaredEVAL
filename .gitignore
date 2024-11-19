@@ -8,4 +8,5 @@ secret.txt
 /wandb
 *.DS_Store
 *.pkl
+*.png
 config.yaml

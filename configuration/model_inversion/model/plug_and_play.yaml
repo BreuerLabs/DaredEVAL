@@ -1,5 +1,5 @@
 name: "plug_and_play"
-stylegan_model: "stylegan2-ada-pytorch/ffhq.pkl"
+stylegan_model: "stylegan2-ada-pytorch/afhqdog.pkl"
 
 evaluation_model:
   architecture: inception-v3 # architecture of evaluation model
@@ -7,19 +7,19 @@ evaluation_model:
 
 # From the pnp repo
 candidates:
-  num_candidates: 200
+  num_candidates: 10
   candidate_search:
     search_space_size: 2000
     center_crop: null
-    resize: 224
+    # resize: 224 #! This is removed because it depends on dataset not on attack 
     horizontal_flip: true
     batch_size: 25
     truncation_psi: 0.5
     truncation_cutoff: 8
 
 attack:
-  batch_size: 25 # Batch size per GPU.
-  num_epochs: 50 # Number of optimization iterations per batch.
+  batch_size: 1 # Batch size per GPU.
+  num_epochs: 10 # Number of optimization iterations per batch.
   targets: 0 # Specify the targeted classes, either a single class index, a list of indices, or all.
   discriminator_loss_weight: 0.0 # Add discriminator weight.
   single_w: true # Optimize a single 512-vector. Otherwise, a distinct vector for each AdaIn operation is optimized.
@@ -30,6 +30,7 @@ attack:
     Resize:
       size: 224
       antialias: true
+
     RandomResizedCrop:
       size: [224, 224]
       scale: [0.9, 1.0]
