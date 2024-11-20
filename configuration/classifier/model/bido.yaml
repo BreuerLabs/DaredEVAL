@@ -9,9 +9,9 @@ args:
   ktype: "linear" # linear, gaussian, IMQ
   hsic_training: True
   hotstart_model: False # Else give path to model
-  root_path: "./"
-  config_dir: './config'
-  model_dir: './target_model'
+  root_path: "Defend_MI"
+  config_dir: 'config'
+  model_dir: 'target_model'
 
 loaded_args:
   dataset:

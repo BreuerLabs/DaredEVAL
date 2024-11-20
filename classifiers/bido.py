@@ -1,6 +1,8 @@
-import sys, os
+import os
 import torch
 import torch.nn as nn
+from omegaconf import OmegaConf, open_dict
+
 from classifiers.abstract_classifier import AbstractClassifier
 from Defend_MI.BiDO.train_HSIC import train_HSIC_main
 from Defend_MI.BiDO import utils
@@ -13,39 +15,38 @@ class BiDO(AbstractClassifier):
         self.config = config
         self.model = None # call model when it trains
 
-    def train_model(self, trainloader, testloader):
-        dataset = self.config.dataset.dataset
-        measure = self.config.model.measure
-        ktype = self.config.model.ktype
-        hsic_training = self.config.model.hsic_training
-        root_path = self.config.model.root_path
-        config_dir = self.config.model.config_dir
-        model_dir = self.config.model.model_dir
-        
-        from argparse import ArgumentParser
+    def train_model(self, trainloader, testloader): # adapted from BiDO repo's train_HSIC.py
+        from argparse import ArgumentParser # bido repo uses argparse, we need to translate our config into 'args' and 'loaded_args' objects
 
         parser = ArgumentParser(description='train with BiDO')
-        inpt = self.config.args
-        parser_input = [f"--{k}={v}" for k, v in inpt.items()]
-        args = parser.parse_args(parser_input)
+        parser.add_argument('--measure', default='HSIC', help='HSIC | COCO')
+        parser.add_argument('--ktype', default='linear', help='gaussian, linear, IMQ')
+        parser.add_argument('--hsic_training', default=True, help='multi-layer constraints', type=bool)
+        parser.add_argument('--root_path', default='./', help='')
+        parser.add_argument('--config_dir', default='./config', help='')
+        parser.add_argument('--model_dir', default='./target_model', help='')
+        parser.add_argument('--hotstart_model', default=False, help='')
+        parser.add_argument('--dataset', default='celeba', help='celeba | mnist | cifar')
 
-        loaded_args = self.config.loaded_args
-        hyper = self.config.hyper
+        inpt = self.config.model.args
+        parser_input = [f"--{k}={v}" for k, v in inpt.items()]
+        dataset_name = self.config.dataset.dataset
+        parser_input.append(f"--dataset={dataset_name}")
+        args = parser.parse_args(args=parser_input)
+
+        loaded_args = OmegaConf.to_container(self.config.model.loaded_args)
+        hyper = self.config.model.hyper
         model_name = loaded_args['dataset']['model_name']
+        if model_name not in loaded_args.keys():
+            loaded_args[model_name] = {}
         for key, value in hyper.items():
             loaded_args[model_name][key] = value
 
-        n_classes = self.config.dataset.output_size
-        loaded_args[model_name]['n_classes'] = n_classes
-
-        train_file = loaded_args['dataset']['train_file']
-        test_file = loaded_args['dataset']['test_file']
+        n_classes = self.config.dataset.n_classes
+        loaded_args['dataset']['n_classes'] = n_classes
 
         model_path = os.path.join(args.root_path, args.model_dir, args.dataset, args.measure)
         os.makedirs(model_path, exist_ok=True)
-        
-        trainloader = utils.init_dataloader(loaded_args, train_file, mode='train')
-        testloader = utils.init_dataloader(loaded_args, test_file, mode='test')
         
         train_HSIC_main(args, loaded_args, trainloader, testloader)
 

@@ -1,6 +1,6 @@
 # conf/config.yaml
 defaults:
   - model: bido   # Yaml file describing which model and hyperparameters to use
-  - dataset: MNIST  # Yaml file with dateset specific parameters
+  - dataset: CIFAR10  # Yaml file with dateset specific parameters
   - training: default # Yaml file with training specific parameters
 
