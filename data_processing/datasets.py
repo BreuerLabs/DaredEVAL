@@ -55,10 +55,6 @@ def get_datasets(config):
     train_size = int((1 - config.training.validation_size) * len(full_train_dataset))
     val_size = len(full_train_dataset) - train_size
     train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
-<<<<<<< HEAD
-    
-    return train_dataset, val_dataset, test_dataset
-=======
 
     return train_dataset, val_dataset, test_dataset
 
@@ -129,4 +125,3 @@ def get_subset(dataset, N, seed):
     
 
 
->>>>>>> 24d5795 (small changes and CelebA stuff)
