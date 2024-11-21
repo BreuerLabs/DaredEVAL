@@ -1,3 +1,5 @@
 dataset: CelebA
 input_size: [3, 64, 64]
 output_size: 40
+target_type: identity 
+N_most_common_classes: 1000
