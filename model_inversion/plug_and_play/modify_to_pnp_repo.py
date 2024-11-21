@@ -24,7 +24,7 @@ def convert_configs(target_config, attack_config):
     new_dict['evaluation_model']['num_classes'] = attack_config.dataset.n_classes
     new_dict['candidates']['candidate_search']['resize'] = target_config.dataset.input_size[1]
     
-    save_path = "plug_and_play_attacks/configs/attacking/"
+    save_path = "Plug_and_Play_Attacks/configs/attacking/"
     save_as = save_path + attack_config.training.save_as
     
     with open(f"{save_as}.yaml", "w") as file:

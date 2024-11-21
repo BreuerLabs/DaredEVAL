@@ -10,8 +10,8 @@ from data_processing.data_loaders import get_data_loaders
 from data_processing.datasets import get_datasets
 
 # import model_inversion.plug_and_play.attack as pnp
-from plug_and_play_attacks.utils.attack_config_parser import AttackConfigParser
-from plug_and_play_attacks.our_attack import attack
+from Plug_and_Play_Attacks.utils.attack_config_parser import AttackConfigParser
+from Plug_and_Play_Attacks.our_attack import attack
 
 from model_inversion.plug_and_play.modify_to_pnp_repo import model_compatibility_wrapper, convert_configs
 
@@ -29,7 +29,7 @@ def run_model_inversion(attack_config):
     if attack_config.target_wandb_id:
         target_config, run_name = wandb_helpers.get_target_config(attack_config)
 
-    # If targeting a local run
+    # If targeting a local runs
     elif attack_config.target_config_path:
         try:
             target_config = OmegaConf.load(attack_config.target_config_path)
