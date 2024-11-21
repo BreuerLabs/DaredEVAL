@@ -18,7 +18,7 @@ loaded_args:
     model_name: "VGG16"
     train_file: ""
     test_file: ""
-    n_classes: None
+    n_classes: None # define this in dataset yaml file instead
 
 hyper:
   lr: 0.001

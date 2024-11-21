@@ -13,7 +13,8 @@ class BiDO(AbstractClassifier):
     def __init__(self, config):
         super(BiDO, self).__init__()
         self.config = config
-        self.model = None # call model when it trains
+        self.model = super(BiDO, self).init_model(config)
+
 
     def train_model(self, trainloader, testloader): # adapted from BiDO repo's train_HSIC.py
         from argparse import ArgumentParser # bido repo uses argparse, we need to translate our config into 'args' and 'loaded_args' objects
@@ -48,7 +49,21 @@ class BiDO(AbstractClassifier):
         model_path = os.path.join(args.root_path, args.model_dir, args.dataset, args.measure)
         os.makedirs(model_path, exist_ok=True)
         
-        train_HSIC_main(args, loaded_args, trainloader, testloader)
+        self.model = train_HSIC_main(args, loaded_args, trainloader, testloader)
+        if self.config.model.criterion == "crossentropy":
+            self.criterion = nn.CrossEntropyLoss().cuda() # useful to have this defined in the class
+            self.criterionSum = nn.CrossEntropyLoss(reduction='sum')
+        else:
+            assert 1 == 0, f"{self.config.model.criterion} not yet supported"
 
-        # Load model
-        self.model = None 
+        # TODO save model
+    
+    def forward(self, x):
+        hiddens, out = self.model(x)
+        return out
+    
+
+
+        
+
+
