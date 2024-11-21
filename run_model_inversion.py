@@ -11,7 +11,7 @@ from data_processing.datasets import get_datasets
 
 # import model_inversion.plug_and_play.attack as pnp
 from Plug_and_Play_Attacks.utils.attack_config_parser import AttackConfigParser
-from Plug_and_Play_Attacks.our_attack import attack
+from model_inversion.plug_and_play.our_attack import attack
 
 from model_inversion.plug_and_play.modify_to_pnp_repo import model_compatibility_wrapper, convert_configs
 

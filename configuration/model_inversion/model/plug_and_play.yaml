@@ -1,5 +1,5 @@
 name: "plug_and_play"
-stylegan_model: "stylegan2-ada-pytorch/afhqdog.pkl"
+stylegan_model: "stylegan2-ada-pytorch/ffhq.pkl"
 
 evaluation_model:
   architecture: inception-v3 # architecture of evaluation model
