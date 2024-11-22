@@ -1,7 +1,7 @@
 
 from classifiers.cnn import CNN
 from classifiers.mlp import MLP
-from classifiers.bitnet import BitNet 
+# from classifiers.bitnet import BitNet 
 
 def get_model(config):
     if config.model.name == "CNN":
@@ -11,7 +11,8 @@ def get_model(config):
         model = MLP(config)
         
     elif config.model.name == "BitNet":
-        model = BitNet(config)
+        # model = BitNet(config)
+        pass
 
     else:
         raise ValueError(f"Unknown model: {config.model.name}")

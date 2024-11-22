@@ -1,5 +1,4 @@
 dataset: CelebA
 input_size: [3, 64, 64]
-output_size: 40
+n_classes: 1000 # N most common classes to be chosen among the target type
 target_type: identity 
-N_most_common_classes: 1000
