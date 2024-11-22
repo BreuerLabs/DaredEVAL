@@ -57,8 +57,11 @@ def run_model_inversion(attack_config):
     
     print("test_loss", test_loss)
     print("test_accuracy", test_accuracy)
+
+    print()
+
     
-    if target_config.training.wandb.track:
+    if attack_config.training.wandb.track:
         wandb.log({"test_loss": test_loss})
         wandb.log({"test_accuracy": test_accuracy})
 
