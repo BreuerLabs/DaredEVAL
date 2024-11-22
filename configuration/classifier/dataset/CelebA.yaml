@@ -1,9 +1,5 @@
 dataset: CelebA
 input_size: [3, 64, 64]
-<<<<<<< HEAD
-n_classes: 40
-=======
-output_size: 40
+n_classes: 1000
 target_type: identity 
 N_most_common_classes: 1000
->>>>>>> 24d5795 (small changes and CelebA stuff)

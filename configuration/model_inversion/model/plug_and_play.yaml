@@ -28,11 +28,11 @@ attack:
     CenterCrop:
       size: 800
     Resize:
-      size: 224
+      size: 32
       antialias: true
 
     RandomResizedCrop:
-      size: [224, 224]
+      size: [32, 32]
       scale: [0.9, 1.0]
       ratio: [1.0, 1.0]
       antialias: true

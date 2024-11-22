@@ -35,11 +35,12 @@ def get_datasets(config):
         
     elif config.dataset.dataset == "CelebA":
         transform = transforms.Compose([
-            transforms.Resize((64, 64)),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
         
+        import pdb; pdb.set_trace()
         full_train_dataset = datasets.CelebA(root='./data', split='all', target_type = config.dataset.target_type, download=False, transform=transform)
         
         full_train_dataset, test_dataset = get_subset(dataset = full_train_dataset, 
