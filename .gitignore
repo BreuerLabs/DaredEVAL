@@ -1,4 +1,5 @@
 .conda
+.vscode
 *.pth
 *.pdf
 .pt
