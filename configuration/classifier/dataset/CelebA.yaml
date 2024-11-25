@@ -2,3 +2,18 @@ dataset: CelebA
 input_size: [3, 24, 224]
 n_classes: 1000 # The amount of most common targets to include.
 target_type: identity 
+
+augment_data: True
+transformations:
+  RandomResizedCrop:
+    size: [224, 224]
+    scale: [0.85, 1]
+    ratio: [1, 1]
+    antialias: true
+  ColorJitter:
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0.1
+    hue: 0.1
+  RandomHorizontalFlip:
+    p: 0.5

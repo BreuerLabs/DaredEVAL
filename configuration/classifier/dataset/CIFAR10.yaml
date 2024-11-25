@@ -1,3 +1,18 @@
 dataset: CIFAR10
 input_size: [3, 32, 32]
 n_classes: 10
+
+augment_data: True
+transformations:
+  RandomResizedCrop:
+    size: [32, 32]
+    scale: [0.85, 1]
+    ratio: [1, 1]
+    antialias: true
+  ColorJitter:
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0.1
+    hue: 0.1
+  RandomHorizontalFlip:
+    p: 0.5
