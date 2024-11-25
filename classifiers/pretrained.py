@@ -35,7 +35,6 @@ class PreTrainedClassifier(AbstractClassifier):
         #! Is this used? It is not defined to do so in the abstract classifier
         if self.config.dataset.n_classes != model.fc.out_features:
             # exchange last layer to match desired numbers of classes
-            model.fc = nn.Linear(model.fc.in_features, self.num_classes)
+            model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
 
         return model
-    
