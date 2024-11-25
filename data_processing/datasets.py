@@ -1,57 +1,41 @@
 from torchvision.datasets import VisionDataset
 from torchvision.datasets.utils import verify_str_arg
-from functools import partial
-import PIL
-from typing import Any, Callable, List, Optional, Union, Tuple
+
 from torchvision import datasets, transforms
-from torch.utils.data import Subset, Dataset
+from torch.utils.data import Subset, Dataset, random_split
 import torch
-from torch.utils.data import random_split
+
+
 import numpy as np
 import pandas as pd
-import os
 
+from functools import partial
+
+import PIL
+from typing import Any, Callable, List, Optional, Union, Tuple
+import os
 from collections import Counter
+from data_processing.data_augmentation import get_transforms
+
 
 def get_datasets(config):
     """Dynamically loads datasets based on the configuration."""
     
+    transform = get_transforms(config)
+    
     if config.dataset.dataset == "CIFAR10":
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-        ])
         full_train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
         test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
         
-    elif config.dataset.dataset == "MNIST":
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))
-        ])
+    elif config.dataset.dataset == "MNIST":   
         full_train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
         test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
         
     elif config.dataset.dataset == "FashionMNIST":
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.5,), (0.5,))
-        ])
         full_train_dataset = datasets.FashionMNIST(root='./data', train=True, download=True, transform=transform)
         test_dataset = datasets.FashionMNIST(root='./data', train=False, download=True, transform=transform)
         
     elif config.dataset.dataset == "CelebA":
-        
-        image_height = config.dataset.input_size[1]
-        image_width  = config.dataset.input_size[2]
-        
-        transform = transforms.Compose([
-            transforms.Resize((image_height, image_width)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-        ])
-        
-        
         necessary_files = ["data/celeba/list_eval_partition.txt", 
                            "data/celeba/identity_CelebA.txt",
                            "data/celeba/img_align_celeba",
@@ -95,7 +79,6 @@ def get_datasets(config):
     train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
 
     return train_dataset, val_dataset, test_dataset
-
 
 
 class CelebA_N_most_common(Dataset):
