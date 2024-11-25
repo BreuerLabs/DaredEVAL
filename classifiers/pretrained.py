@@ -22,8 +22,11 @@ class PreTrainedClassifier(AbstractClassifier):
         arch = self.config.model.architecture
         pretrained = self.config.model.pretrained
         if arch == 'resnet152':
-            weights = resnet.ResNet18_Weights.DEFAULT if pretrained else None
+            weights = resnet.ResNet152_Weights.DEFAULT if pretrained else None
             model = resnet.resnet152(weights=weights)
+        elif arch == 'resnet18':
+            weights = resnet.ResNet18_Weights.DEFAULT if pretrained else None
+            model = resnet.resnet18(weights=weights)       
         else:
             raise RuntimeError(
                 f'No model with the name {arch} available'
