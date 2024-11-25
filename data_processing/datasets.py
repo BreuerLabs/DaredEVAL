@@ -97,7 +97,6 @@ def get_datasets(config):
     return train_dataset, val_dataset, test_dataset
 
 
-
 class CelebA_N_most_common(Dataset):
     def __init__(self,
                  train,
