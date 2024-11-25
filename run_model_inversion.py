@@ -20,6 +20,14 @@ from utils import wandb_helpers
 
 @hydra.main(config_path="configuration/model_inversion", config_name="config.yaml", version_base="1.3")
 def run_model_inversion(attack_config):
+    
+    if torch.cuda.is_available() and attack_config.training.device != "cuda":
+        question = f"\nCuda is available but not configured from command to be used! Do you wish to use cuda instead of {attack_config.training.device}?\nType y to use cuda, enter if not:"
+        
+        use_cuda = input(question)
+        
+        if use_cuda.lower().strip() == "y":
+            attack_config.training.device = 'cuda'
 
     if attack_config.training.wandb.track:
         wandb_helpers.wandb_init(attack_config)
