@@ -12,6 +12,7 @@ class AbstractClassifier(nn.Module):
     def init_model(self, config):
         model = None
         self.device = config.training.device
+        self.config = config
         
         if config.training.save_as:
             self.save_as = config.training.save_as + ".pth"
@@ -20,11 +21,20 @@ class AbstractClassifier(nn.Module):
             self.save_as = wandb.run.name + ".pth"
             
         else:
-            raise ValueError("Please provide a name to save the model when not uing wandb tracking")
+            raise ValueError("Please provide a name to save the model when not using wandb tracking")
+
+        if config.model.criterion == "crossentropy":
+            self.criterion = nn.CrossEntropyLoss()
+            self.criterionSum = nn.CrossEntropyLoss(reduction='sum')
+
+        if config.model.criterion == "MSE":
+            self.criterion = nn.MSELoss()
+            self.criterionSum = nn.MSELoss(reduction='sum')
         
         return model
     
     def train_one_epoch(self, train_loader):
+        
         config = self.config
         self.train()
         total_loss = 0
@@ -49,24 +59,17 @@ class AbstractClassifier(nn.Module):
 
 
     def train_model(self, train_loader, val_loader):
-
-        self.to(self.device)
         config = self.config
-
-    
+        
         if config.model.optimizer == "adam":
             self.optimizer = torch.optim.Adam(self.parameters(), lr=config.model.hyper.lr)
 
-        if config.model.criterion == "crossentropy":
-            self.criterion = nn.CrossEntropyLoss()
-            self.criterionSum = nn.CrossEntropyLoss(reduction='sum')
-
-        if config.model.criterion == "MSE":
-            self.criterion = nn.MSELoss()
-            self.criterionSum = nn.MSELoss(reduction='sum')
+        self.to(self.device)
         
         best_loss = np.inf
         no_improve_epochs = 0
+        
+        print("\nTraining using ", self.device)
         
         for epoch in tqdm(range(config.model.hyper.epochs), desc="Training", total=config.model.hyper.epochs):
             train_loss = self.train_one_epoch(train_loader)
@@ -104,6 +107,7 @@ class AbstractClassifier(nn.Module):
         self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
     
     def evaluate(self, loader):
+        self.to(self.device)
         self.eval()
         
         correct = 0

@@ -1,4 +1,3 @@
-
 from classifiers.cnn import CNN
 from classifiers.mlp import MLP
 from classifiers.lassonet_mlp import LassoNetMLP
@@ -6,7 +5,6 @@ from classifiers.sglnn import SGLNN
 # from classifiers.bitnet import BitNet
 from classifiers.bido import BiDO
 from classifiers.pretrained import PreTrainedClassifier
-
 
 def get_model(config):
     if config.model.name == "CNN":
@@ -26,7 +24,7 @@ def get_model(config):
 
     elif config.model.name == "BiDO":
         model = BiDO(config)
-        
+
     elif config.model.name == "PreTrainedClassifier":
         model = PreTrainedClassifier(config)
 

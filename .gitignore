@@ -1,5 +1,6 @@
 .vscode
 .conda
+.vscode
 *.pth
 *.pdf
 .pt
@@ -7,6 +8,10 @@
 secret.txt
 /outputs
 /wandb
+*.DS_Store
+*.pkl
+*.png
+config.yaml
 *.png
 .DS_store
 /classifiers/saved_configs

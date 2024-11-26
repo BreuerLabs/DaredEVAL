@@ -10,24 +10,24 @@ def get_data_loaders(config):
 
     num_workers = config.training.dataloader_num_workers
     train_loader = torch.utils.data.DataLoader(train_dataset,
-                                               batch_size=config.model.hyper.batch_size,
-                                               shuffle=True,
-                                               num_workers=num_workers,
-                                               pin_memory=True,
-                                               drop_last=True,
+                                            batch_size=config.model.hyper.batch_size,
+                                            shuffle=True,
+                                            num_workers=num_workers,
+                                            pin_memory=True,
+                                            drop_last=True,
                                                )
     val_loader = torch.utils.data.DataLoader(val_dataset,
-                                             batch_size=config.model.hyper.batch_size,
-                                             shuffle=False,
-                                             num_workers=num_workers,
-                                             pin_memory=True,
-                                             drop_last=False,)
+                                            batch_size=config.model.hyper.batch_size,
+                                            shuffle=False,
+                                            num_workers=num_workers,
+                                            pin_memory=True,
+                                            drop_last=False,)
     test_loader = torch.utils.data.DataLoader(test_dataset,
-                                              batch_size=config.model.hyper.batch_size,
-                                              shuffle=False,
-                                              num_workers=num_workers,
-                                              pin_memory=True,
-                                              drop_last=False,)
+                                            batch_size=config.model.hyper.batch_size,
+                                            shuffle=False,
+                                            num_workers=num_workers,
+                                            pin_memory=True,
+                                            drop_last=False,)
     
     print(f"Data loaders for {config.dataset.dataset} loaded successfully")
     

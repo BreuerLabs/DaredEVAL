@@ -231,4 +231,3 @@ class CustomCelebA(VisionDataset):
         lines = ["Target type: {target_type}", "Split: {split}"]
         return '\n'.join(lines).format(**self.__dict__)
 
-
