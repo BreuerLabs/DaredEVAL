@@ -1,5 +1,5 @@
 dataset: CelebA
-input_size: [3, 24, 224]
+input_size: [3, 244, 224]
 n_classes: 1000 # The amount of most common targets to include.
 target_type: identity 
 
