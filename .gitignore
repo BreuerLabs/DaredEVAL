@@ -11,3 +11,5 @@ secret.txt
 .DS_store
 /classifiers/saved_configs
 /stylegan2-ada-pytorch
+/Plug_and_Play_Attacks
+/Defend_MI
