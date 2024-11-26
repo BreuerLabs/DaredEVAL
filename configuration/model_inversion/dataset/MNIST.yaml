@@ -1,5 +1,6 @@
 dataset: MNIST
 input_size: [1, 28, 28]
 n_classes: 10
+augment_data: True
 # n_candidates: 10
 # target_classes: [0,4,7] # use "all" if targeting all classes
