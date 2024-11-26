@@ -6,3 +6,7 @@
 secret.txt
 /outputs
 /wandb
+Plug_and_Play_Attacks
+stylegan2-ada-pytorch
+.vscode
+classifiers/saved_configs
