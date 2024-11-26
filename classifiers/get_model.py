@@ -1,7 +1,7 @@
 
 from classifiers.cnn import CNN
 from classifiers.mlp import MLP
-from classifiers.bitnet import BitNet
+# from classifiers.bitnet import BitNet
 from classifiers.bido import BiDO
 
 def get_model(config):
@@ -11,8 +11,8 @@ def get_model(config):
     elif config.model.name == "MLP":
         model = MLP(config)
         
-    elif config.model.name == "BitNet":
-        model = BitNet(config)
+    # elif config.model.name == "BitNet":
+    #     model = BitNet(config)
 
     elif config.model.name == "BiDO":
         model = BiDO(config)
