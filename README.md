@@ -1,6 +1,6 @@
 ## Configuration with Hydra
 
-This project uses [Hydra](https://hydra.cc/) for managing configurations. The configuration files are located in the `conf` directory.
+This project uses [Hydra](https://hydra.cc/) for managing configurations. The configuration files are located in the `configuration` directory.
 
 ### Folder Structure
 

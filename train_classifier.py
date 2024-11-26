@@ -4,11 +4,20 @@ import wandb
 import os
 import torch
 
-from dataloaders.get_data_loaders import get_data_loaders
+from data_processing.data_loaders import get_data_loaders
 from classifiers.get_model import get_model
 
 @hydra.main(config_path="configuration/classifier", config_name="config.yaml", version_base="1.3")
 def train_classifier(config):
+    
+    if torch.cuda.is_available() and config.training.device != "cuda":
+        question = f"\nCuda is available but not configured from command to be used! Do you wish to use cuda instead of {config.training.device}?\nType y to use cuda, enter if not:"
+        
+        use_cuda = input(question)
+        
+        if use_cuda.lower().strip() == "y":
+            config.training.device = 'cuda'
+            
 
     if config.training.wandb.track:
         try:
