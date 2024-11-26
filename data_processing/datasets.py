@@ -1,22 +1,19 @@
 from torchvision.datasets import VisionDataset
 from torchvision.datasets.utils import verify_str_arg
-
 from torchvision import datasets, transforms
 from torch.utils.data import Subset, Dataset, random_split
 import torch
-
 
 import numpy as np
 import pandas as pd
 
 from functools import partial
-
 import PIL
 from typing import Any, Callable, List, Optional, Union, Tuple
 import os
 from collections import Counter
-from data_processing.data_augmentation import get_transforms
 
+from data_processing.data_augmentation import get_transforms
 
 def get_datasets(config):
     """Dynamically loads datasets based on the configuration."""
@@ -49,6 +46,7 @@ def get_datasets(config):
         if not is_downloaded:
             try:
                 _ = datasets.CelebA(root='./data', split='all', target_type = config.dataset.target_type, download=True, transform=transform)
+                del _
             
             except Exception as e:
                 raise AssertionError("There are problems with torchvision and the automatic download of CelebA. Git issue: https://github.com/pytorch/vision/issues/8204. Temporary fix is to download the files manually and put them in the celeba folder in the data folder.")
@@ -67,8 +65,6 @@ def get_datasets(config):
                                    root='./data/celeba',
                                    N = config.dataset.n_classes
                                    )
-        
-        # test_dataset = datasets.CelebA(root='./data', split='test', target_type = target, download=True, transform=transform)
 
     else:
         raise ValueError(f"Unknown dataset: {config.dataset.dataset}")
@@ -235,73 +231,4 @@ class CustomCelebA(VisionDataset):
         lines = ["Target type: {target_type}", "Split: {split}"]
         return '\n'.join(lines).format(**self.__dict__)
 
-
-
-
-
-# def get_subset(dataset, N, seed):
-    
-#     """
-#     Processes the CelebA dataset to return training and test subsets containing only the top 1000 most common classes.
-
-#     Parameters:
-#     ----------
-#     dataset : Dataset
-#         The input CelebA dataset containing images and corresponding labels. It is assumed that the dataset
-#         includes a 'label' or equivalent field indicating the class of each sample.
-
-#     Returns:
-#     -------
-#     train_dataset : Dataset
-#         A processed training subset of the CelebA dataset containing only the top 1000 most common classes.
-    
-#     test_dataset : Dataset
-#         A processed testing subset of the CelebA dataset containing only the top 1000 most common classes.
-
-#     """
-#     print("\n THIS LINE IS BEING RUN!!!")
-#     dataset.targets = dataset.identity
-
-#     # Select the 1,000 most frequent celebrities from the dataset
-#     targets = np.array([t.item() for t in dataset.identity])
-#     ordered_dict = dict(
-#         sorted(Counter(targets).items(),
-#                 key=lambda item: item[1],
-#                 reverse=True))
-#     sorted_targets = list(ordered_dict.keys())[:N]
-
-#     # Select the corresponding samples for train and test split
-#     indices = np.where(np.isin(targets, sorted_targets))[0]
-#     np.random.seed(seed)
-#     np.random.shuffle(indices)
-#     training_set_size = int(0.9 * len(indices))
-#     train_idx = indices[:training_set_size]
-#     test_idx = indices[training_set_size:]
-
-#     # Assert that there are no overlapping datasets
-#     assert len(set.intersection(set(train_idx), set(test_idx))) == 0
-
-#     # # Set transformations
-#     # self.transform = transform
-#     target_mapping = {
-#         sorted_targets[i]: i
-#         for i in range(len(sorted_targets))
-#     }
-
-#     target_transform = transforms.Lambda(lambda x: target_mapping[x])
-
-#     # Split dataset
-    
-#     train_dataset = Subset(dataset, train_idx)
-#     train_targets = np.array(targets)[train_idx]
-#     train_dataset.targets = [target_transform(t) for t in train_targets]
-#     # self.name = 'CelebA1000_train'
-    
-#     test_dataset = Subset(dataset, test_idx)
-#     test_targets = np.array(targets)[test_idx]
-#     test_dataset.targets = [target_transform(t) for t in test_targets]
-#     # self.name = 'CelebA1000_test'
-
-#     return train_dataset, test_dataset
-    
 
