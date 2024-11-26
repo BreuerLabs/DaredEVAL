@@ -60,6 +60,10 @@ class AbstractClassifier(nn.Module):
         if config.model.criterion == "crossentropy":
             self.criterion = nn.CrossEntropyLoss()
             self.criterionSum = nn.CrossEntropyLoss(reduction='sum')
+
+        if config.model.criterion == "MSE":
+            self.criterion = nn.MSELoss()
+            self.criterionSum = nn.MSELoss(reduction='sum')
         
         best_loss = np.inf
         no_improve_epochs = 0
