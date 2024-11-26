@@ -26,6 +26,10 @@ class AbstractClassifier(nn.Module):
         if config.model.criterion == "crossentropy":
             self.criterion = nn.CrossEntropyLoss()
             self.criterionSum = nn.CrossEntropyLoss(reduction='sum')
+
+        if config.model.criterion == "MSE":
+            self.criterion = nn.MSELoss()
+            self.criterionSum = nn.MSELoss(reduction='sum')
         
         return model
     
@@ -59,7 +63,7 @@ class AbstractClassifier(nn.Module):
         
         if config.model.optimizer == "adam":
             self.optimizer = torch.optim.Adam(self.parameters(), lr=config.model.hyper.lr)
-            
+
         self.to(self.device)
         
         best_loss = np.inf

@@ -5,6 +5,7 @@ from data_processing.datasets import get_datasets
 
 def get_data_loaders(config):
     """Dynamically loads datasets based on the configuration."""
+    
     train_dataset, val_dataset, test_dataset = get_datasets(config)
 
     num_workers = config.training.dataloader_num_workers

@@ -1,7 +1,7 @@
 dataset: CelebA
-input_size: [3, 224, 224]
-n_classes: 1000 # The amount of most common targets to include.
 target_type: identity 
+input_size: [3, 224, 224]
+n_classes: 1000 # N most common classes to be chosen among the target type
 
 augment_data: True
 transformations:

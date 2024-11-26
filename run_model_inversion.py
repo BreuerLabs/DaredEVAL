@@ -9,10 +9,8 @@ from classifiers.get_model import get_model
 from data_processing.data_loaders import get_data_loaders
 from data_processing.datasets import get_datasets
 
-# import model_inversion.plug_and_play.attack as pnp
 from Plug_and_Play_Attacks.utils.attack_config_parser import AttackConfigParser
 from model_inversion.plug_and_play.our_attack import attack
-
 from model_inversion.plug_and_play.modify_to_pnp_repo import model_compatibility_wrapper, convert_configs
 
 
@@ -84,24 +82,8 @@ def run_model_inversion(attack_config):
             target_model = target_model,
             evaluation_model = None
             )
-    
-    # if attack_config.model.name == "plug_and_play":
-    #     pnp.run(target_model, target_config, attack_config)
-
-    # else:
-    #     raise ValueError(f"Unknown model: {attack_config.model.name}")
-    
-    
-    
-    # # load the model
-    # gan = GAN(config)
-    
-    # # Train model
-    # gan.train(train_loader)
-    
-    
+   
     print("done")
-    
     
 if __name__ == "__main__":
     run_model_inversion()

@@ -1,0 +1,15 @@
+name: "SGLNN"
+optimizer: "adam"
+criterion: "MSE"
+hotstart_model: False # Else give path to model
+hyper:
+  lr: 0.001
+  epochs: 20
+  batch_size: 256
+  hidden_size: 250
+  patience: 100
+  gl_lambda: 0 # Regularizer term
+  gl_theta: 0 # Norm threshold for zeroing weights
+  sgl_alpha: 0.04 # See SGLNN paper Eqn. (15)
+  smooth: False
+

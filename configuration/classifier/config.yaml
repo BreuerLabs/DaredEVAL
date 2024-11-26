@@ -1,4 +1,4 @@
-# conf/config.yaml
+# configuration/config.yaml
 defaults:
   - model: cnn   # Yaml file describing which model and hyperparameters to use
   - dataset: CelebA # Yaml file with dateset specific parameters
