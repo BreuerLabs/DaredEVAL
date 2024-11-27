@@ -43,8 +43,6 @@ def get_target_config(config):
                 
         return cleaned_config
         
-        
-        
     api = wandb.Api()
     run = api.run(f"{config.training.wandb.entity}/{config.training.wandb.project}/{config.target_wandb_id}")
         
@@ -61,3 +59,13 @@ def get_target_config(config):
     
     return target_config, run.name
     
+def get_target_weights(target_config, attack_config):
+
+    api = wandb.Api()
+    run = api.run(f"{attack_config.training.wandb.entity}/{attack_config.training.wandb.project}/{attack_config.target_wandb_id}")
+    if target_config.training.save_as:
+        target_weights_filename = target_config.training.save_as
+    else: # .pth filename is the same as wandb run name in this case
+        target_weights_filename = run.name
+
+    return run.file(f"classifiers/saved_models/{target_weights_filename}").name

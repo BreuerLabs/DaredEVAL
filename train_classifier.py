@@ -39,6 +39,11 @@ def train_classifier(config):
         
     # Save the configuration for later use   
     OmegaConf.save(config, f"classifiers/saved_configs/{config.training.save_as}.yaml")
+
+    # Save weights in wandb
+    if config.training.wandb.track:
+        # wandb.log_model(path=f"classifiers/saved_models/{model.save_as}")
+        wandb.save(f"classifiers/saved_models/{model.save_as}")
     
     
 if __name__ == "__main__":

@@ -34,6 +34,7 @@ def run_model_inversion(attack_config):
     # If targeting a model trained with wandb tracking
     if attack_config.target_wandb_id:
         target_config, run_name = wandb_helpers.get_target_config(attack_config)
+        model_weights_path = wandb_helpers.get_target_weights(attack_config)
 
     # If targeting a local runs
     elif attack_config.target_config_path:
@@ -45,6 +46,8 @@ def run_model_inversion(attack_config):
         except Exception as e:
             print(f"Error loading YAML file: {e}", file=sys.stderr)
             raise
+    
+        model_weights_path = f"classifiers/saved_models/{run_name}.pth"
         
     else:
         raise ValueError("Please provide either a wandb id or a path to a configuration file")
@@ -54,9 +57,7 @@ def run_model_inversion(attack_config):
     train_loader, val_loader, test_loader = get_data_loaders(target_config)
     
     target_model = get_model(target_config)
-    
-    model_weights_path = f"classifiers/saved_models/{run_name}.pth" #! We can change this to save weights in wandb instead.
-    
+
     target_model.load_model(model_weights_path)
     
     test_loss, test_accuracy = target_model.evaluate(test_loader)
