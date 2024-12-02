@@ -8,4 +8,5 @@ seed: 42
 wandb:
   track: False
   project: "plug_and_play"
+  target_project: "ModelInversion"
   entity: "BreuerLab"

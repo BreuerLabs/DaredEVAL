@@ -17,6 +17,13 @@ class BiDO(AbstractClassifier):
 
 
     def train_model(self, trainloader, testloader): # adapted from BiDO repo's train_HSIC.py
+        if self.config.training.save_as:
+            self.save_as = self.config.training.save_as + ".pth"
+        elif self.config.training.wandb.track:
+            self.save_as = self.wandb.run.name + ".pth" 
+        else:
+            raise ValueError("Please provide a name to save the model when not using wandb tracking")
+        
         from argparse import ArgumentParser # bido repo uses argparse, we need to translate our config into 'args' and 'loaded_args' objects
 
         parser = ArgumentParser(description='train with BiDO')

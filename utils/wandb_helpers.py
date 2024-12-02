@@ -44,7 +44,7 @@ def get_target_config(config):
         return cleaned_config
         
     api = wandb.Api()
-    run = api.run(f"{config.training.wandb.entity}/{config.training.wandb.project}/{config.target_wandb_id}")
+    run = api.run(f"{config.training.wandb.entity}/{config.training.wandb.target_project}/{config.target_wandb_id}")
         
     # Download the YAML config file
     target_config = run.file("config.yaml").download(replace=True)
@@ -62,10 +62,12 @@ def get_target_config(config):
 def get_target_weights(target_config, attack_config):
 
     api = wandb.Api()
-    run = api.run(f"{attack_config.training.wandb.entity}/{attack_config.training.wandb.project}/{attack_config.target_wandb_id}")
+    run = api.run(f"{attack_config.training.wandb.entity}/{attack_config.training.wandb.target_project}/{attack_config.target_wandb_id}")
     if target_config.training.save_as:
         target_weights_filename = target_config.training.save_as
     else: # .pth filename is the same as wandb run name in this case
         target_weights_filename = run.name
+    
+    target_weights_path_wrapper = run.file(f"classifiers/saved_models/{target_weights_filename}.pth").download(replace=True)
 
-    return run.file(f"classifiers/saved_models/{target_weights_filename}").name
+    return target_weights_path_wrapper.name

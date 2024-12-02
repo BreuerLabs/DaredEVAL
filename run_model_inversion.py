@@ -34,7 +34,7 @@ def run_model_inversion(attack_config):
     # If targeting a model trained with wandb tracking
     if attack_config.target_wandb_id:
         target_config, run_name = wandb_helpers.get_target_config(attack_config)
-        model_weights_path = wandb_helpers.get_target_weights(attack_config)
+        model_weights_path = wandb_helpers.get_target_weights(target_config, attack_config)
 
     # If targeting a local runs
     elif attack_config.target_config_path:

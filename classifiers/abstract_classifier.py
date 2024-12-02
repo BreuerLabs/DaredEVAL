@@ -13,15 +13,7 @@ class AbstractClassifier(nn.Module):
         model = None
         self.device = config.training.device
         self.config = config
-        
-        if config.training.save_as:
-            self.save_as = config.training.save_as + ".pth"
-            
-        elif config.training.wandb.track:
-            self.save_as = wandb.run.name + ".pth"
-            
-        else:
-            raise ValueError("Please provide a name to save the model when not using wandb tracking")
+    
 
         if config.model.criterion == "crossentropy":
             self.criterion = nn.CrossEntropyLoss()
@@ -60,6 +52,13 @@ class AbstractClassifier(nn.Module):
 
     def train_model(self, train_loader, val_loader):
         config = self.config
+
+        if config.training.save_as:
+            self.save_as = config.training.save_as + ".pth"
+        elif config.training.wandb.track:
+            self.save_as = wandb.run.name + ".pth" 
+        else:
+            raise ValueError("Please provide a name to save the model when not using wandb tracking")
         
         if config.model.optimizer == "adam":
             self.optimizer = torch.optim.Adam(self.parameters(), lr=config.model.hyper.lr)
