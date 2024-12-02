@@ -176,11 +176,11 @@ class CustomCelebA(VisionDataset):
                                           ("train", "valid", "test", "all"))]
 
         fn = partial(os.path.join, self.root)
-        splits = pd.read_csv(fn("list_eval_partition.txt"), delim_whitespace=True, header=None, index_col=0)
-        identity = pd.read_csv(fn("identity_CelebA.txt"), delim_whitespace=True, header=None, index_col=0)
-        bbox = pd.read_csv(fn("list_bbox_celeba.txt"), delim_whitespace=True, header=1, index_col=0)
-        landmarks_align = pd.read_csv(fn("list_landmarks_align_celeba.txt"), delim_whitespace=True, header=1)
-        attr = pd.read_csv(fn("list_attr_celeba.txt"), delim_whitespace=True, header=1)
+        splits = pd.read_csv(fn("list_eval_partition.txt"), sep='\s+', header=None, index_col=0)
+        identity = pd.read_csv(fn("identity_CelebA.txt"), sep='\s+', header=None, index_col=0)
+        bbox = pd.read_csv(fn("list_bbox_celeba.txt"), sep='\s+', header=1, index_col=0)
+        landmarks_align = pd.read_csv(fn("list_landmarks_align_celeba.txt"), sep='\s+', header=1)
+        attr = pd.read_csv(fn("list_attr_celeba.txt"), sep='\s+', header=1)
         mask = slice(None) if split_ is None else (splits[1] == split_)
 
         self.filename = splits[mask].index.values
