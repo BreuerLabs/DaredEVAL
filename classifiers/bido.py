@@ -2,6 +2,7 @@ import os
 import torch
 import torch.nn as nn
 from omegaconf import OmegaConf, open_dict
+import wandb
 
 from classifiers.abstract_classifier import AbstractClassifier
 from Defend_MI.BiDO.train_HSIC import train_HSIC_main
@@ -20,7 +21,7 @@ class BiDO(AbstractClassifier):
         if self.config.training.save_as:
             self.save_as = self.config.training.save_as + ".pth"
         elif self.config.training.wandb.track:
-            self.save_as = self.wandb.run.name + ".pth" 
+            self.save_as = wandb.run.name + ".pth" 
         else:
             raise ValueError("Please provide a name to save the model when not using wandb tracking")
         
