@@ -56,15 +56,20 @@ class BiDO(AbstractClassifier):
 
         model_path = os.path.join(args.root_path, args.model_dir, args.dataset, args.measure)
         os.makedirs(model_path, exist_ok=True)
-        
-        self.model = train_HSIC_main(args, loaded_args, trainloader, testloader)
+
         if self.config.model.criterion == "crossentropy":
             self.criterion = nn.CrossEntropyLoss().cuda() # useful to have this defined in the class
             self.criterionSum = nn.CrossEntropyLoss(reduction='sum')
         else:
             assert 1 == 0, f"{self.config.model.criterion} not yet supported"
+        
+        self.model = train_HSIC_main(args, loaded_args, trainloader, testloader)
+        # TODO add wandb logging for train
+        self.save_model(self.save_as)
 
-        # TODO save model
+        self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
+        
+
     
     def forward(self, x):
         hiddens, out = self.model(x)
