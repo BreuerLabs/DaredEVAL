@@ -40,7 +40,7 @@ class BiDO(AbstractClassifier):
         inpt = self.config.model.args
         parser_input = [f"--{k}={v}" for k, v in inpt.items()]
         dataset_name = self.config.dataset.dataset
-        parser_input.append(f"--dataset={dataset_name}")
+        parser_input.append(f"--dataset={dataset_name.lower()}") # 'celeba' not 'CelebA'
         args = parser.parse_args(args=parser_input)
 
         loaded_args = OmegaConf.to_container(self.config.model.loaded_args)
