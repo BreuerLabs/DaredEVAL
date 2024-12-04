@@ -21,12 +21,24 @@ class PreTrainedClassifier(AbstractClassifier):
 
         arch = self.config.model.architecture
         pretrained = self.config.model.pretrained
-        if arch == 'resnet152':
+        if arch.lower() == 'resnet152':
             weights = resnet.ResNet152_Weights.DEFAULT if pretrained else None
             model = resnet.resnet152(weights=weights)
-        elif arch == 'resnet18':
+        elif arch.lower() == 'resnet18':
             weights = resnet.ResNet18_Weights.DEFAULT if pretrained else None
             model = resnet.resnet18(weights=weights)       
+        
+        elif 'inception' in arch.lower():
+            weights = inception.Inception_V3_Weights.DEFAULT if pretrained else None
+            model = inception.inception_v3(weights=weights,
+                                           aux_logits=True,
+                                           init_weights=True)
+            if self.num_classes != model.fc.out_features:
+                # exchange the last layer to match the desired numbers of classes
+                model.fc = nn.Linear(model.fc.in_features, self.num_classes)
+            return model    
+            
+        
         else:
             raise RuntimeError(
                 f'No model with the name {arch} available'
