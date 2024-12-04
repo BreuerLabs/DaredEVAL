@@ -38,7 +38,7 @@ def train_classifier(config):
         wandb.log({"test_accuracy": test_accuracy})
         
     # Save the configuration for later use   
-    OmegaConf.save(config, f"classifiers/saved_configs/{config.training.save_as}.yaml")
+    OmegaConf.save(config, f"classifiers/saved_configs/{model.save_as}.yaml")
 
     # Save weights in wandb
     if config.training.wandb.track:
