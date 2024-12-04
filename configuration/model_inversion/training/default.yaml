@@ -7,6 +7,6 @@ validation_size: 0.2  # Fraction of the training set to use as validation
 seed: 42
 wandb:
   track: False
-  project: "plug_and_play"
-  target_project: "ModelInversion"
+  project: "plug_and_play" # where current run will be loaded
+  target_project: "ModelInversion" # where the target model is loaded from
   entity: "BreuerLab"

@@ -7,5 +7,5 @@ dataloader_num_workers: 8
 seed: 42
 wandb:
   track: True
-  project: "ModelInversion"
+  project: "ModelInversion" # where current run will be loaded
   entity: "BreuerLab"
