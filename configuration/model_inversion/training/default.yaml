@@ -9,4 +9,5 @@ wandb:
   track: False
   project: "plug_and_play"
   target_project: "ModelInversion"
+  evaluation_project: "ModelInversion"
   entity: "BreuerLab"

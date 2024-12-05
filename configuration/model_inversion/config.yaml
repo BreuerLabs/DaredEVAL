@@ -1,8 +1,8 @@
 # conf/config.yaml
 defaults:
-  - model: plug_and_play   # Yaml file describing which model and hyperparameters to use
+  - model: plug_and_play_small   # Yaml file describing which model and hyperparameters to use
   - dataset: CelebA  # Yaml file with dateset specific parameters
   - training: default # Yaml file with training specific parameters
 
-target_wandb_id: "s7t7p479"
-target_config_path: False #"classifiers/saved_configs/cifardropout.yaml" 
+target_wandb_id: "s7t7p479" # The wandb id of the run of the target model. This will then extract the config and model weights from wandb.
+target_config_path: False #"classifiers/saved_configs/cifardropout.yaml" # The path to a config of a trained target model. Weights with the same name must be in classifiers/saved_models

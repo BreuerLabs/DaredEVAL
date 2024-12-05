@@ -9,7 +9,7 @@ evaluation_model:
   # weights: classifiers/saved_models/soft-wood-101.pth # link to weight file
 
 candidates:
-  num_candidates: 20
+  num_candidates: 200
   candidate_search:
     search_space_size: 5000
     center_crop: 800
@@ -55,7 +55,7 @@ final_selection:
   iterations: 100 # Number of iterations random transformations are applied.
 
 wandb: # Options for WandB logging.
-  enable_logging: True # Activate logging.
+  enable_logging: false # Activate logging.
   wandb_init_args: # WandB init arguments.
     project: plug_and_play
     save_code: true
