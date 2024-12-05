@@ -2,3 +2,5 @@
 *
 # But don't ignore this file
 !.gitignore
+
+# This makes it possible to push this empty folder
