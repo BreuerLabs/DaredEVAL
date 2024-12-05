@@ -28,7 +28,7 @@ from Plug_and_Play_Attacks.utils.stylegan import create_image, load_discrimator,
 from Plug_and_Play_Attacks.utils.wandb import *
 
 
-def attack(config, target_dataset, target_model, evaluation_model):
+def attack(config, target_dataset, target_model, evaluation_model, wandb_run = None):
     ####################################
     #        Attack Preparation        #
     ####################################
@@ -70,20 +70,29 @@ def attack(config, target_dataset, target_model, evaluation_model):
     
     num_ws = G.num_ws
 
-    # target_dataset = config.get_target_dataset()
+    # target_dataset = config.get_target_dataset() #! Passed in as argument instead of loading here
     target_model_name = target_model.name
+    target_model_num_classes = target_model.num_classes
 
     # Distribute models
     target_model = torch.nn.DataParallel(target_model, device_ids=gpu_devices)
-    target_model.name = target_model_name
     synthesis = torch.nn.DataParallel(G.synthesis, device_ids=gpu_devices)
-    synthesis.num_ws = num_ws
     discriminator = torch.nn.DataParallel(D, device_ids=gpu_devices)
 
+    # Reinstanciate model variables
+    target_model.name = target_model_name
+    synthesis.num_ws = num_ws
+    target_model.num_classes = target_model_num_classes
+    
+    
     # Load basic attack parameters
     num_epochs = config.attack['num_epochs']
     batch_size_single = config.attack['batch_size']
     batch_size = config.attack['batch_size'] * max(torch.cuda.device_count(), 1) #! Changed this to max(n, 1) to make it work with cpu.
+    
+    #!s Instead of running their load model, we pass it directly 
+    config.model = target_model
+    
     targets = config.create_target_vector()
 
     # Create initial style vectors
@@ -93,8 +102,9 @@ def attack(config, target_dataset, target_model, evaluation_model):
 
     # Initialize wandb logging
     if config.logging:
-        optimizer = config.create_optimizer(params=[w])
-        wandb_run = init_wandb_logging(optimizer, target_model_name, config) #! TODO: Update logging (args is not defined)
+        # optimizer = config.create_optimizer(params=[w])
+        # wandb_run = init_wandb_logging(optimizer, target_model_name, config) #! wandb_run is passed as argument instead
+        
         run_id = wandb_run.id
 
     # Print attack configuration
@@ -123,7 +133,7 @@ def attack(config, target_dataset, target_model, evaluation_model):
     # Log initial vectors
     if config.logging:
         Path("results").mkdir(parents=True, exist_ok=True)
-        init_w_path = f"results/init_w_{run_id}.pt"
+        init_w_path = f"model_inversion/plug_and_play/results/init_w/{run_id}.pt"
         torch.save(w.detach(), init_w_path)
         wandb.save(init_w_path)
 
@@ -166,7 +176,7 @@ def attack(config, target_dataset, target_model, evaluation_model):
 
     # Log optimized vectors
     if config.logging:
-        optimized_w_path = f"results/optimized_w_{run_id}.pt"
+        optimized_w_path = f"model_inversion/plug_and_play/results/optimized_w/{run_id}.pt"
         torch.save(w_optimized_unselected.detach(), optimized_w_path)
         wandb.save(optimized_w_path)
 
@@ -261,7 +271,7 @@ def attack(config, target_dataset, target_model, evaluation_model):
                 f'Filtered Evaluation of {final_w.shape[0]} images on Inception-v3: \taccuracy@1={acc_top1:4f}, ',
                 f'accuracy@5={acc_top5:4f}, correct_confidence={avg_correct_conf:4f}, total_confidence={avg_total_conf:4f}'
             )
-        del evaluation_model
+        # del evaluation_model #! Maybe add again if memory becomes a problem
 
     except Exception:
         print(traceback.format_exc())
@@ -337,7 +347,9 @@ def attack(config, target_dataset, target_model, evaluation_model):
     
     try:
         # Load Inception-v3 evaluation model and remove final layer
-        evaluation_model_dist = config.create_evaluation_model()
+        if not evaluation_model:
+            evaluation_model_dist = config.create_evaluation_model()
+            
         evaluation_model_dist.model.fc = torch.nn.Sequential()
         evaluation_model_dist = torch.nn.DataParallel(evaluation_model_dist,
                                                       device_ids=gpu_devices)

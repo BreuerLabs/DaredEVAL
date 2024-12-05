@@ -42,6 +42,7 @@ class model_compatibility_wrapper(nn.Module):
         
         self.name = target_config.model.name
         self.device = torch.device(target_config.training.device)
+        self.num_classes = target_config.dataset.n_classes
         self.to(self.device)
 
         self.use_cuda = torch.cuda.is_available() and target_config.training.device == "cuda"

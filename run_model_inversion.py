@@ -14,7 +14,7 @@ from model_inversion.plug_and_play.our_attack import attack
 from model_inversion.plug_and_play.modify_to_pnp_repo import model_compatibility_wrapper, convert_configs
 
 
-from utils import wandb_helpers
+from utils import wandb_helpers, load_trained_models
 
 @hydra.main(config_path="configuration/model_inversion", config_name="config.yaml", version_base="1.3")
 def run_model_inversion(attack_config):
@@ -28,52 +28,43 @@ def run_model_inversion(attack_config):
             attack_config.training.device = 'cuda'
 
     if attack_config.training.wandb.track:
-        wandb_helpers.wandb_init(attack_config)
-
-    
-    # If targeting a model trained with wandb tracking
-    if attack_config.target_wandb_id:
-        target_config, run_name = wandb_helpers.get_target_config(attack_config)
-        model_weights_path = wandb_helpers.get_target_weights(target_config, attack_config)
-
-    # If targeting a local runs
-    elif attack_config.target_config_path:
-        try:
-            target_config = OmegaConf.load(attack_config.target_config_path)
-            run_name = target_config.training.save_as
-            print("Configuration loaded successfully.")
-            
-        except Exception as e:
-            print(f"Error loading YAML file: {e}", file=sys.stderr)
-            raise
-    
-        model_weights_path = f"classifiers/saved_models/{run_name}.pth"
+        wandb_run = wandb_helpers.wandb_init(attack_config)
         
     else:
-        raise ValueError("Please provide either a wandb id or a path to a configuration file")
-    
+        wandb_run = None
+
+    target_config, target_weights_path = load_trained_models.get_target_config_and_weights(attack_config)
+        
     # Load data
     train_dataset, val_dataset, test_dataset = get_datasets(target_config)
     train_loader, val_loader, test_loader = get_data_loaders(target_config)
     
     target_model = get_model(target_config)
 
-    target_model.load_model(model_weights_path)
+    target_model.load_model(target_weights_path)
     
     test_loss, test_accuracy = target_model.evaluate(test_loader)
-    
     print("test_loss", test_loss)
     print("test_accuracy", test_accuracy)
 
     print()
-
     
     if attack_config.training.wandb.track:
         wandb.log({"test_loss": test_loss})
         wandb.log({"test_accuracy": test_accuracy})
 
     if attack_config.model.name == "plug_and_play":
+        
+        evaluation_config, evaluation_weights_path = load_trained_models.get_evaluation_config_and_weights(attack_config)
+        
+        # Load evaluation model
+        evalutation_model = get_model(evaluation_config)
+        evalutation_model.load_model(evaluation_weights_path)
+        
+        # Convert to plug and play compatibility 
         target_model = model_compatibility_wrapper(model = target_model, target_config = target_config)
+        evalutation_model = model_compatibility_wrapper(model = evalutation_model, target_config = evaluation_config)
+        
         new_attack_config_path = convert_configs(target_config, attack_config)
         new_attack_config = AttackConfigParser(new_attack_config_path)
         
@@ -81,7 +72,8 @@ def run_model_inversion(attack_config):
             config = new_attack_config,
             target_dataset = train_dataset,
             target_model = target_model,
-            evaluation_model = None
+            evaluation_model = evalutation_model,
+            wandb_run = wandb_run
             )
    
     print("done")
