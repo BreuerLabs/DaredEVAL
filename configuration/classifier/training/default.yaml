@@ -6,6 +6,6 @@ validation_size: 0.2  # Fraction of the training set to use as validation
 dataloader_num_workers: 8
 seed: 42
 wandb:
-  track: True
+  track: False
   project: "ModelInversion"
   entity: "BreuerLab"

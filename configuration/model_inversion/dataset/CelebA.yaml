@@ -1,6 +1,6 @@
 dataset: CelebA
-input_size: [3, 64, 64]
-n_classes: 40
+input_size: [3, 224, 224]
+n_classes: 1000
 augment_data: True
 # n_candidates: 10
 # target_classes: [0,4,7] # use "all" if targeting all classes
