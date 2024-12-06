@@ -1,4 +1,5 @@
 dataset: CIFAR10
+face_dataset: False
 input_size: [3, 32, 32]
 n_classes: 10
 

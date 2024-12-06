@@ -1,4 +1,5 @@
 dataset: CelebA
+face_dataset: True
 target_type: identity 
 input_size: [3, 299, 299]
 n_classes: 1000 # N most common classes to be chosen among the target type
