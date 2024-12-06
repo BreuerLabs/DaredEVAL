@@ -62,7 +62,7 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
 
         idx_to_class = KeyDict()
 
-    # Load pre-trained StyleGan2 components #! Missing gpu atm
+    # Load pre-trained StyleGan2 components
     G = load_generator(config.stylegan_model, device)
     D = load_discrimator(config.stylegan_model, device)
     
@@ -90,8 +90,8 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
     batch_size_single = config.attack['batch_size']
     batch_size = config.attack['batch_size'] * max(torch.cuda.device_count(), 1) #! Changed this to max(n, 1) to make it work with cpu.
     
-    #!s Instead of running their load model, we pass it directly 
-    config.model = target_model
+    
+    config.model = target_model #! Instead of running their load model, we pass it directly 
     
     targets = config.create_target_vector()
 
@@ -222,7 +222,8 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
     
     try:
         if not evaluation_model: #! Only relevant if we delete evaluation_model earlier in script to save memory
-            evaluation_model = config.create_evaluation_model() #! TODO: replace
+            #evaluation_model = config.create_evaluation_model() #! TODO: replace
+            raise NotImplementedError("not implemented yet!")
             
         evaluation_model = torch.nn.DataParallel(evaluation_model)
         evaluation_model.to(device)
@@ -299,7 +300,8 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
 
         # create datasets
         attack_dataset = TensorDataset(final_w, final_targets)
-        attack_dataset.targets = final_targets #! TODO: This doesn't work
+        # attack_dataset.targets = final_targets #! TODO: This doesn't work
+        
         training_dataset = target_dataset
         
         # training_dataset = create_target_dataset(target_dataset,
