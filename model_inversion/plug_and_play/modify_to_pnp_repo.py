@@ -24,6 +24,13 @@ def convert_configs(target_config, attack_config):
     new_dict['evaluation_model']['num_classes'] = attack_config.dataset.n_classes
     new_dict['candidates']['candidate_search']['resize'] = target_config.dataset.input_size[1]
     
+    # Convert wandb configuration
+    new_dict['wandb'] = {}
+    new_dict['wandb']['enable_logging'] = attack_config.training.wandb.track
+    new_dict['wandb']['wandb_init_args'] = {}
+    new_dict['wandb']['wandb_init_args']['project'] = attack_config.training.wandb.project
+    new_dict['wandb']['wandb_init_args']['save_code'] = True #? Don't know what they use this for
+    
     save_path = "Plug_and_Play_Attacks/configs/attacking/"
     save_as = save_path + attack_config.training.save_as
     

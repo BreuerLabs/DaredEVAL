@@ -102,7 +102,7 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
 
     # Initialize wandb logging
     if config.logging:
-        # optimizer = config.create_optimizer(params=[w])
+        optimizer = config.create_optimizer(params=[w])
         # wandb_run = init_wandb_logging(optimizer, target_model_name, config) #! wandb_run is passed as argument instead
         
         run_id = wandb_run.id
@@ -197,18 +197,19 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
             targets,
             target_model,
             device=device,
-            batch_size=batch_size * 10,
+            batch_size=batch_size * 10, #? Why multiplied by 10?
             **config.final_selection,
             rtpt=rtpt)
         print(f'Selected a total of {final_w.shape[0]} final images ',
               f'of target classes {set(final_targets.cpu().tolist())}.')
     else:
         final_targets, final_w = targets, w_optimized_unselected
+        
     del target_model
 
     # Log selected vectors
     if config.logging:
-        optimized_w_path_selected = f"results/optimized_w_selected_{run_id}.pt"
+        optimized_w_path_selected = f"model_inversion/plug_and_play/results/optimized_w_selected/{run_id}.pt"
         torch.save(final_w.detach(), optimized_w_path_selected)
         wandb.save(optimized_w_path_selected)
         wandb.config.update({'w_path': optimized_w_path})
@@ -220,8 +221,8 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
     # Compute attack accuracy with evaluation model on all generated samples
     
     try:
-        if not evaluation_model:
-            evaluation_model = config.create_evaluation_model()
+        if not evaluation_model: #! Only relevant if we delete evaluation_model earlier in script to save memory
+            evaluation_model = config.create_evaluation_model() #! TODO: replace
             
         evaluation_model = torch.nn.DataParallel(evaluation_model)
         evaluation_model.to(device)
@@ -235,14 +236,16 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
             synthesis,
             config,
             batch_size=batch_size * 2,
-            resize=299,
+            resize=299, #! TODO: Use parameter
             rtpt=rtpt)
 
         if config.logging:
             try:
                 filename_precision = write_precision_list(
-                    f'results/precision_list_unfiltered_{run_id}',
-                    precision_list)
+                    filename = f'model_inversion/plug_and_play/results/precision_list_unfiltered/{run_id}',
+                    precision_list = precision_list
+                    )
+                
                 wandb.save(filename_precision)
             except:
                 pass
@@ -259,11 +262,11 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
                 synthesis,
                 config,
                 batch_size=batch_size * 2,
-                resize=299,
+                resize=299, #! TODO: Use parameter
                 rtpt=rtpt)
             if config.logging:
                 filename_precision = write_precision_list(
-                    f'results/precision_list_filtered_{run_id}',
+                    f'model_inversion/plug_and_play/results/precision_list_filtered/{run_id}',
                     precision_list)
                 wandb.save(filename_precision)
 
@@ -286,6 +289,8 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
     try:
         # set transformations
         crop_size = config.attack_center_crop
+        
+        #! TODO: Use parameters
         target_transform = T.Compose([
             T.ToTensor(),
             T.Resize((299, 299), antialias=True),
@@ -294,14 +299,14 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
 
         # create datasets
         attack_dataset = TensorDataset(final_w, final_targets)
-        attack_dataset.targets = final_targets
+        attack_dataset.targets = final_targets #! TODO: This doesn't work
         training_dataset = target_dataset
         
         # training_dataset = create_target_dataset(target_dataset,
         #                                          target_transform)
         
         training_dataset.transform = target_transform #! This instead of their dataset load functions
-        training_dataset = ClassSubset(
+        training_dataset = ClassSubset(      #! This doesn't work
             training_dataset,
             target_classes=torch.unique(final_targets).cpu().tolist())
 
@@ -358,7 +363,7 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
 
         # Compute average feature distance on Inception-v3
         evaluate_inception = DistanceEvaluation(evaluation_model_dist,
-                                                synthesis, 299,
+                                                synthesis, 299, #! TODO: use parameter 
                                                 config.attack_center_crop,
                                                 target_dataset, config.seed)
         avg_dist_inception, mean_distances_list = evaluate_inception.compute_dist(
@@ -370,15 +375,17 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
         if config.logging:
             try:
                 filename_distance = write_precision_list(
-                    f'results/distance_inceptionv3_list_filtered_{run_id}',
+                    f'model_inversion/plug_and_play/results/distance_inceptionv3_list_filtered{run_id}',
                     mean_distances_list)
                 wandb.save(filename_distance)
+                
             except:
                 pass
 
         print('Mean Distance on Inception-v3: ',
               avg_dist_inception.cpu().item())
-        # Compute feature distance only for facial images
+        
+        # Compute feature distance only for facial images #! TODO: Still not modified
         if target_dataset in [
                 'facescrub', 'celeba_identities', 'celeba_attributes'
         ]:
@@ -417,8 +424,8 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
     # Logging of final results
     if config.logging:
         print('Finishing attack, logging results and creating sample images.')
-        num_classes = 10
-        num_imgs = 8
+        num_classes = 10 #! Hard coded?
+        num_imgs = 8     #! Hard coded?
         # Sample final images from the first and last classes
         label_subset = set(
             list(set(targets.tolist()))[:int(num_classes / 2)] +
@@ -650,5 +657,5 @@ def final_wandb_logging(avg_correct_conf, avg_total_conf, acc_top1, acc_top5,
     wandb.finish()
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__': #! We run attack function from this script in run_model_inversion.py
+#     main()

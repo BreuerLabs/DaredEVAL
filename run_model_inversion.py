@@ -29,7 +29,7 @@ def run_model_inversion(attack_config):
 
     if attack_config.training.wandb.track:
         wandb_run = wandb_helpers.wandb_init(attack_config)
-        
+         
     else:
         wandb_run = None
 
