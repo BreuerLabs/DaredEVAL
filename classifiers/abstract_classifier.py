@@ -4,6 +4,9 @@ import numpy as np
 import wandb
 from tqdm import tqdm
 
+from classifiers.drop_layer import ElementwiseLinear, lasso_penalty, get_feature_norms
+
+
 class AbstractClassifier(nn.Module):
     """ 
     This is an abstract class for the classifiers. It contains the train, forward, predict, save_model, load_model methods. It should not be used directly. 
@@ -13,7 +16,6 @@ class AbstractClassifier(nn.Module):
         model = None
         self.device = config.training.device
         self.config = config
-    
 
         if config.model.criterion == "crossentropy":
             self.criterion = nn.CrossEntropyLoss()
@@ -22,8 +24,18 @@ class AbstractClassifier(nn.Module):
         if config.model.criterion == "MSE":
             self.criterion = nn.MSELoss()
             self.criterionSum = nn.MSELoss(reduction='sum')
-        
+
+
+        if config.model.drop_layer:
+            if config.model.flatten:
+                in_features = (config.dataset.input_size[1] * config.dataset.input_size[2] * config.dataset.input_size[0],)
+            else:
+                in_features = (config.dataset.input_size[0], config.dataset.input_size[1], config.dataset.input_size[2])
+
+            model = ElementwiseLinear(in_features) # starting point that the implemented classifier can build from
+
         return model
+
     
     def train_one_epoch(self, train_loader):
         
@@ -35,8 +47,14 @@ class AbstractClassifier(nn.Module):
             data, target = data.to(self.device), target.to(self.device)
             self.optimizer.zero_grad()
             output = self(data)
-            loss = self.criterion(output, target)
-            total_loss += loss.item() * len(data)
+            loss = self.criterionSum(output, target)
+            if config.model.penalty == "lasso": # normal lasso on first layer weights
+                lasso_pen = config.model.hyper.lasso_lambda * lasso_penalty(self.model)
+                loss += lasso_pen
+
+            total_loss += loss.item()            
+            # loss = self.criterion(output, target)
+            # total_loss += loss.item() * len(data)
             loss_calculated += len(data)
 
             if config.training.verbose == 2:
@@ -44,6 +62,13 @@ class AbstractClassifier(nn.Module):
 
             loss.backward()
             self.optimizer.step()
+
+            track_features = self.config.training.wandb.track_features
+            if track_features:
+                feature_norms = get_feature_norms(self.model, track_features)
+                for idx, feature_norm in zip(track_features, feature_norms):
+                    wandb.log({f"feature_{idx}" : feature_norm.item()})
+
 
         train_loss = total_loss / loss_calculated
 
@@ -117,7 +142,13 @@ class AbstractClassifier(nn.Module):
             for batch_idx, (data, target) in enumerate(loader):
                 data, target = data.to(self.device), target.to(self.device)
                 output = self(data)
-                total_loss += self.criterionSum(output, target).item()
+
+                loss = self.criterionSum(output, target).item()
+                if self.config.model.penalty == "lasso": # normal lasso on first layer weights
+                    lasso_pen = self.config.model.hyper.lasso_lambda * lasso_penalty(self.model)
+                    loss += lasso_pen
+
+                total_loss += loss
                 total_instances += len(data)
                 
                 pred = torch.argmax(output, dim=1)
@@ -147,5 +178,5 @@ class AbstractClassifier(nn.Module):
             state_dict = torch.load(file_path, map_location=map_location, weights_only=True)
 
             self.load_state_dict(state_dict)
-        
-    
+
+

@@ -31,8 +31,9 @@ class CNN(AbstractClassifier, nn.Module):
         self.config = config
         self.model = self.init_model(config)
         
+
     def init_model(self, config):
-        super(CNN, self).init_model(config)
+        input_defense_layer = super(CNN, self).init_model(config) # AbstractClassifier's init_model will return an ElementwiseLinear layer if drop_layer=True in config
         self.n_channels = config.dataset.input_size[0]
         
         first_conv = ConvBlock(self.n_channels, config.model.hyper.n_neurons, config.model.hyper.kernel_size, config.model.hyper.stride)
@@ -51,16 +52,30 @@ class CNN(AbstractClassifier, nn.Module):
         
         # Calculate the output size after the convolutional layers
         conv_output_size = config.model.hyper.n_neurons * 2**config.model.hyper.n_depth * input_height * input_width
+
+        modules = [first_conv,
+                    *conv_layers,
+                    nn.Flatten(),
+                    nn.Linear(conv_output_size , config.model.hyper.linear_output_size), 
+                    nn.ReLU(),
+                    nn.Dropout(config.model.hyper.dropout),
+                    nn.Linear(config.model.hyper.linear_output_size, config.dataset.n_classes)
+        ]
+
+        if input_defense_layer is not None: # prepend defense layer if necessary
+            modules = [input_defense_layer] + modules
+
+        model = nn.Sequential(*modules)
         
-        model = nn.Sequential(
-            first_conv,
-            *conv_layers,
-            nn.Flatten(),
-            nn.Linear(conv_output_size , config.model.hyper.linear_output_size), 
-            nn.ReLU(),
-            nn.Dropout(config.model.hyper.dropout),
-            nn.Linear(config.model.hyper.linear_output_size, config.dataset.n_classes)
-            )
+        # model = nn.Sequential(
+        #     first_conv,
+        #     *conv_layers,
+        #     nn.Flatten(),
+        #     nn.Linear(conv_output_size , config.model.hyper.linear_output_size), 
+        #     nn.ReLU(),
+        #     nn.Dropout(config.model.hyper.dropout),
+        #     nn.Linear(config.model.hyper.linear_output_size, config.dataset.n_classes)
+        #     )
 
         return model
     

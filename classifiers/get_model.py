@@ -5,7 +5,7 @@ from classifiers.sglnn import SGLNN
 # from classifiers.bitnet import BitNet
 from classifiers.bido import BiDO
 from classifiers.pretrained import PreTrainedClassifier
-from classifiers.drop_layer import DropLayer
+# from classifiers.drop_layer import DropLayer
 
 def get_model(config, name=None):
 
@@ -32,8 +32,8 @@ def get_model(config, name=None):
     elif model_name == "PreTrainedClassifier":
         model = PreTrainedClassifier(config)
 
-    elif model_name == "DropLayer":
-        model = DropLayer(config)
+    # elif model_name == "DropLayer":
+    #     model = DropLayer(config)
 
     else:
         raise ValueError(f"Unknown model: {model_name}")
