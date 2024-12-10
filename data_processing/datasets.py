@@ -15,10 +15,8 @@ from collections import Counter
 
 from data_processing.data_augmentation import get_transforms
 
-def get_datasets(config):
+def get_datasets(config, transform):
     """Dynamically loads datasets based on the configuration."""
-    
-    transform = get_transforms(config)
     
     if config.dataset.dataset == "CIFAR10":
         full_train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)

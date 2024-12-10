@@ -8,6 +8,7 @@ import sys
 from classifiers.get_model import get_model
 from data_processing.data_loaders import get_data_loaders
 from data_processing.datasets import get_datasets
+from data_processing.data_augmentation import get_transforms
 
 from Plug_and_Play_Attacks.utils.attack_config_parser import AttackConfigParser
 from model_inversion.plug_and_play.our_attack import attack
@@ -36,7 +37,8 @@ def run_model_inversion(attack_config):
     target_config, target_weights_path = load_trained_models.get_target_config_and_weights(attack_config)
         
     # Load data
-    train_dataset, val_dataset, test_dataset = get_datasets(target_config)
+    transform = get_transforms(target_config)
+    train_dataset, val_dataset, test_dataset = get_datasets(target_config, transform)
     train_loader, val_loader, test_loader = get_data_loaders(target_config)
     
     target_model = get_model(target_config)
@@ -73,7 +75,8 @@ def run_model_inversion(attack_config):
             target_dataset = train_dataset,
             target_model = target_model,
             evaluation_model = evalutation_model,
-            wandb_run = wandb_run
+            our_config = attack_config,
+            wandb_run = wandb_run,
             )
    
     print("done")
