@@ -2,6 +2,7 @@ name: "SGLNN"
 optimizer: "adam"
 criterion: "MSE"
 hotstart_model: False # Else give path to model
+flatten: True
 hyper:
   lr: 0.001
   epochs: 20

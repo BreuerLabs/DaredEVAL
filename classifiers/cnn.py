@@ -25,24 +25,24 @@ class ConvBlock(nn.Module):
         return self.block(x)
 
 class CNN(AbstractClassifier, nn.Module):
-    
     def __init__(self, config):
-        super(CNN, self).__init__()
+        super(CNN, self).__init__(config)
         self.config = config
-        self.model = self.init_model(config)
+        self.model = self.init_model()
+
+
+    def init_model(self):
+        super(CNN, self).init_model()
+        self.n_channels = self.config.dataset.input_size[0]
         
-    def init_model(self, config):
-        super(CNN, self).init_model(config)
-        self.n_channels = config.dataset.input_size[0]
+        first_conv = ConvBlock(self.n_channels, self.config.model.hyper.n_neurons, self.config.model.hyper.kernel_size, self.config.model.hyper.stride)
         
-        first_conv = ConvBlock(self.n_channels, config.model.hyper.n_neurons, config.model.hyper.kernel_size, config.model.hyper.stride)
-        
-        conv_layers = [ConvBlock(config.model.hyper.n_neurons * 2**i, config.model.hyper.n_neurons * 2**(i+1), 
-                                config.model.hyper.kernel_size, config.model.hyper.stride) for i in range(config.model.hyper.n_depth)]
+        conv_layers = [ConvBlock(self.config.model.hyper.n_neurons * 2**i, self.config.model.hyper.n_neurons * 2**(i+1), 
+                                self.config.model.hyper.kernel_size, self.config.model.hyper.stride) for i in range(self.config.model.hyper.n_depth)]
         
         # Calculate the output size after the convolutional layers
-        input_height, input_width = config.dataset.input_size[1], config.dataset.input_size[2]
-        num_layers = config.model.hyper.n_depth + 1  # Including the first conv layer
+        input_height, input_width = self.config.dataset.input_size[1], self.config.dataset.input_size[2]
+        num_layers = self.config.model.hyper.n_depth + 1  # Including the first conv layer
         
         # Keep track of the output size after each layer
         for _ in range(num_layers):
@@ -50,16 +50,16 @@ class CNN(AbstractClassifier, nn.Module):
             input_width = (input_width - 2) // 2 + 1
         
         # Calculate the output size after the convolutional layers
-        conv_output_size = config.model.hyper.n_neurons * 2**config.model.hyper.n_depth * input_height * input_width
-        
+        conv_output_size = self.config.model.hyper.n_neurons * 2**self.config.model.hyper.n_depth * input_height * input_width
+
         model = nn.Sequential(
             first_conv,
             *conv_layers,
             nn.Flatten(),
-            nn.Linear(conv_output_size , config.model.hyper.linear_output_size), 
+            nn.Linear(conv_output_size , self.config.model.hyper.linear_output_size), 
             nn.ReLU(),
-            nn.Dropout(config.model.hyper.dropout),
-            nn.Linear(config.model.hyper.linear_output_size, config.dataset.n_classes)
+            nn.Dropout(self.config.model.hyper.dropout),
+            nn.Linear(self.config.model.hyper.linear_output_size, self.config.dataset.n_classes)
             )
 
         return model
