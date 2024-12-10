@@ -12,24 +12,37 @@ class ElementwiseLinear(nn.Module):
         super(ElementwiseLinear, self).__init__()
 
         # w is the learnable weight of this layer module
-        self.weight = nn.Parameter(torch.rand(input_size), requires_grad=True)
+        self.weight = nn.Parameter(torch.ones(input_size), requires_grad=True)
 
     def forward(self, x: torch.tensor) -> torch.tensor:
         # simple elementwise multiplication
         return self.weight * x
     
 
-def lasso_penalty(model): # Lasso penalty on one-dimensional weights
+# def lasso_penalty(model): # Lasso penalty on one-dimensional weights
         
-        w_first = model[0].weight.data
-        lasso_pen = w_first.abs().sum()
+#         w_first = model[0].weight.data
+#         lasso_pen = w_first.abs().sum()
 
-        return lasso_pen
+#         return lasso_pen
     
 
-def get_feature_norms(model, feature_idxs):
-    w_features = [model[0].weight.data[:, *feature_idx] for feature_idx in feature_idxs]
-    return [torch.abs(w_feature) for w_feature in w_features]
+# def get_feature_norms(model, feature_idxs):
+#     w_first = model[0].weight.data
+    
+#     if isinstance(feature_idxs[0], list): # like drop_layer, one weight for each feature index, norm is just abs. value
+#         w_features = [w_first[:, *feature_idx] for feature_idx in feature_idxs]
+#         return [torch.abs(w_feature) for w_feature in w_features]
+    
+#     elif isinstance(feature_idxs[0], int):
+#         if len(w_first.shape) == 1: # just one weight for each feature index, norm is just abs. value
+#             w_features = [w_first[feature_idx] for feature_idx in feature_idxs]
+#             return [torch.abs(w_feature) for w_feature in w_features]
+        
+#         elif len(w_first.shape) == 2: # like SGLNN, take L2 norm of all weights associated with each feature index
+#             w_features = [w_first[:, feature_idx] for feature_idx in feature_idxs]
+#             return [torch.linalg.norm(w_feature) for w_feature in w_features]
+    
         
     
 

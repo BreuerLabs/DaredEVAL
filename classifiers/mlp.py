@@ -16,34 +16,29 @@ class FullyConnectedBlock(nn.Module):
         return self.block(x)
 
 class MLP(AbstractClassifier, nn.Module):
-    
     def __init__(self, config):
-        super(MLP, self).__init__()
+        super(MLP, self).__init__(config)
         self.config = config
-        self.model = self.init_model(config)
+        self.model = self.init_model()
         
-    def init_model(self, config):
-        super(MLP, self).init_model(config)
+    def init_model(self):
+        super(MLP, self).init_model() # AbstractClassifier's init_model will return an ElementwiseLinear layer if drop_layer=True inself.config
         
         # Input features based on the dataset
-        in_features = config.dataset.input_size[1] * config.dataset.input_size[2] * config.dataset.input_size[0]
+        in_features =self.config.dataset.input_size[1] *self.config.dataset.input_size[2] *self.config.dataset.input_size[0]
         
-        first_layer = FullyConnectedBlock(in_features, config.model.hyper.n_neurons, config.model.hyper.dropout)
+        first_layer = FullyConnectedBlock(in_features,self.config.model.hyper.n_neurons,self.config.model.hyper.dropout)
         
-        middle_layers = [FullyConnectedBlock(config.model.hyper.n_neurons, config.model.hyper.n_neurons, config.model.hyper.dropout) for _ in range(config.model.hyper.n_depth)]
+        middle_layers = [FullyConnectedBlock(self.config.model.hyper.n_neurons,self.config.model.hyper.n_neurons,self.config.model.hyper.dropout) for _ in range(self.config.model.hyper.n_depth)]
         
-        last_layer = nn.Linear(config.model.hyper.n_neurons, config.dataset.n_classes)
-        
-        model = nn.Sequential(
-                            first_layer,
-                            *middle_layers,
-                            last_layer
-                            )
+        last_layer = nn.Linear(self.config.model.hyper.n_neurons,self.config.dataset.n_classes)
+
+        modules = [first_layer,
+                   *middle_layers,
+                   last_layer
+                   ]
+
+        model = nn.Sequential(*modules)
 
         return model
 
-    def forward(self, x):
-        batch_size = x.shape[0]
-        x = torch.reshape(x, (batch_size, -1))
-        
-        return self.model(x)

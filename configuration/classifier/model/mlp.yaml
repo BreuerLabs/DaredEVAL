@@ -1,6 +1,7 @@
 name: "MLP"
 optimizer: "adam"
 criterion: "crossentropy"
+flatten: True
 hotstart_model: False # Else give path to model
 hyper:
   lr: 0.001
