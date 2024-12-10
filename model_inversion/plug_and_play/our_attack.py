@@ -27,8 +27,10 @@ from Plug_and_Play_Attacks.utils.datasets import (create_target_dataset, get_fac
 from Plug_and_Play_Attacks.utils.stylegan import create_image, load_discrimator, load_generator
 from Plug_and_Play_Attacks.utils.wandb import *
 
+from data_processing.datasets import get_datasets
+from data_processing.data_augmentation import get_transforms
 
-def attack(config, target_dataset, target_model, evaluation_model, wandb_run = None):
+def attack(config, target_dataset, target_model, evaluation_model, our_config, wandb_run = None):
     ####################################
     #        Attack Preparation        #
     ####################################
@@ -291,29 +293,30 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
         # set transformations
         crop_size = config.attack_center_crop
         
-        #! TODO: Use parameters
-        target_transform = T.Compose([
-            T.ToTensor(),
-            T.Resize((299, 299), antialias=True),
-            T.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
-        ])
-
-        # create datasets
-        attack_dataset = TensorDataset(final_w, final_targets)
-        # attack_dataset.targets = final_targets #! TODO: This doesn't work
-        
-        training_dataset = target_dataset
+        ### This is replaced by our dataload functions ###
+        # target_transform = T.Compose([
+        #     T.ToTensor(),
+        #     T.Resize((299, 299), antialias=True),
+        #     T.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+        # ])
         
         # training_dataset = create_target_dataset(target_dataset,
-        #                                          target_transform)
+        #                                          target_transform)        
         
-        training_dataset.transform = target_transform #! This instead of their dataset load functions
+        target_transform_list = [T.Resize((299, 299), antialias=True)] #! TODO: Use parameters
+        target_transform  = get_transforms(our_config, target_transform_list)
+        training_dataset = get_datasets(our_config, target_transform)
+        
+        # create datasets
+        attack_dataset = TensorDataset(final_w, final_targets)
+        attack_dataset.targets = final_targets #! TODO: This doesn't work
+        
         training_dataset = ClassSubset(      #! This doesn't work
             training_dataset,
             target_classes=torch.unique(final_targets).cpu().tolist())
 
-        # compute FID score
-        fid_evaluation = FID_Score(training_dataset,
+        # compute FID score #! TODO: Use parameters
+        fid_evaluation = FID_Score(training_dataset, 
                                    attack_dataset,
                                    device=device,
                                    crop_size=crop_size,
@@ -327,7 +330,7 @@ def attack(config, target_dataset, target_model, evaluation_model, wandb_run = N
             f'FID score computed on {final_w.shape[0]} attack samples and {config.dataset}: {fid_score:.4f}'
         )
 
-        # compute precision, recall, density, coverage
+        # compute precision, recall, density, coverage #! TODO: Use parameters
         prdc = PRCD(training_dataset,
                     attack_dataset,
                     device=device,
