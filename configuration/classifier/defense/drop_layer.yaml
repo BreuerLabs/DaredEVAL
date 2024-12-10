@@ -1,5 +1,5 @@
 name: "drop_layer"
-penalty: False # "lasso",
-apply_threshold: False
-lasso_lambda: 1
+penalty: "lasso" # can set this to False for no penalty
+apply_threshold: True
+lasso_lambda: 0.1
 lasso_threshold: 0.01
