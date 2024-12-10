@@ -59,14 +59,9 @@ class AbstractClassifier(nn.Module):
             output = self(data)
 
             loss = self.get_loss(output, target)
-            # loss = self.criterionSum(output, target)
-            # if self.config.model.penalty == "lasso": # normal lasso on first layer weights
-            #     lasso_pen = self.config.model.hyper.lasso_lambda * self.lasso_penalty()
-            #     loss = loss + lasso_pen
 
             total_loss += loss.item()            
-            # loss = self.criterion(output, target)
-            # total_loss += loss.item() * len(data)
+
             loss_calculated += len(data)
 
             if self.config.training.verbose == 2:
@@ -183,7 +178,7 @@ class AbstractClassifier(nn.Module):
             x = torch.reshape(x, (batch_size, -1))
 
         if self.input_defense_layer is not None:
-            x = self.input_defense_layer(x) # TODO make this work
+            x = self.input_defense_layer(x)
 
         return self.model(x)
 
@@ -208,30 +203,32 @@ class AbstractClassifier(nn.Module):
         if self.config.defense.name == "drop_layer":
             thresh = self.config.defense.lasso_threshold
             current_w_first = self.input_defense_layer.weight.data
-            below_threshold = current_w_first.abs() <= thresh  # which features we will zero out
-            new_w_first = current_w_first * ~below_threshold
+            current_w_norms = torch.linalg.norm(current_w_first, dim=0)
+            below_threshold = current_w_norms <= thresh  # which features we will zero out
+            new_w_first = current_w_first * ~below_threshold # (n_channels, x_dim, y_dim) x (x_dim, y_dim) = (n_channels, x_dim, y_dim)
             self.input_defense_layer.weight.data = new_w_first
         else:
             assert 0 == 1, f"apply_threshold not yet implemented for defense {self.config.defense.name}"
 
     def lasso_penalty(self): # Lasso penalty on one-dimensional weights
         
-        w_first = self.input_defense_layer.weight.data
-        lasso_pen = w_first.abs().sum()
-
+        w_first = self.input_defense_layer.weight
+        w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels. Performs abs() when n_channels=1, combines RGB values of pixels (group lasso) when n_channels=3
+        lasso_pen = w_norms.sum()
         return lasso_pen
     
     def get_feature_norms(self):
         w_first = self.input_defense_layer.weight.data
+        w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels
         feature_idxs = OmegaConf.to_object(self.config.training.wandb.track_features)
         
         if isinstance(feature_idxs[0], list): # like drop_layer, one weight for each feature index, norm is just abs. value
-            w_features = [w_first[:, *feature_idx] for feature_idx in feature_idxs]
+            w_features = [w_norms[*feature_idx] for feature_idx in feature_idxs]
             return [torch.abs(w_feature) for w_feature in w_features]
         
         elif isinstance(feature_idxs[0], int):
             if len(w_first.shape) == 1: # just one weight for each feature index, norm is just abs. value
-                w_features = [w_first[feature_idx] for feature_idx in feature_idxs]
+                w_features = [w_norms[feature_idx] for feature_idx in feature_idxs]
                 return [torch.abs(w_feature) for w_feature in w_features]
         else:
             assert 0 == 1, f"feature_idxs[0] is type {type(feature_idxs[0])}, not int or list"
