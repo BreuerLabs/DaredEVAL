@@ -5,7 +5,7 @@ flatten: False # whether or not input needs to be flattened before passing to mo
 hotstart_model: False # Else give path to model
 hyper:
   lr: 0.001
-  epochs: 10
+  epochs: 20
   batch_size: 256
   n_neurons: 64  
   n_depth: 2
