@@ -1,6 +1,14 @@
 dataset: MNIST
+face_dataset: False
 input_size: [1, 28, 28]
 n_classes: 10
+
 augment_data: True
-# n_candidates: 10
-# target_classes: [0,4,7] # use "all" if targeting all classes
+transformations:
+  RandomResizedCrop:
+    size: [28, 28]
+    scale: [0.85, 1]
+    ratio: [1, 1]
+    antialias: true
+  RandomHorizontalFlip:
+    p: 0.5

@@ -222,65 +222,66 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
 
     # Compute attack accuracy with evaluation model on all generated samples
     
-    try:
-        if not evaluation_model: #! Only relevant if we delete evaluation_model earlier in script to save memory
-            #evaluation_model = config.create_evaluation_model() #! TODO: replace
-            raise NotImplementedError("not implemented yet!")
-            
-        evaluation_model = torch.nn.DataParallel(evaluation_model)
-        evaluation_model.to(device)
-        evaluation_model.eval()
-        class_acc_evaluator = ClassificationAccuracy(evaluation_model,
-                                                     device=device)
+    # try:
+    if not evaluation_model: #! Only relevant if we delete evaluation_model earlier in script to save memory
+        #evaluation_model = config.create_evaluation_model() #! TODO: replace
+        raise NotImplementedError("not implemented yet!")
+    
+    
+    evaluation_model = torch.nn.DataParallel(evaluation_model)
+    evaluation_model.to(device)
+    evaluation_model.eval()
+    class_acc_evaluator = ClassificationAccuracy(evaluation_model,
+                                                    device=device)
 
+    acc_top1, acc_top5, predictions, avg_correct_conf, avg_total_conf, target_confidences, maximum_confidences, precision_list = class_acc_evaluator.compute_acc(
+        w_optimized_unselected,
+        targets,
+        synthesis,
+        config,
+        batch_size=batch_size * 2,
+        resize=299, #! TODO: Use parameter
+        rtpt=rtpt)
+
+    if config.logging:
+        try:
+            filename_precision = write_precision_list(
+                filename = f'model_inversion/plug_and_play/results/precision_list_unfiltered/{run_id}',
+                precision_list = precision_list
+                )
+            
+            wandb.save(filename_precision)
+        except:
+            pass
+    print(
+        f'\nUnfiltered Evaluation of {final_w.shape[0]} images on Inception-v3: \taccuracy@1={acc_top1:4f}',
+        f', accuracy@5={acc_top5:4f}, correct_confidence={avg_correct_conf:4f}, total_confidence={avg_total_conf:4f}'
+    )
+
+    # Compute attack accuracy on filtered samples
+    if config.final_selection:
         acc_top1, acc_top5, predictions, avg_correct_conf, avg_total_conf, target_confidences, maximum_confidences, precision_list = class_acc_evaluator.compute_acc(
-            w_optimized_unselected,
-            targets,
+            final_w,
+            final_targets,
             synthesis,
             config,
             batch_size=batch_size * 2,
             resize=299, #! TODO: Use parameter
             rtpt=rtpt)
-
         if config.logging:
-            try:
-                filename_precision = write_precision_list(
-                    filename = f'model_inversion/plug_and_play/results/precision_list_unfiltered/{run_id}',
-                    precision_list = precision_list
-                    )
-                
-                wandb.save(filename_precision)
-            except:
-                pass
+            filename_precision = write_precision_list(
+                f'model_inversion/plug_and_play/results/precision_list_filtered/{run_id}',
+                precision_list)
+            wandb.save(filename_precision)
+
         print(
-            f'\nUnfiltered Evaluation of {final_w.shape[0]} images on Inception-v3: \taccuracy@1={acc_top1:4f}',
-            f', accuracy@5={acc_top5:4f}, correct_confidence={avg_correct_conf:4f}, total_confidence={avg_total_conf:4f}'
+            f'Filtered Evaluation of {final_w.shape[0]} images on Inception-v3: \taccuracy@1={acc_top1:4f}, ',
+            f'accuracy@5={acc_top5:4f}, correct_confidence={avg_correct_conf:4f}, total_confidence={avg_total_conf:4f}'
         )
-
-        # Compute attack accuracy on filtered samples
-        if config.final_selection:
-            acc_top1, acc_top5, predictions, avg_correct_conf, avg_total_conf, target_confidences, maximum_confidences, precision_list = class_acc_evaluator.compute_acc(
-                final_w,
-                final_targets,
-                synthesis,
-                config,
-                batch_size=batch_size * 2,
-                resize=299, #! TODO: Use parameter
-                rtpt=rtpt)
-            if config.logging:
-                filename_precision = write_precision_list(
-                    f'model_inversion/plug_and_play/results/precision_list_filtered/{run_id}',
-                    precision_list)
-                wandb.save(filename_precision)
-
-            print(
-                f'Filtered Evaluation of {final_w.shape[0]} images on Inception-v3: \taccuracy@1={acc_top1:4f}, ',
-                f'accuracy@5={acc_top5:4f}, correct_confidence={avg_correct_conf:4f}, total_confidence={avg_total_conf:4f}'
-            )
         # del evaluation_model #! Maybe add again if memory becomes a problem
 
-    except Exception:
-        print(traceback.format_exc())
+    # except Exception:
+    #     print(traceback.format_exc())
 
     ####################################
     #    FID Score and GAN Metrics     #
@@ -304,14 +305,19 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
         #                                          target_transform)        
         
         target_transform_list = [T.Resize((299, 299), antialias=True)] #! TODO: Use parameters
-        target_transform  = get_transforms(our_config, target_transform_list)
-        training_dataset = get_datasets(our_config, target_transform)
+        
+        # This is to only use the transformation shown above
+        our_config_no_aug = our_config
+        our_config_no_aug.dataset.augment_data = False
+        
+        target_transform  = get_transforms(our_config_no_aug, target_transform_list)
+        training_dataset, _, _ = get_datasets(our_config, target_transform)
         
         # create datasets
         attack_dataset = TensorDataset(final_w, final_targets)
-        attack_dataset.targets = final_targets #! TODO: This doesn't work
+        attack_dataset.targets = final_targets 
         
-        training_dataset = ClassSubset(      #! This doesn't work
+        training_dataset = ClassSubset(     
             training_dataset,
             target_classes=torch.unique(final_targets).cpu().tolist())
 
@@ -354,23 +360,47 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
     ####################################
     avg_dist_inception = None
     avg_dist_facenet = None
-    
+        
     try:
         # Load Inception-v3 evaluation model and remove final layer
         if not evaluation_model:
-            evaluation_model_dist = config.create_evaluation_model()
+            evaluation_model_dist = config.create_evaluation_model() #! TODO: Replace this
             
-        evaluation_model_dist.model.fc = torch.nn.Sequential()
-        evaluation_model_dist = torch.nn.DataParallel(evaluation_model_dist,
+        evaluation_model_dist = evaluation_model
+        
+        if isinstance(evaluation_model_dist, torch.nn.DataParallel):
+            evaluation_model_dist.module.fc = torch.nn.Sequential()  # This is the fix 
+        else:
+            evaluation_model_dist.model.fc = torch.nn.Sequential() # This doesn't work
+            evaluation_model_dist = torch.nn.DataParallel(evaluation_model_dist,
                                                       device_ids=gpu_devices)
+        
         evaluation_model_dist.to(device)
         evaluation_model_dist.eval()
 
+        ### Get our dataset
+        target_transform_list = [T.Resize((299, 299), antialias=True)] #! TODO: Use parameters TODO: Maybe add cropping
+        
+        # This is to only use the transformation shown above
+        our_config_no_aug = our_config
+        our_config_no_aug.dataset.augment_data = False
+        
+        target_transform  = get_transforms(our_config_no_aug, target_transform_list)
+        training_dataset, _, _ = get_datasets(our_config, target_transform)
+        ### 
+        
+        # # Compute average feature distance on Inception-v3
+        # evaluate_inception = DistanceEvaluation(evaluation_model_dist,
+        #                                         synthesis, 299, #! TODO: use parameter 
+        #                                         config.attack_center_crop,
+        #                                         target_dataset, config.seed)
+        
         # Compute average feature distance on Inception-v3
         evaluate_inception = DistanceEvaluation(evaluation_model_dist,
                                                 synthesis, 299, #! TODO: use parameter 
                                                 config.attack_center_crop,
-                                                target_dataset, config.seed)
+                                                training_dataset, config.seed)
+        
         avg_dist_inception, mean_distances_list = evaluate_inception.compute_dist(
             final_w,
             final_targets,
@@ -380,7 +410,7 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
         if config.logging:
             try:
                 filename_distance = write_precision_list(
-                    f'model_inversion/plug_and_play/results/distance_inceptionv3_list_filtered{run_id}',
+                    f'model_inversion/plug_and_play/results/distance_inceptionv3_list_filtered/{run_id}',
                     mean_distances_list)
                 wandb.save(filename_distance)
                 
@@ -391,27 +421,45 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
               avg_dist_inception.cpu().item())
         
         # Compute feature distance only for facial images #! TODO: Still not modified
-        if target_dataset in [
-                'facescrub', 'celeba_identities', 'celeba_attributes'
-        ]:
+        if our_config.dataset.face_dataset:
             # Load FaceNet model for face recognition
             facenet = InceptionResnetV1(pretrained='vggface2')
             facenet = torch.nn.DataParallel(facenet, device_ids=gpu_devices)
             facenet.to(device)
             facenet.eval()
 
-            # Compute average feature distance on facenet
-            evaluater_facenet = DistanceEvaluation(facenet, synthesis, 160,
-                                                   config.attack_center_crop,
-                                                   target_dataset, config.seed)
+            # # Compute average feature distance on facenet #! Replaced
+            # evaluater_facenet = DistanceEvaluation(facenet, synthesis, 160,
+            #                                        config.attack_center_crop,
+            #                                        target_dataset, config.seed)
+            
+            ### Get our dataset
+            face_net_img_size = 160 #! TODO: use parameter
+            
+            target_transform_list = [T.Resize((face_net_img_size, face_net_img_size), antialias=True)] #! TODO: Maybe add cropping
+            
+            # This is to only use the transformation shown above
+            our_config_no_aug = our_config
+            our_config_no_aug.dataset.augment_data = False
+            
+            target_transform  = get_transforms(our_config_no_aug, target_transform_list)
+            training_dataset_facenet, _, _ = get_datasets(our_config, target_transform)
+            ### 
+                
+            # Compute average feature distance on Inception-v3
+            evaluater_facenet = DistanceEvaluation(facenet, synthesis, face_net_img_size,  
+                                                    config.attack_center_crop,
+                                                    training_dataset_facenet, config.seed)
+            
+            
             avg_dist_facenet, mean_distances_list = evaluater_facenet.compute_dist(
                 final_w,
                 final_targets,
-                batch_size=batch_size_single * 8,
+                batch_size=batch_size_single * 8, #! Hardcoded?
                 rtpt=rtpt)
             if config.logging:
                 filename_distance = write_precision_list(
-                    f'results/distance_facenet_list_filtered_{run_id}',
+                    f'model_inversion/plug_and_play/results/distance_facenet_list_filtered/{run_id}',
                     mean_distances_list)
                 wandb.save(filename_distance)
 
@@ -478,9 +526,7 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
         facenet = torch.nn.DataParallel(facenet, device_ids=gpu_devices)
         facenet.to(device)
         facenet.eval()
-        if target_dataset in [
-                'facescrub', 'celeba_identities', 'celeba_attributes'
-        ]:
+        if our_config.dataset.face_dataset:
             log_nearest_neighbors(log_imgs,
                                   log_targets,
                                   facenet,

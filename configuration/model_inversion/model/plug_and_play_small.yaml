@@ -12,7 +12,7 @@ evaluation_model:
 candidates:
   num_candidates: 10
   candidate_search:
-    search_space_size: 5000
+    search_space_size: 1000
     center_crop: null
     # resize: 224 #! This is removed because it depends on dataset not on attack 
     horizontal_flip: true
@@ -22,8 +22,8 @@ candidates:
 
 attack:
   batch_size: 25 # Batch size per GPU.
-  num_epochs: 70 # Number of optimization iterations per batch.
-  targets: [0,10,20,30,40] # Specify the targeted classes, either a single class index, a list of indices, or all.
+  num_epochs: 10 # Number of optimization iterations per batch.
+  targets: 0 # Specify the targeted classes, either a single class index, a list of indices, or all.
   discriminator_loss_weight: 0.0 # Add discriminator weight.
   single_w: true # Optimize a single 512-vector. Otherwise, a distinct vector for each AdaIn operation is optimized.
   clip: false # Clip generated images in range [-1, 1].

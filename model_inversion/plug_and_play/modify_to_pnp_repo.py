@@ -45,7 +45,13 @@ def convert_configs(target_config, attack_config):
 class model_compatibility_wrapper(nn.Module):
     def __init__(self, model, target_config):
         super(model_compatibility_wrapper, self).__init__()
-        self.model = model
+        
+        #   # Flattening the model hierarchy by copying attributes directly
+        # for name, module in model.named_children():
+        #     self.add_module(name, module)
+
+        
+        self._model = model # Makes it possible to access the abstract classifier when defining functions in the class
         
         self.name = target_config.model.name
         self.device = torch.device(target_config.training.device)
@@ -53,19 +59,24 @@ class model_compatibility_wrapper(nn.Module):
         self.to(self.device)
 
         self.use_cuda = torch.cuda.is_available() and target_config.training.device == "cuda"
-            
+        
+    @property
+    def model(self):
+        """Property to simplify access to the underlying model."""
+        return self._model.model if hasattr(self._model, "model") else self._model
+        
     def forward(self, x):
-        return self.model.forward(x)
+        return self._model.forward(x)
 
     def fit(self, train_loader, val_loader):
-        return self.model.train_model(train_loader, val_loader)
+        return self._model.train_model(train_loader, val_loader)
 
     def evaluate(self, data_loader):
-        avg_loss, accuracy = self.model.evaluate(data_loader)
+        avg_loss, accuracy = self._model.evaluate(data_loader)
         return accuracy, avg_loss
 
     def predict(self, x):
-        return self.model.predict(x)
+        return self._model.predict(x)
     
     def set_parameter_requires_grad(self, requires_grad):
         for param in self.parameters():
