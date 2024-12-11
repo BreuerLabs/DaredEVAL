@@ -43,7 +43,7 @@ class AbstractClassifier(nn.Module):
         else:
             in_features = (self.config.dataset.input_size[0], self.config.dataset.input_size[1], self.config.dataset.input_size[2])
 
-        defense_layer = ElementwiseLinear(in_features) # starting point that the implemented classifier can build from
+        defense_layer = ElementwiseLinear(in_features, w_init=self.config.defense.input_defense_init)
 
         return defense_layer
 

@@ -3,3 +3,4 @@ penalty: "lasso" # can set this to False for no penalty
 apply_threshold: True
 lasso_lambda: 0.1
 lasso_threshold: 0.01
+input_defense_init: 1

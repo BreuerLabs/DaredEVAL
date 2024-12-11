@@ -8,11 +8,11 @@ import torch.nn as nn
 # from classifiers.cnn import CNN
 
 class ElementwiseLinear(nn.Module):
-    def __init__(self, input_size: tuple) -> None:
+    def __init__(self, input_size: tuple, w_init=1) -> None:
         super(ElementwiseLinear, self).__init__()
 
         # w is the learnable weight of this layer module
-        self.weight = nn.Parameter(torch.ones(input_size), requires_grad=True)
+        self.weight = nn.Parameter(torch.full(input_size, w_init), requires_grad=True)
 
     def forward(self, x: torch.tensor) -> torch.tensor:
         # simple elementwise multiplication
