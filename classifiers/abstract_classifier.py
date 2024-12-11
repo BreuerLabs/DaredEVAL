@@ -69,6 +69,7 @@ class AbstractClassifier(nn.Module):
 
             loss.backward()
             self.optimizer.step()
+            self.train_step += 1
             if self.config.defense.apply_threshold:
                self.apply_threshold()
 
@@ -76,7 +77,7 @@ class AbstractClassifier(nn.Module):
             if track_features:
                 feature_norms = self.get_feature_norms()
                 for idx, feature_norm in zip(track_features, feature_norms):
-                    wandb.log({f"feature_{idx}" : feature_norm.item()})
+                    wandb.log({f"feature_{idx}" : feature_norm.item(), "train_step": self.train_step})
 
 
         train_loss = total_loss / loss_calculated
@@ -96,6 +97,8 @@ class AbstractClassifier(nn.Module):
         if self.config.model.optimizer == "adam":
             self.optimizer = torch.optim.Adam(self.parameters(), lr=self.config.model.hyper.lr)
 
+        self.train_step = 0
+
         self.to(self.device)
         
         best_loss = np.inf
@@ -111,7 +114,7 @@ class AbstractClassifier(nn.Module):
                 print(f"Train loss: {train_loss}")
             
             if self.config.training.wandb.track:
-                wandb.log({"train_loss": train_loss})
+                wandb.log({"train_loss": train_loss, "train_step": self.train_step})
 
             if val_loader and epoch % self.config.training.evaluate_freq == 0:
                 val_loss, accuracy = self.evaluate(val_loader)
@@ -121,8 +124,8 @@ class AbstractClassifier(nn.Module):
                     print(f'Accuracy: {accuracy}')
                 
                 if self.config.training.wandb.track:
-                    wandb.log({"val_loss": val_loss})
-                    wandb.log({"accuracy": accuracy})
+                    wandb.log({"val_loss": val_loss, "train_step": self.train_step})
+                    wandb.log({"accuracy": accuracy, "train_step": self.train_step})
                 
                 if val_loss < best_loss:
                     best_loss = val_loss
@@ -202,9 +205,9 @@ class AbstractClassifier(nn.Module):
     def apply_threshold(self):
         if self.config.defense.name == "drop_layer":
             thresh = self.config.defense.lasso_threshold
-            current_w_first = self.input_defense_layer.weight.data
-            current_w_norms = torch.linalg.norm(current_w_first, dim=0)
-            below_threshold = current_w_norms <= thresh  # which features we will zero out
+            current_w_first = self.input_defense_layer.weight.data # (n_channels, x_dim, y_dim)
+            current_w_norms = torch.linalg.norm(current_w_first, dim=0) # (x_dim, y_dim)
+            below_threshold = current_w_norms <= thresh  # (x_dim, y_dim)
             new_w_first = current_w_first * ~below_threshold # (n_channels, x_dim, y_dim) x (x_dim, y_dim) = (n_channels, x_dim, y_dim)
             self.input_defense_layer.weight.data = new_w_first
         else:
@@ -219,7 +222,7 @@ class AbstractClassifier(nn.Module):
     
     def get_feature_norms(self):
         w_first = self.input_defense_layer.weight.data
-        w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels
+        w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels, shape is (x_dim, y_dim)
         feature_idxs = OmegaConf.to_object(self.config.training.wandb.track_features)
         
         if isinstance(feature_idxs[0], list): # like drop_layer, one weight for each feature index, norm is just abs. value
