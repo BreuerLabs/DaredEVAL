@@ -39,6 +39,7 @@ def run_model_inversion(attack_config):
     # Load data
     transform = get_transforms(target_config)
     train_dataset, val_dataset, test_dataset = get_datasets(target_config, transform)
+    
     train_loader, val_loader, test_loader = get_data_loaders(target_config)
     
     target_model = get_model(target_config)
@@ -60,12 +61,12 @@ def run_model_inversion(attack_config):
         evaluation_config, evaluation_weights_path = load_trained_models.get_evaluation_config_and_weights(attack_config)
         
         # Load evaluation model
-        evalutation_model = get_model(evaluation_config)
-        evalutation_model.load_model(evaluation_weights_path)
+        evaluation_model = get_model(evaluation_config)
+        evaluation_model.load_model(evaluation_weights_path)
         
         # Convert to plug and play compatibility 
         target_model = model_compatibility_wrapper(model = target_model, target_config = target_config)
-        evalutation_model = model_compatibility_wrapper(model = evalutation_model, target_config = evaluation_config)
+        evaluation_model = model_compatibility_wrapper(model = evaluation_model, target_config = evaluation_config)
         
         new_attack_config_path = convert_configs(target_config, attack_config)
         new_attack_config = AttackConfigParser(new_attack_config_path)
@@ -74,7 +75,7 @@ def run_model_inversion(attack_config):
             config = new_attack_config,
             target_dataset = train_dataset,
             target_model = target_model,
-            evaluation_model = evalutation_model,
+            evaluation_model = evaluation_model,
             our_config = attack_config,
             wandb_run = wandb_run,
             )
