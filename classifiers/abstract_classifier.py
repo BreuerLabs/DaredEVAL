@@ -97,7 +97,10 @@ class AbstractClassifier(nn.Module):
             raise ValueError("Please provide a name to save the model when not using wandb tracking")
         
         if self.config.model.optimizer == "adam":
-            self.optimizer = torch.optim.Adam(self.parameters(), lr=self.config.model.hyper.lr)
+            self.optimizer = torch.optim.Adam(self.parameters(),
+                                              lr=self.config.model.hyper.lr,
+                                              betas=(0.9, self.config.model.hyper.beta2),
+                                              )
 
         self.train_step = 0
 

@@ -14,3 +14,4 @@ hyper:
   kernel_size: 3
   patience: 10
   linear_output_size: 256
+  beta2: 0.999

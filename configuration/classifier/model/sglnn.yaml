@@ -13,4 +13,5 @@ hyper:
   gl_theta: 0 # Norm threshold for zeroing weights
   sgl_alpha: 0.04 # See SGLNN paper Eqn. (15)
   smooth: False
+  beta2: 0.999
 
