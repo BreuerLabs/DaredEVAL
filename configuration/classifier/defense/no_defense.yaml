@@ -1,6 +1,12 @@
 name: "no_defense"
 penalty: False
 apply_threshold: False
-lasso_lambda: 0
-lasso_threshold: 0.01
+lasso: # do not use with no_defense
+  lambda_: 0
+  threshold: 0.01
+  smooth: False
+  alpha: 0.04 # smoothing hyperparameter, see Zhang et al. 2020
+
 input_defense_init: 1
+plot_mask: False
+plot_save_name: None

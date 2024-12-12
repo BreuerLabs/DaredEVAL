@@ -6,6 +6,7 @@ from tqdm import tqdm
 from omegaconf import OmegaConf
 
 from classifiers.defense_utils import ElementwiseLinear
+from utils.plotting import plot_tensor
 
 
 class AbstractClassifier(nn.Module):
@@ -139,6 +140,10 @@ class AbstractClassifier(nn.Module):
                         print("Early stopping")
                         break
                     
+        # show defense layer mask
+        if self.config.defense == "drop_layer" and self.config.defense.plot_mask:
+            plot_tensor(self.model.input_defense_layer.weight.data, self.config.defense.plot_save_name)
+        
         # Load the best model
         self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
     
@@ -171,7 +176,7 @@ class AbstractClassifier(nn.Module):
     def get_loss(self, output, target): # calculate loss with whatever penalties added 
         loss = self.criterionSum(output, target)
         if self.config.defense.penalty == "lasso": # normal lasso on first layer weights
-                lasso_pen = self.config.defense.lasso_lambda * self.lasso_penalty()
+                lasso_pen = self.config.defense.lasso.lambda_ * self.lasso_penalty()
                 loss = loss + lasso_pen
         
         return loss
@@ -205,7 +210,7 @@ class AbstractClassifier(nn.Module):
 
     def apply_threshold(self):
         if self.config.defense.name == "drop_layer":
-            thresh = self.config.defense.lasso_threshold
+            thresh = self.config.defense.lasso.threshold
             current_w_first = self.input_defense_layer.weight.data # (n_channels, x_dim, y_dim)
             current_w_norms = torch.linalg.norm(current_w_first, dim=0) # (x_dim, y_dim)
             below_threshold = current_w_norms <= thresh  # (x_dim, y_dim)
@@ -220,8 +225,8 @@ class AbstractClassifier(nn.Module):
         w_first = self.input_defense_layer.weight
         w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels. Performs abs() when n_channels=1, combines RGB values of pixels (group lasso) when n_channels=3
         
-        if self.config.defense.lasso_smooth:
-            alpha = self.config.defense.lasso_alpha
+        if self.config.defense.lasso.smooth:
+            alpha = self.config.defense.lasso.alpha
             smoothed_norms = (w_norms**2 / (2*alpha)) + (alpha/2) # see eqn. (15) in SGLasso paper
             final_smoothed_norms = torch.zeros_like(w_norms)
             final_smoothed_norms[w_norms < alpha] = smoothed_norms[w_norms < alpha]
