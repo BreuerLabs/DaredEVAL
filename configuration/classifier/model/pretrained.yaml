@@ -1,5 +1,5 @@
 name: "PreTrainedClassifier"
-architecture: "resnet18" # Options: resnet18, resnet152
+architecture: "resnet18" # Options: resnet18, resnet152, inception
 pretrained: True
 optimizer: "adam"
 criterion: "crossentropy"

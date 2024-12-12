@@ -23,7 +23,7 @@ def train_classifier(config):
 
     if config.training.wandb.track:
         wandb_helpers.wandb_init(config)
-            
+    
     # Load the data
     train_loader, val_loader, test_loader = get_data_loaders(config)
     

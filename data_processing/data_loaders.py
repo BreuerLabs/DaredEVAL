@@ -2,11 +2,13 @@ from torchvision import datasets, transforms
 import torch
 from torch.utils.data import random_split
 from data_processing.datasets import get_datasets
+from data_processing.data_augmentation import get_transforms
 
 def get_data_loaders(config):
     """Dynamically loads datasets based on the configuration."""
     
-    train_dataset, val_dataset, test_dataset = get_datasets(config)
+    transform = get_transforms(config)
+    train_dataset, val_dataset, test_dataset = get_datasets(config, transform)
 
     num_workers = config.training.dataloader_num_workers
     train_loader = torch.utils.data.DataLoader(train_dataset,

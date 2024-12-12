@@ -1,12 +1,9 @@
-# Adapted from PnP classifier.py
-
 import torch
 import torch.nn as nn
 from classifiers.abstract_classifier import AbstractClassifier
 import torchvision
 from torchvision import transforms
 from torchvision.models import densenet, inception, resnet
-
 
 class PreTrainedClassifier(AbstractClassifier):
     
@@ -21,12 +18,21 @@ class PreTrainedClassifier(AbstractClassifier):
 
         arch = self.config.model.architecture
         pretrained = self.config.model.pretrained
-        if arch == 'resnet152':
+        if arch.lower() == 'resnet152':
             weights = resnet.ResNet152_Weights.DEFAULT if pretrained else None
             model = resnet.resnet152(weights=weights)
-        elif arch == 'resnet18':
+        elif arch.lower() == 'resnet18':
             weights = resnet.ResNet18_Weights.DEFAULT if pretrained else None
             model = resnet.resnet18(weights=weights)       
+        
+        elif 'inception' in arch.lower():
+            weights = inception.Inception_V3_Weights.DEFAULT if pretrained else None
+            model = inception.inception_v3(weights=weights,
+                                           aux_logits=True,
+                                           init_weights=False)
+            
+            return model    
+            
         else:
             raise RuntimeError(
                 f'No model with the name {arch} available'
@@ -38,3 +44,52 @@ class PreTrainedClassifier(AbstractClassifier):
             model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
 
         return model
+    
+    # Only used when training inception models
+    def get_inception_loss(self, inception_output, target):
+        output, aux_logits = inception_output
+            
+        aux_loss = torch.tensor(0.0, device=self.device)
+
+        # Separate Inception_v3 outputs
+        aux_logits = None
+    
+        if aux_logits is not None:
+            aux_loss += self.criterion(aux_logits, target).sum()
+        
+        loss = self.criterion(output, target) + aux_loss
+        
+        return loss
+    
+    def train_one_epoch(self, train_loader):
+        config = self.config
+        self.train()
+        total_loss = 0
+        loss_calculated = 0
+        
+        for batch_idx, (data, target) in enumerate(train_loader):
+            data, target = data.to(self.device), target.to(self.device)
+            self.optimizer.zero_grad()
+            
+            output = self(data)
+            
+            if isinstance(output, inception.InceptionOutputs):
+                loss = self.get_inception_loss(output, target)
+
+            else:
+                loss = self.criterion(output, target)
+                
+            total_loss += loss.item() * len(data)
+            loss_calculated += len(data)
+
+            if config.training.verbose == 2:
+                print("loss: ", loss.item())
+
+            loss.backward()
+            self.optimizer.step()
+
+        train_loss = total_loss / loss_calculated
+
+        return train_loss
+    
+            

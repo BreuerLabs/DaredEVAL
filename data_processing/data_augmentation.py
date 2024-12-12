@@ -2,7 +2,7 @@
 from torchvision import datasets, transforms
 
 
-def get_transforms(config):
+def get_transforms(config, extra_augmentations:list = []):
     # Get dataaugmentations
     if config.dataset.augment_data:
         random_resize_crop = transforms.RandomResizedCrop(**config.dataset.transformations.RandomResizedCrop)
@@ -15,6 +15,9 @@ def get_transforms(config):
             
     else:
         augmentations = []
+        
+    if extra_augmentations:
+        augmentations += extra_augmentations
             
     if config.dataset.dataset == "CIFAR10":
         base_transformations = [

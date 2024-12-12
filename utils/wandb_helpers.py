@@ -27,8 +27,10 @@ def wandb_init(config):
     except Exception as e:
         print(f"\nCould not initiate wandb logger\nError: {e}")
         
+    return run
         
-def get_target_config(config):
+        
+def get_config(entity, project, wandb_id):
     
     def remove_value_keys(config):
         """Removes the 'value' key from each top-level key in the dictionary if it exists."""
@@ -44,7 +46,7 @@ def get_target_config(config):
         return cleaned_config
         
     api = wandb.Api()
-    run = api.run(f"{config.training.wandb.entity}/{config.training.wandb.target_project}/{config.target_wandb_id}")
+    run = api.run(f"{entity}/{project}/{wandb_id}")
         
     # Download the YAML config file
     target_config = run.file("config.yaml").download(replace=True)
@@ -59,15 +61,15 @@ def get_target_config(config):
     
     return target_config, run.name
     
-def get_target_weights(target_config, attack_config):
+def get_weights(entity, project, wandb_id, save_as = None):
 
     api = wandb.Api()
-    run = api.run(f"{attack_config.training.wandb.entity}/{attack_config.training.wandb.target_project}/{attack_config.target_wandb_id}")
-    if target_config.training.save_as:
-        target_weights_filename = target_config.training.save_as
-    else: # .pth filename is the same as wandb run name in this case
-        target_weights_filename = run.name
+    run = api.run(f"{entity}/{project}/{wandb_id}")
     
-    target_weights_path_wrapper = run.file(f"classifiers/saved_models/{target_weights_filename}.pth").download(replace=True)
+    filename = save_as if save_as else run.name
+    file_path = f"classifiers/saved_models/{filename}.pth"
+    
+    target_weights = run.file(file_path).download(replace=True)
+    del target_weights
 
-    return target_weights_path_wrapper.name
+    return file_path

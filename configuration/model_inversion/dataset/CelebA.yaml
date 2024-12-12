@@ -1,6 +1,20 @@
 dataset: CelebA
-input_size: [3, 64, 64]
-n_classes: 40
+face_dataset: True
+target_type: identity 
+input_size: [3, 224, 224]
+n_classes: 1000 # N most common classes to be chosen among the target type
+
 augment_data: True
-# n_candidates: 10
-# target_classes: [0,4,7] # use "all" if targeting all classes
+transformations:
+  RandomResizedCrop:
+    size: [224, 224]
+    scale: [0.85, 1]
+    ratio: [1, 1]
+    antialias: true
+  ColorJitter:
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0.1
+    hue: 0.1
+  RandomHorizontalFlip:
+    p: 0.5

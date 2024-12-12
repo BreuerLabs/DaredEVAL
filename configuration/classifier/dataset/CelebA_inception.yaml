@@ -1,13 +1,13 @@
 dataset: CelebA
 face_dataset: True
 target_type: identity 
-input_size: [3, 224, 224]
+input_size: [3, 299, 299]
 n_classes: 1000 # N most common classes to be chosen among the target type
 
 augment_data: True
 transformations:
   RandomResizedCrop:
-    size: [224, 224]
+    size: [299, 299]
     scale: [0.85, 1]
     ratio: [1, 1]
     antialias: true

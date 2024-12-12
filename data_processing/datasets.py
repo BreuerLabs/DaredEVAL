@@ -15,10 +15,8 @@ from collections import Counter
 
 from data_processing.data_augmentation import get_transforms
 
-def get_datasets(config):
+def get_datasets(config, transform):
     """Dynamically loads datasets based on the configuration."""
-    
-    transform = get_transforms(config)
     
     if config.dataset.dataset == "CIFAR10":
         full_train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
@@ -73,8 +71,32 @@ def get_datasets(config):
     train_size = int((1 - config.training.validation_size) * len(full_train_dataset))
     val_size = len(full_train_dataset) - train_size
     train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
+    
+    train_dataset = AttackDataset(train_dataset)
+    val_dataset = AttackDataset(val_dataset)
+    
+    #! Maybe also do: test_dataset = AttackDataset(test_dataset)
 
     return train_dataset, val_dataset, test_dataset
+
+
+class AttackDataset(Dataset):
+    """
+    Wrap a subset to add a 'self.targets' attribute. Needed for attacks
+
+    Args:
+        subset (torch.utils.data.Subset): A subset of a dataset.
+    """
+    
+    def __init__(self, subset):
+        self.subset = subset
+        self.targets = torch.tensor([subset.dataset.targets[idx] for idx in subset.indices])
+
+    def __getitem__(self, index):
+        return self.subset[index]
+
+    def __len__(self):
+        return len(self.subset)
 
 
 class CelebA_N_most_common(Dataset):

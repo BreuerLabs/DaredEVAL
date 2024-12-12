@@ -1,12 +1,12 @@
 evaluate_freq: 1  # Evaluation frequency
-display_step: 189
 save_as: "test" # What to save the model as, if False, then it is saved as the wandb run name
 verbose: 1  # 0: silent, 1: progress bar, 2: one line per epoch
 device: "cuda"  # Options: "cuda", "mps", "cpu"
 validation_size: 0.2  # Fraction of the training set to use as validation
 seed: 42
 wandb:
-  track: False
+  track: True
   project: "plug_and_play" # where current run will be loaded
   target_project: "ModelInversion" # where the target model is loaded from
+  evaluation_project: "ModelInversion"
   entity: "BreuerLab"
