@@ -446,7 +446,7 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
             training_dataset_facenet, _, _ = get_datasets(our_config, target_transform)
             ### 
                 
-            # Compute average feature distance on Inception-v3
+            # Compute average feature distance on vggface
             evaluater_facenet = DistanceEvaluation(facenet, synthesis, face_net_img_size,  
                                                     config.attack_center_crop,
                                                     training_dataset_facenet, config.seed)
@@ -572,7 +572,7 @@ def create_parser():
 #     return config, args
 
 
-def  create_initial_vectors(config, G, target_model, targets, device):
+def create_initial_vectors(config, G, target_model, targets, device):
     with torch.no_grad():
         w = config.create_candidates(G, target_model, targets).cpu()
         if config.attack['single_w']:

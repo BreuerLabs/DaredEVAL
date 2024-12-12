@@ -113,7 +113,7 @@ class CelebA_N_most_common(Dataset):
                         target_type="identity")
         celeba.targets = celeba.identity
 
-        # Select the 1,000 most frequent celebrities from the dataset
+        # Select the N most frequent celebrities from the dataset
         targets = np.array([t.item() for t in celeba.identity])
         ordered_dict = dict(
             sorted(Counter(targets).items(),
