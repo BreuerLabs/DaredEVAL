@@ -3,4 +3,6 @@ penalty: "lasso" # can set this to False for no penalty
 apply_threshold: True
 lasso_lambda: 0.1
 lasso_threshold: 0.01
-input_defense_init: 1
+input_defense_init: 1. # needs to be a float I think
+lasso_smooth: False
+lasso_alpha: 0.04 # smoothing hyperparameter, see Zhang et al. 2020

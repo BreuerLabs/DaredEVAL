@@ -78,6 +78,7 @@ class AbstractClassifier(nn.Module):
                 feature_norms = self.get_feature_norms()
                 for idx, feature_norm in zip(track_features, feature_norms):
                     wandb.log({f"feature_{idx}" : feature_norm.item(), "train_step": self.train_step})
+                wandb.log({"n_features" : self.n_features_remaining, "train_step" : self.train_step})
 
 
         train_loss = total_loss / loss_calculated
@@ -114,7 +115,7 @@ class AbstractClassifier(nn.Module):
                 print(f"Train loss: {train_loss}")
             
             if self.config.training.wandb.track:
-                wandb.log({"train_loss": train_loss, "train_step": self.train_step})
+                wandb.log({"train_loss": train_loss, "train_step": self.train_step, "epoch": epoch+1})
 
             if val_loader and epoch % self.config.training.evaluate_freq == 0:
                 val_loss, accuracy = self.evaluate(val_loader)
@@ -124,8 +125,8 @@ class AbstractClassifier(nn.Module):
                     print(f'Accuracy: {accuracy}')
                 
                 if self.config.training.wandb.track:
-                    wandb.log({"val_loss": val_loss, "train_step": self.train_step})
-                    wandb.log({"accuracy": accuracy, "train_step": self.train_step})
+                    wandb.log({"val_loss": val_loss, "train_step": self.train_step, "epoch": epoch+1})
+                    wandb.log({"accuracy": accuracy, "train_step": self.train_step, "epoch": epoch+1})
                 
                 if val_loss < best_loss:
                     best_loss = val_loss
@@ -210,6 +211,7 @@ class AbstractClassifier(nn.Module):
             below_threshold = current_w_norms <= thresh  # (x_dim, y_dim)
             new_w_first = current_w_first * ~below_threshold # (n_channels, x_dim, y_dim) x (x_dim, y_dim) = (n_channels, x_dim, y_dim)
             self.input_defense_layer.weight.data = new_w_first
+            self.n_features_remaining = below_threshold.numel() - below_threshold.sum()
         else:
             assert 0 == 1, f"apply_threshold not yet implemented for defense {self.config.defense.name}"
 
@@ -217,7 +219,17 @@ class AbstractClassifier(nn.Module):
         
         w_first = self.input_defense_layer.weight
         w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels. Performs abs() when n_channels=1, combines RGB values of pixels (group lasso) when n_channels=3
-        lasso_pen = w_norms.sum()
+        
+        if self.config.defense.lasso_smooth:
+            alpha = self.config.defense.lasso_alpha
+            smoothed_norms = (w_norms**2 / (2*alpha)) + (alpha/2) # see eqn. (15) in SGLasso paper
+            final_smoothed_norms = torch.zeros_like(w_norms)
+            final_smoothed_norms[w_norms < alpha] = smoothed_norms[w_norms < alpha]
+            final_smoothed_norms[w_norms >= alpha] = w_norms[w_norms >= alpha] # only use smoothed norms if less than alpha
+            lasso_pen = final_smoothed_norms.sum()
+        else:
+            lasso_pen = w_norms.sum()
+
         return lasso_pen
     
     def get_feature_norms(self):
