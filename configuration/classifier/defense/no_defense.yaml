@@ -6,6 +6,7 @@ lasso: # do not use with no_defense
   threshold: 0.01
   smooth: False
   alpha: 0.04 # smoothing hyperparameter, see Zhang et al. 2020
+  warm_start: False
 
 input_defense_init: 1
 plot_mask: False
