@@ -12,3 +12,4 @@ hyper:
   dropout: 0.0
   kernel_size: 3
   patience: 20
+  beta2: 0.999
