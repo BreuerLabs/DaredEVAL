@@ -11,9 +11,9 @@ import wandb
 class SGLNN(AbstractClassifier, nn.Module):
 
     def __init__(self, config):
-        super(SGLNN, self).__init__()
+        super(SGLNN, self).__init__(config)
         self.config = config
-        self.model = self.init_model(config)
+        self.model = self.init_model()
 
     def init_model(self):
         super(SGLNN, self).init_model()

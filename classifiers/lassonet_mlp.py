@@ -24,7 +24,7 @@ class LassoNetMLP(AbstractClassifier): # adapted from LassoNet Github model.py
 
     def __init__(self, config):
         self.config = config
-        super(LassoNetMLP, self).__init__()
+        super(LassoNetMLP, self).__init__(config)
 
         self.model, self.skip = self.init_model(self.config) # TODO change structure?
         self.lambda_ = self.config.model.hyper.skip_gl_lambda
@@ -32,10 +32,8 @@ class LassoNetMLP(AbstractClassifier): # adapted from LassoNet Github model.py
         if self.config.training.wandb.track:
             wandb.log({"skip_strength" : self.M})   
 
-        
-
-    def init_model(self, config):
-        super(LassoNetMLP, self).init_model(config)
+    def init_model(self):
+        super(LassoNetMLP, self).init_model()
         dropout = self.config.model.hyper.dropout
         in_features = self.config.dataset.input_size[1] * self.config.dataset.input_size[2] * self.config.dataset.input_size[0]
         n_neurons = self.config.model.hyper.n_neurons
