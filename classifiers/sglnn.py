@@ -15,13 +15,13 @@ class SGLNN(AbstractClassifier, nn.Module):
         self.config = config
         self.model = self.init_model(config)
 
-    def init_model(self, config):
-        super(SGLNN, self).init_model(config)
+    def init_model(self):
+        super(SGLNN, self).init_model()
 
-        n_channels, height, width = config.dataset.input_size
+        n_channels, height, width = self.config.dataset.input_size
 
-        self.first_layer = nn.Linear(n_channels*height*width, config.model.hyper.hidden_size) # inputs are flattened along channels and height/width before being passed in
-        self.hidden_layer = nn.Linear(config.model.hyper.hidden_size, config.dataset.n_classes)
+        self.first_layer = nn.Linear(n_channels*height*width, self.config.model.hyper.hidden_size) # inputs are flattened along channels and height/width before being passed in
+        self.hidden_layer = nn.Linear(self.config.model.hyper.hidden_size, self.config.dataset.n_classes)
         
         model = nn.Sequential(
             self.first_layer,

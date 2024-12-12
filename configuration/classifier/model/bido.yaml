@@ -3,6 +3,7 @@
 name: "BiDO"
 optimizer: "adam"
 criterion: "crossentropy"
+flatten: False # whether or not input needs to be flattened before passing to model
 
 args:
   measure: "HSIC" # HSIC or COCO

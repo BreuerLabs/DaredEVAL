@@ -4,6 +4,7 @@ pretrained: True
 optimizer: "adam"
 criterion: "crossentropy"
 hotstart_model: False # Else give path to model
+flatten: False # whether or not input needs to be flattened before passing to model
 hyper:
   lr: 0.001
   epochs: 20

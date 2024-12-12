@@ -12,9 +12,9 @@ from Defend_MI.BiDO import utils
 class BiDO(AbstractClassifier):
 
     def __init__(self, config):
-        super(BiDO, self).__init__()
+        super(BiDO, self).__init__(config)
         self.config = config
-        self.model = super(BiDO, self).init_model(config)
+        self.model = super(BiDO, self).init_model()
 
 
     def train_model(self, trainloader, testloader): # adapted from BiDO repo's train_HSIC.py

@@ -8,12 +8,12 @@ from torchvision.models import densenet, inception, resnet
 class PreTrainedClassifier(AbstractClassifier):
     
     def __init__(self, config):
-        super(PreTrainedClassifier, self).__init__()
+        super(PreTrainedClassifier, self).__init__(config)
         self.config = config
         self.model = self.init_model()
         
     def init_model(self):
-        super(PreTrainedClassifier, self).init_model(self.config)
+        super(PreTrainedClassifier, self).init_model()
         self.n_channels = self.config.dataset.input_size[0]
 
         arch = self.config.model.architecture
