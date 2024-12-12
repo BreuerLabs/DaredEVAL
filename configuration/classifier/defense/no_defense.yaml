@@ -1,0 +1,6 @@
+name: "no_defense"
+penalty: False
+apply_threshold: False
+lasso_lambda: 0.1
+lasso_threshold: 0.01
+input_defense_init: 1

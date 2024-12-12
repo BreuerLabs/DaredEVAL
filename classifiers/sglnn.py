@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from classifiers.abstract_classifier import AbstractClassifier
+# from classifiers.defense_utils import get_feature_norms
+import wandb
 
 
 class SGLNN(AbstractClassifier, nn.Module):
@@ -79,6 +81,12 @@ class SGLNN(AbstractClassifier, nn.Module):
             loss.backward()
             self.optimizer.step()
             self.apply_threshold() # zero out weights in first layer that are below a certain threshold
+
+            track_features = self.config.training.wandb.track_features
+            if track_features:
+                feature_norms = get_feature_norms(self.model, track_features)
+                for idx, feature_norm in zip(track_features, feature_norms):
+                    wandb.log({f"feature_{idx}" : feature_norm.item()})
 
         train_loss = total_loss / loss_calculated
 
