@@ -1,0 +1,19 @@
+program: train_classifier.py
+name: cnn_sweep_test
+method: random
+metric: 
+  name: test_accuracy
+  goal: maximize
+parameters:
+  model:
+    value: cnn
+  dataset:
+    value: MNIST
+  model.hyper.batch_size:
+    values: [16, 32, 64]
+  model.hyper.n_depth:
+    values: [2,3,4]
+  model.hyper.dropout:
+    distribution: uniform
+    min: 0.0
+    max: 0.5
