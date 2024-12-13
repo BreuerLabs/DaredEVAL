@@ -61,7 +61,7 @@ class AbstractClassifier(nn.Module):
 
             loss = self.get_loss(output, target)
 
-            total_loss += loss.item()            
+            total_loss += loss.item()          
 
             loss_calculated += len(data)
 
@@ -144,8 +144,15 @@ class AbstractClassifier(nn.Module):
                         break
                     
         # show defense layer mask
-        if self.config.defense == "drop_layer" and self.config.defense.plot_mask:
-            plot_tensor(self.model.input_defense_layer.weight.data, self.config.defense.plot_save_name)
+        if self.config.defense.name == "drop_layer" and self.config.defense.plot_mask:
+            w = self.input_defense_layer.weight.data
+            if self.config.model.flatten:
+                w = w.reshape(tuple(self.config.dataset.input_size))
+
+            plt = plot_tensor(w.cpu(), self.save_as)
+            if self.config.training.wandb.track:
+                wandb.log({"defense_mask" : plt})
+            
         
         # Load the best model
         self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)

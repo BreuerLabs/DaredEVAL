@@ -4,4 +4,6 @@ def plot_tensor(tensor, save_name):
     arr = tensor.numpy().transpose(1,2,0)
     plt.imshow(arr)
     plt.axis('off')
-    plt.savefig(f"plots/{save_name}.png", bbox_inches = 'tight')
+    plot_path = f"plots/{save_name}.png"
+    plt.savefig(plot_path, bbox_inches = 'tight')
+    return plt
