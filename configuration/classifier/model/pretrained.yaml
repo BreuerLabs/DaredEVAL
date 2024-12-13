@@ -10,5 +10,4 @@ hyper:
   epochs: 20
   batch_size: 256
   patience: 20
-  linear_output_size: 256
   beta2: 0.999
