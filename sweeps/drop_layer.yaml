@@ -1,5 +1,5 @@
 program: train_classifier.py 
-name: cnn_sweep_test
+name: drop_layer
 
 method: bayes
 metric: 
@@ -10,14 +10,12 @@ parameters:
   model:
     values: [cnn]
   dataset:
-    values: [MNIST]
-  model.hyper.batch_size:
-    values: [16, 32, 64]
-  model.hyper.n_depth:
-    values: [2,3]
-  model.hyper.dropout:
+    values: [CIFAR10]
+  defense:
+    values: [drop_layer]
+  defense.lasso.lambda_:
     distribution: uniform
-    min: 0.0
+    min: 0.001
     max: 0.5
 
 early_terminate:
@@ -30,4 +28,3 @@ command:
   - ${interpreter}
   - ${program}
   - ${args_no_hyphens}
-  # - python
