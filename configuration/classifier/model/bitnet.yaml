@@ -3,6 +3,7 @@ optimizer: "adam"
 criterion: "crossentropy"
 hotstart_model: False # Else give path to model
 flatten: False # whether or not input needs to be flattened before passing to model
+lr_scheduler: False # "MultiStepLR", 
 hyper:
   lr: 0.001
   epochs: 20
@@ -13,3 +14,5 @@ hyper:
   kernel_size: 3
   patience: 20
   beta2: 0.999
+  milestones: False # Ex. [75, 90]
+  gamma: False # Ex. 0.1, factor by which lr changes at each milestone for MultiStepLR

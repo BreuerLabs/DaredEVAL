@@ -110,16 +110,22 @@ class AbstractClassifier(nn.Module):
                                               betas=(0.9, self.config.model.hyper.beta2),
                                               )
 
+        if self.config.model.lr_scheduler == "MultiStepLR": 
+            lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer,
+                                                             milestones=self.config.model.hyper.milestones,
+                                                             gamma=self.config.model.hyper.gamma,
+                                                             )
+
         self.train_step = 0
 
         self.to(self.device)
         
         best_loss = np.inf
         no_improve_epochs = 0
-        
+
         print("\nTraining using ", self.device)
         
-        for epoch in tqdm(range(self.config.model.hyper.epochs), desc="Training", total=self.config.model.hyper.epochs):
+        for epoch in tqdm(range(self.config.model.hyper.epochs), desc="Training", total=self.config.model.hyper.epochs):         
             train_loss = self.train_one_epoch(train_loader)
 
             if self.config.training.verbose:
@@ -128,6 +134,8 @@ class AbstractClassifier(nn.Module):
             
             if self.config.training.wandb.track:
                 wandb.log({"train_loss": train_loss, "train_step": self.train_step, "epoch": epoch+1})
+                if self.config.model.lr_scheduler:
+                    wandb.log({"learning_rate" : lr_scheduler.get_last_lr()[0], "train_step" : self.train_step, "epoch": epoch+1})
 
             if val_loader and epoch % self.config.training.evaluate_freq == 0:
                 val_loss, val_accuracy = self.evaluate(val_loader)
@@ -142,7 +150,7 @@ class AbstractClassifier(nn.Module):
                 
                 if val_loss < best_loss:
                     best_loss = val_loss
-                    self.save_model(self.save_as) #! TODO: Make sure input defense layer gets saved here too
+                    self.save_model(self.save_as)
                     no_improve_epochs = 0
 
                 else:
@@ -150,6 +158,10 @@ class AbstractClassifier(nn.Module):
                     if no_improve_epochs >= self.config.model.hyper.patience:
                         print("Early stopping")
                         break
+
+            if self.config.model.lr_scheduler:
+                lr_scheduler.step()
+                
 
         # save train loss and accuracy
         final_train_loss, final_train_accuracy = self.evaluate(train_loader)
@@ -231,6 +243,10 @@ class AbstractClassifier(nn.Module):
     def save_model(self, name):
         path = f"classifiers/saved_models/{name}"
         torch.save(self.state_dict(), path)
+
+        # if self.config.defense.name == "drop_layer": # save the drop layer as well
+        #     path = f"classifiers/saved_models/drop-layer-{name}"
+        #     torch.save(self.input_defense_layer.state_dict(), path)
         
     def load_model(self, file_path, map_location = None):
         if map_location is None:
