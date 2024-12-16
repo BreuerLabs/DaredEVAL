@@ -122,19 +122,19 @@ class AbstractClassifier(nn.Module):
                 wandb.log({"train_loss": train_loss, "train_step": self.train_step, "epoch": epoch+1})
 
             if val_loader and epoch % self.config.training.evaluate_freq == 0:
-                val_loss, accuracy = self.evaluate(val_loader)
+                val_loss, val_accuracy = self.evaluate(val_loader)
                 
                 if self.config.training.verbose:
                     print(f'Validation loss: {val_loss}') 
-                    print(f'Accuracy: {accuracy}')
+                    print(f'Accuracy: {val_accuracy}')
                 
                 if self.config.training.wandb.track:
                     wandb.log({"val_loss": val_loss, "train_step": self.train_step, "epoch": epoch+1})
-                    wandb.log({"accuracy": accuracy, "train_step": self.train_step, "epoch": epoch+1})
+                    wandb.log({"val_accuracy": val_accuracy, "train_step": self.train_step, "epoch": epoch+1})
                 
                 if val_loss < best_loss:
                     best_loss = val_loss
-                    self.save_model(self.save_as)
+                    self.save_model(self.save_as) #! TODO: Make sure input defense layer gets saved here too
                     no_improve_epochs = 0
 
                 else:
@@ -142,14 +142,30 @@ class AbstractClassifier(nn.Module):
                     if no_improve_epochs >= self.config.model.hyper.patience:
                         print("Early stopping")
                         break
-                    
-        # show defense layer mask
-        if self.config.defense.name == "drop_layer" and self.config.defense.plot_mask:
-            w = self.input_defense_layer.weight.data
-            if self.config.model.flatten:
-                w = w.reshape(tuple(self.config.dataset.input_size))
 
-            plt = plot_tensor(w.cpu(), self.save_as)
+        # save train loss and accuracy
+        final_train_loss, final_train_accuracy = self.evaluate(train_loader)
+        if self.config.training.verbose:
+            print(f'Final train loss: {final_train_loss}') 
+            print(f'Final train accuracy: {final_train_accuracy}')
+        
+        if self.config.training.wandb.track:
+            wandb.log({"final_train_loss": final_train_loss, "train_step": self.train_step, "epoch": epoch+1})
+            wandb.log({"final_train_accuracy": final_train_accuracy, "train_step": self.train_step, "epoch": epoch+1})
+
+        # save defense layer mask plot
+        if self.config.defense.name == "drop_layer" and self.config.defense.plot_mask:
+            w_first = self.input_defense_layer.weight.data
+            
+            n_channels, x_dim, y_dim = self.config.dataset.input_size
+            if n_channels == 3:
+                w_norms = torch.linalg.norm(w_first, dim=0)
+            else: # n_channels == 1
+                w_norms = w_first.abs() # does the same thing as norm of dim=0 when n_channels is 1, but this is more readable
+                
+            w_norms = w_norms.reshape((1, x_dim, y_dim))
+
+            plt = plot_tensor(w_norms.cpu(), self.save_as)
             if self.config.training.wandb.track:
                 wandb.log({"defense_mask" : plt})
             

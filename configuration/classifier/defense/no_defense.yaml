@@ -10,4 +10,3 @@ lasso: # do not use with no_defense
 
 input_defense_init: 1
 plot_mask: False
-plot_save_name: None

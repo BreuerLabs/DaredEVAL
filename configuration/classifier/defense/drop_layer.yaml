@@ -10,4 +10,3 @@ lasso:
   
 input_defense_init: 0.5 # needs to be a float I think
 plot_mask: True
-plot_save_name: "test_mask"
