@@ -28,7 +28,9 @@ class AbstractClassifier(nn.Module):
             self.criterionSum = nn.MSELoss(reduction='sum')
 
         if self.config.defense.name == "drop_layer":
-            self.input_defense_layer = self.init_defense_layer()
+            self.input_defense_layer = self.init_input_defense_layer()
+            if self.config.defense.penalty == "skip_lasso":
+                self.skip_defense_layer = self.init_skip_defense_layer()
         else:
             self.input_defense_layer = None
 
@@ -37,7 +39,7 @@ class AbstractClassifier(nn.Module):
         return model
 
 
-    def init_defense_layer(self):
+    def init_input_defense_layer(self):
 
         if self.config.model.flatten:
             in_features = (self.config.dataset.input_size[1] * self.config.dataset.input_size[2] * self.config.dataset.input_size[0],)
@@ -47,6 +49,12 @@ class AbstractClassifier(nn.Module):
         defense_layer = ElementwiseLinear(in_features, w_init=self.config.defense.input_defense_init)
 
         return defense_layer
+    
+
+    def init_skip_defense_layer(self):
+        pass
+        # skip = nn.Linear(in_features, self.config.dataset.n_classes, bias=False)
+    
 
     
     def train_one_epoch(self, train_loader):
