@@ -19,9 +19,17 @@ def wandb_init(config):
     try:
         # project is the name of the project in wandb, entity is the username
         # You can also add tags, group etc.
+
+        run_id = config.training.wandb.run_id if config.training.wandb.run_id else None
+        run_name = config.training.wandb.run_name if config.training.wandb.run_name else None
+
         run = wandb.init(project=config.training.wandb.project, 
-                config=OmegaConf.to_container(config), 
-                entity=config.training.wandb.entity)
+            config=OmegaConf.to_container(config), 
+            entity=config.training.wandb.entity,
+            id=run_id,
+            name=run_name,
+            resume="allow",
+        )
         
         print(f"wandb initiated with run id: {run.id} and run name: {run.name}")
     except Exception as e:

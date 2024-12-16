@@ -10,3 +10,5 @@ wandb:
   project: "ModelInversion" # where current run will be loaded
   entity: "BreuerLab"
   track_features: False # ex. "[[0, 0], [0, 223], [112, 112], [223, 0], [223, 223]]"
+  run_id: False # else give a wandb run id from which to continue training
+  run_name: False

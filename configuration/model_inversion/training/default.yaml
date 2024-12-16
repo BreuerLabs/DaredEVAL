@@ -10,3 +10,5 @@ wandb:
   target_project: "ModelInversion" # where the target model is loaded from
   evaluation_project: "ModelInversion"
   entity: "BreuerLab"
+  run_id: False
+  run_name: False

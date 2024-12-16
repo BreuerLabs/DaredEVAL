@@ -27,8 +27,19 @@ def train_classifier(config):
     # Load the data
     train_loader, val_loader, test_loader = get_data_loaders(config)
     
+    # Load the model
     model = get_model(config)
     
+    # Load trained model weights if given
+    if config.training.wandb.run_id:
+        model_weights_path = wandb_helpers.get_weights(
+                                                        entity   = config.training.wandb.entity,
+                                                        project  = config.training.wandb.project,
+                                                        wandb_id = config.training.wandb.run_id,
+        )
+        model.load_model(model_weights_path)
+
+    # Train the model
     model.train_model(train_loader, val_loader)
     
     test_loss, test_accuracy = model.evaluate(test_loader)
@@ -44,6 +55,8 @@ def train_classifier(config):
     if config.training.wandb.track:
         # wandb.log_model(path=f"classifiers/saved_models/{model.save_as}")
         wandb.save(f"classifiers/saved_models/{model.save_as}")
+        # if config.defense.name == "drop_layer":
+        #     wandb.save(f"classifiers/saved_models/drop-layer-{model.save_as}")
     
     
 if __name__ == "__main__":
