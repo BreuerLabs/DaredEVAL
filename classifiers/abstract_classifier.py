@@ -153,6 +153,22 @@ class AbstractClassifier(nn.Module):
                 if self.config.training.wandb.track:
                     wandb.log({"val_loss": val_loss, "train_step": self.train_step, "epoch": epoch+1})
                     wandb.log({"val_accuracy": val_accuracy, "train_step": self.train_step, "epoch": epoch+1})
+
+                # save defense layer mask plot
+                if self.config.defense.name == "drop_layer" and self.config.defense.plot_mask:
+                    w_first = self.input_defense_layer.weight.data
+                    
+                    n_channels, x_dim, y_dim = self.config.dataset.input_size
+                    if n_channels == 3:
+                        w_norms = torch.linalg.norm(w_first, dim=0)
+                    else: # n_channels == 1
+                        w_norms = w_first.abs() # does the same thing as norm of dim=0 when n_channels is 1, but this is more readable
+                        
+                    w_norms = w_norms.reshape((1, x_dim, y_dim))
+
+                    plt = plot_tensor(w_norms.cpu(), self.save_as)
+                    if self.config.training.wandb.track:
+                        wandb.log({"defense_mask" : plt, "train_step": self.train_step, "epoch": epoch+1})
                 
                 if val_loss < best_loss:
                     best_loss = val_loss
@@ -178,24 +194,7 @@ class AbstractClassifier(nn.Module):
         if self.config.training.wandb.track:
             wandb.log({"final_train_loss": final_train_loss, "train_step": self.train_step, "epoch": epoch+1})
             wandb.log({"final_train_accuracy": final_train_accuracy, "train_step": self.train_step, "epoch": epoch+1})
-
-        # save defense layer mask plot
-        if self.config.defense.name == "drop_layer" and self.config.defense.plot_mask:
-            w_first = self.input_defense_layer.weight.data
-            
-            n_channels, x_dim, y_dim = self.config.dataset.input_size
-            if n_channels == 3:
-                w_norms = torch.linalg.norm(w_first, dim=0)
-            else: # n_channels == 1
-                w_norms = w_first.abs() # does the same thing as norm of dim=0 when n_channels is 1, but this is more readable
-                
-            w_norms = w_norms.reshape((1, x_dim, y_dim))
-
-            plt = plot_tensor(w_norms.cpu(), self.save_as)
-            if self.config.training.wandb.track:
-                wandb.log({"defense_mask" : plt})
-            
-        
+                 
         # Load the best model
         self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
     
