@@ -65,9 +65,10 @@ class PreTrainedClassifier(AbstractClassifier):
         else:
             loss = self.criterionSum(output, target)
         
-        if self.config.defense.penalty == "lasso": # normal lasso on first layer weights
-            lasso_pen = self.config.defense.lasso.lambda_ * self.lasso_penalty()
-            loss = loss + lasso_pen
+        if self.config.defense.name == "drop_layer":
+            if self.config.defense.penalty == "lasso": # normal lasso on first layer weights
+                lasso_pen = self.config.defense.lasso.lambda_ * self.lasso_penalty()
+                loss = loss + lasso_pen
 
         return loss
     
