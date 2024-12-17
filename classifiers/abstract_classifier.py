@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 import wandb
 from tqdm import tqdm
+import omegaconf
 from omegaconf import OmegaConf
 
 from classifiers.defense_utils import ElementwiseLinear
@@ -90,9 +91,10 @@ class AbstractClassifier(nn.Module):
 
             track_features = self.config.training.wandb.track_features
             if track_features:
-                feature_norms = self.get_feature_norms()
-                for idx, feature_norm in zip(track_features, feature_norms):
-                    wandb.log({f"feature_{idx}" : feature_norm.item(), "train_step": self.train_step})
+                if isinstance(track_features, omegaconf.listconfig.ListConfig):
+                    feature_norms = self.get_feature_norms()
+                    for idx, feature_norm in zip(track_features, feature_norms):
+                        wandb.log({f"feature_{idx}" : feature_norm.item(), "train_step": self.train_step})
                 wandb.log({"n_features" : self.n_features_remaining, "train_step" : self.train_step})
 
 
@@ -145,12 +147,16 @@ class AbstractClassifier(nn.Module):
 
             if val_loader and epoch % self.config.training.evaluate_freq == 0:
                 val_loss, val_accuracy = self.evaluate(val_loader)
+
+                _, train_accuracy = self.evaluate(train_loader)
                 
                 if self.config.training.verbose:
+                    print(f'Train Accuracy: {train_accuracy}')
                     print(f'Validation loss: {val_loss}') 
-                    print(f'Accuracy: {val_accuracy}')
+                    print(f'Val Accuracy: {val_accuracy}')
                 
                 if self.config.training.wandb.track:
+                    wandb.log({"train_accuracy": train_accuracy, "train_step": self.train_step, "epoch": epoch+1})
                     wandb.log({"val_loss": val_loss, "train_step": self.train_step, "epoch": epoch+1})
                     wandb.log({"val_accuracy": val_accuracy, "train_step": self.train_step, "epoch": epoch+1})
 
