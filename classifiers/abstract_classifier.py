@@ -252,9 +252,6 @@ class AbstractClassifier(nn.Module):
         path = f"classifiers/saved_models/{name}"
         torch.save(self.state_dict(), path)
 
-        # if self.config.defense.name == "drop_layer": # save the drop layer as well
-        #     path = f"classifiers/saved_models/drop-layer-{name}"
-        #     torch.save(self.input_defense_layer.state_dict(), path)
         
     def load_model(self, file_path, map_location = None):
         if map_location is None:

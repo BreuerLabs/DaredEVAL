@@ -70,7 +70,8 @@ def get_datasets(config, transform):
     # Split the full training dataset into training and validation sets
     train_size = int((1 - config.training.validation_size) * len(full_train_dataset))
     val_size = len(full_train_dataset) - train_size
-    train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
+    generator1 = torch.Generator().manual_seed(config.training.seed)
+    train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size], generator=generator1)
     
     train_dataset = AttackDataset(train_dataset)
     val_dataset = AttackDataset(val_dataset)
