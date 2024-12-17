@@ -4,6 +4,7 @@ verbose: 1  # 0: silent, 1: progress bar, 2: one line per epoch
 device: "cuda"  # Options: "cuda", "mps", "cpu"
 validation_size: 0.2  # Fraction of the training set to use as validation
 seed: 42
+save_defense_layer_freq: 10
 wandb:
   track: True
   project: "plug_and_play" # where current run will be loaded

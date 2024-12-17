@@ -159,7 +159,19 @@ class AbstractClassifier(nn.Module):
                     wandb.log({"train_accuracy": train_accuracy, "train_step": self.train_step, "epoch": epoch+1})
                     wandb.log({"val_loss": val_loss, "train_step": self.train_step, "epoch": epoch+1})
                     wandb.log({"val_accuracy": val_accuracy, "train_step": self.train_step, "epoch": epoch+1})
+                
+                if val_loss < best_loss:
+                    best_loss = val_loss
+                    self.save_model(self.save_as)
+                    no_improve_epochs = 0
 
+                else:
+                    no_improve_epochs += 1
+                    if no_improve_epochs >= self.config.model.hyper.patience:
+                        print("Early stopping")
+                        break
+
+            if epoch % self.config.training.save_defense_layer_freq == 0:
                 # save defense layer mask plot
                 if self.config.defense.name == "drop_layer" and self.config.defense.plot_mask:
                     w_first = self.input_defense_layer.weight.data
@@ -175,17 +187,6 @@ class AbstractClassifier(nn.Module):
                     plt = plot_tensor(w_norms.cpu(), self.save_as)
                     if self.config.training.wandb.track:
                         wandb.log({"defense_mask" : plt, "train_step": self.train_step, "epoch": epoch+1})
-                
-                if val_loss < best_loss:
-                    best_loss = val_loss
-                    self.save_model(self.save_as)
-                    no_improve_epochs = 0
-
-                else:
-                    no_improve_epochs += 1
-                    if no_improve_epochs >= self.config.model.hyper.patience:
-                        print("Early stopping")
-                        break
 
             if self.config.model.lr_scheduler:
                 lr_scheduler.step()
