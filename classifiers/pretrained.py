@@ -50,13 +50,9 @@ class PreTrainedClassifier(AbstractClassifier):
         output, aux_logits = inception_output
             
         aux_loss = torch.tensor(0.0, device=self.device)
-
-        # Separate Inception_v3 outputs
-        aux_logits = None
     
-        if aux_logits is not None:
-            aux_loss += self.criterion(aux_logits, target).sum() #! does this need to be criterionSum instead of criterion too?
-        
+        aux_loss += self.criterionSum(aux_logits, target) #! does this need to be criterionSum instead of criterion too?
+    
         loss = self.criterionSum(output, target) + aux_loss
         
         return loss
