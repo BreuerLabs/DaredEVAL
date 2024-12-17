@@ -19,20 +19,25 @@ class AbstractClassifier(nn.Module):
         self.device = config.training.device
         self.config = config
 
-        if self.config.model.criterion == "crossentropy":
+        if config.model.criterion == "crossentropy":
             self.criterion = nn.CrossEntropyLoss()
             self.criterionSum = nn.CrossEntropyLoss(reduction='sum')
 
-        if self.config.model.criterion == "MSE":
+        if config.model.criterion == "MSE":
             self.criterion = nn.MSELoss()
             self.criterionSum = nn.MSELoss(reduction='sum')
 
-        if self.config.defense.name == "drop_layer":
+        ## Defenses
+        if config.defense.name == "drop_layer":
             self.input_defense_layer = self.init_input_defense_layer()
             if self.config.defense.penalty == "skip_lasso":
                 self.skip_defense_layer = self.init_skip_defense_layer()
         else:
             self.input_defense_layer = None
+        
+        if config.defense.name == "struppek":
+            self.criterion.label_smoothing = config.defense.alpha
+            self.criterionSum.label_smoothing = config.defense.alpha        
 
     def init_model(self):
         model = None
@@ -79,7 +84,8 @@ class AbstractClassifier(nn.Module):
             loss.backward()
             self.optimizer.step()
             self.train_step += 1
-            if self.config.defense.apply_threshold:
+            
+            if self.config.defense.name == "drop_layer" and self.config.defense.apply_threshold:
                self.apply_threshold()
 
             track_features = self.config.training.wandb.track_features
@@ -220,11 +226,13 @@ class AbstractClassifier(nn.Module):
         return avg_loss, accuracy
 
     def get_loss(self, output, target): # calculate loss with whatever penalties added 
-        loss = self.criterionSum(output, target)
-        if self.config.defense.penalty == "lasso": # normal lasso on first layer weights
-                lasso_pen = self.config.defense.lasso.lambda_ * self.lasso_penalty()
-                loss = loss + lasso_pen
         
+        loss = self.criterionSum(output, target)
+        
+        if self.config.defense.name == "drop_layer": # normal lasso on first layer weights
+            lasso_pen = self.config.defense.lasso.lambda_ * self.lasso_penalty()
+            loss = loss + lasso_pen
+                
         return loss
 
     def forward(self, x):
