@@ -10,7 +10,7 @@ lr_scheduler: False # "MultiStepLR",
 hyper:
   lr: 0.001
   epochs: 20
-  batch_size: 256
+  batch_size: 128
   patience: 20
   beta2: 0.999
   milestones: False # Ex. [75, 90]
