@@ -187,6 +187,7 @@ class AbstractClassifier(nn.Module):
             if self.config.model.lr_scheduler:
                 lr_scheduler.step()
                 
+                
 
         # save train loss and accuracy
         final_train_loss, final_train_accuracy = self.evaluate(train_loader)
