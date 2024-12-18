@@ -7,8 +7,12 @@ from data_processing.data_augmentation import get_transforms
 def get_data_loaders(config):
     """Dynamically loads datasets based on the configuration."""
     
-    transform = get_transforms(config)
-    train_dataset, val_dataset, test_dataset = get_datasets(config, transform)
+    train_transform = get_transforms(config, train=True)
+    test_trainsform = get_transforms(config, train=False)
+    
+    train_dataset, val_dataset, test_dataset = get_datasets(config = config, 
+                                                            train_transform=train_transform,
+                                                            test_transform=test_trainsform)
 
     num_workers = config.training.dataloader_num_workers
     train_loader = torch.utils.data.DataLoader(train_dataset,
