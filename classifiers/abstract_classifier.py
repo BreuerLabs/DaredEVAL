@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 import wandb
 from tqdm import tqdm
+import omegaconf
 from omegaconf import OmegaConf
 
 from classifiers.defense_utils import ElementwiseLinear
@@ -90,9 +91,10 @@ class AbstractClassifier(nn.Module):
 
             track_features = self.config.training.wandb.track_features
             if track_features:
-                feature_norms = self.get_feature_norms()
-                for idx, feature_norm in zip(track_features, feature_norms):
-                    wandb.log({f"feature_{idx}" : feature_norm.item(), "train_step": self.train_step})
+                if isinstance(track_features, omegaconf.listconfig.ListConfig):
+                    feature_norms = self.get_feature_norms()
+                    for idx, feature_norm in zip(track_features, feature_norms):
+                        wandb.log({f"feature_{idx}" : feature_norm.item(), "train_step": self.train_step})
                 wandb.log({"n_features" : self.n_features_remaining, "train_step" : self.train_step})
 
 
@@ -145,12 +147,16 @@ class AbstractClassifier(nn.Module):
 
             if val_loader and epoch % self.config.training.evaluate_freq == 0:
                 val_loss, val_accuracy = self.evaluate(val_loader)
+
+                _, train_accuracy = self.evaluate(train_loader)
                 
                 if self.config.training.verbose:
+                    print(f'Train Accuracy: {train_accuracy}')
                     print(f'Validation loss: {val_loss}') 
-                    print(f'Accuracy: {val_accuracy}')
+                    print(f'Val Accuracy: {val_accuracy}')
                 
                 if self.config.training.wandb.track:
+                    wandb.log({"train_accuracy": train_accuracy, "train_step": self.train_step, "epoch": epoch+1})
                     wandb.log({"val_loss": val_loss, "train_step": self.train_step, "epoch": epoch+1})
                     wandb.log({"val_accuracy": val_accuracy, "train_step": self.train_step, "epoch": epoch+1})
                 
@@ -165,6 +171,23 @@ class AbstractClassifier(nn.Module):
                         print("Early stopping")
                         break
 
+            if epoch % self.config.training.save_defense_layer_freq == 0:
+                # save defense layer mask plot
+                if self.config.defense.name == "drop_layer" and self.config.defense.plot_mask:
+                    w_first = self.input_defense_layer.weight.data
+                    
+                    n_channels, x_dim, y_dim = self.config.dataset.input_size
+                    if n_channels == 3:
+                        w_norms = torch.linalg.norm(w_first, dim=0)
+                    else: # n_channels == 1
+                        w_norms = w_first.abs() # does the same thing as norm of dim=0 when n_channels is 1, but this is more readable
+                        
+                    w_norms = w_norms.reshape((1, x_dim, y_dim))
+
+                    plt = plot_tensor(w_norms.cpu(), self.save_as)
+                    if self.config.training.wandb.track:
+                        wandb.log({"defense_mask" : plt, "train_step": self.train_step, "epoch": epoch+1})
+
             if self.config.model.lr_scheduler:
                 lr_scheduler.step()
                 
@@ -178,24 +201,7 @@ class AbstractClassifier(nn.Module):
         if self.config.training.wandb.track:
             wandb.log({"final_train_loss": final_train_loss, "train_step": self.train_step, "epoch": epoch+1})
             wandb.log({"final_train_accuracy": final_train_accuracy, "train_step": self.train_step, "epoch": epoch+1})
-
-        # save defense layer mask plot
-        if self.config.defense.name == "drop_layer" and self.config.defense.plot_mask:
-            w_first = self.input_defense_layer.weight.data
-            
-            n_channels, x_dim, y_dim = self.config.dataset.input_size
-            if n_channels == 3:
-                w_norms = torch.linalg.norm(w_first, dim=0)
-            else: # n_channels == 1
-                w_norms = w_first.abs() # does the same thing as norm of dim=0 when n_channels is 1, but this is more readable
-                
-            w_norms = w_norms.reshape((1, x_dim, y_dim))
-
-            plt = plot_tensor(w_norms.cpu(), self.save_as)
-            if self.config.training.wandb.track:
-                wandb.log({"defense_mask" : plt})
-            
-        
+                 
         # Load the best model
         self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
     
@@ -252,9 +258,6 @@ class AbstractClassifier(nn.Module):
         path = f"classifiers/saved_models/{name}"
         torch.save(self.state_dict(), path)
 
-        # if self.config.defense.name == "drop_layer": # save the drop layer as well
-        #     path = f"classifiers/saved_models/drop-layer-{name}"
-        #     torch.save(self.input_defense_layer.state_dict(), path)
         
     def load_model(self, file_path, map_location = None):
         if map_location is None:

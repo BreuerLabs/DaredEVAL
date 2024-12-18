@@ -64,42 +64,10 @@ class PreTrainedClassifier(AbstractClassifier):
 
         else:
             loss = self.criterionSum(output, target)
-        
-        if self.config.defense.name == "drop_layer" and self.config.defense.penalty == "lasso": # normal lasso on first layer weights
-            lasso_pen = self.config.defense.lasso.lambda_ * self.lasso_penalty()
-            loss = loss + lasso_pen
+
+        if self.config.defense.name == "drop_layer":
+            if self.config.defense.penalty == "lasso": # normal lasso on first layer weights
+                lasso_pen = self.config.defense.lasso.lambda_ * self.lasso_penalty()
+                loss = loss + lasso_pen
 
         return loss
-    
-    # def train_one_epoch(self, train_loader):
-    #     config = self.config
-    #     self.train()
-    #     total_loss = 0
-    #     loss_calculated = 0
-        
-    #     for batch_idx, (data, target) in enumerate(train_loader):
-    #         data, target = data.to(self.device), target.to(self.device)
-    #         self.optimizer.zero_grad()
-            
-    #         output = self(data)
-            
-    #         if isinstance(output, inception.InceptionOutputs):
-    #             loss = self.get_inception_loss(output, target)
-
-    #         else:
-    #             loss = self.criterion(output, target)
-                
-    #         total_loss += loss.item() * len(data)
-    #         loss_calculated += len(data)
-
-    #         if config.training.verbose == 2:
-    #             print("loss: ", loss.item())
-
-    #         loss.backward()
-    #         self.optimizer.step()
-
-    #     train_loss = total_loss / loss_calculated
-
-    #     return train_loss
-    
-            
