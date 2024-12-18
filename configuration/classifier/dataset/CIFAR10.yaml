@@ -1,6 +1,7 @@
 dataset: CIFAR10
 face_dataset: False
 input_size: [3, 32, 32]
+resize: False # Will resize all images to the size given in input_size for all images
 n_classes: 10
 
 augment_data: True

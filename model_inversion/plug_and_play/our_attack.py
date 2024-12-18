@@ -21,7 +21,6 @@ from Plug_and_Play_Attacks.datasets.custom_subset import ClassSubset
 from Plug_and_Play_Attacks.metrics.classification_acc import ClassificationAccuracy
 from Plug_and_Play_Attacks.metrics.fid_score import FID_Score
 from Plug_and_Play_Attacks.metrics.prcd import PRCD
-from Plug_and_Play_Attacks.utils.attack_config_parser import AttackConfigParser
 from Plug_and_Play_Attacks.utils.datasets import (create_target_dataset, get_facescrub_idx_to_class,
                             get_stanford_dogs_idx_to_class)
 from Plug_and_Play_Attacks.utils.stylegan import create_image, load_discrimator, load_generator
@@ -310,8 +309,8 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
         our_config_no_aug = our_config
         our_config_no_aug.dataset.augment_data = False
         
-        target_transform  = get_transforms(our_config_no_aug, target_transform_list)
-        training_dataset, _, _ = get_datasets(our_config, target_transform)
+        target_transform  = get_transforms(our_config_no_aug, target_transform_list, train=False) # Train is false to not get the data augmentations
+        training_dataset, _, _ = get_datasets(our_config, train_transform= target_transform, test_transform=None)
         
         # create datasets
         attack_dataset = TensorDataset(final_w, final_targets)
@@ -385,8 +384,13 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
         our_config_no_aug = our_config
         our_config_no_aug.dataset.augment_data = False
         
-        target_transform  = get_transforms(our_config_no_aug, target_transform_list)
-        training_dataset, _, _ = get_datasets(our_config, target_transform)
+        target_transform  = get_transforms(config=our_config_no_aug, 
+                                           extra_augmentations=target_transform_list, 
+                                           train=False)
+        
+        training_dataset, _, _ = get_datasets(config=our_config, 
+                                              train_transform=target_transform,
+                                              test_transform=None)
         ### 
         
         # # Compute average feature distance on Inception-v3
@@ -442,8 +446,13 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
             our_config_no_aug = our_config
             our_config_no_aug.dataset.augment_data = False
             
-            target_transform  = get_transforms(our_config_no_aug, target_transform_list)
-            training_dataset_facenet, _, _ = get_datasets(our_config, target_transform)
+            target_transform  = get_transforms(config=our_config_no_aug, 
+                                               extra_augmentations=target_transform_list, 
+                                               train=False)
+            
+            training_dataset_facenet, _, _ = get_datasets(config=our_config, 
+                                                          train_transform=target_transform, 
+                                                          test_transform=None)
             ### 
                 
             # Compute average feature distance on vggface
