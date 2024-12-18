@@ -1,6 +1,6 @@
 from classifiers.abstract_classifier import AbstractClassifier
 
-def apply_struppek_defense(config, model:AbstractClassifier):
+def apply_label_smoothing_defense(config, model:AbstractClassifier):
     
     class Struppek(model.__class__):
         

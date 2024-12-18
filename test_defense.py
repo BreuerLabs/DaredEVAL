@@ -8,7 +8,7 @@ from omegaconf import OmegaConf
 from data_processing.data_loaders import get_data_loaders
 from classifiers.get_model import get_model
 from utils import wandb_helpers
-from defenses.struppek import apply_struppek_defense
+from defenses.label_smoothing import apply_struppek_defense
 
 @hydra.main(config_path="configuration/classifier", config_name="config.yaml", version_base="1.3")
 def train_classifier(config):

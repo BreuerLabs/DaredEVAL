@@ -44,7 +44,6 @@ class AbstractClassifier(nn.Module):
         model = None
         return model
 
-
     def init_input_defense_layer(self):
 
         if self.config.model.flatten:
@@ -55,13 +54,10 @@ class AbstractClassifier(nn.Module):
         defense_layer = ElementwiseLinear(in_features, w_init=self.config.defense.input_defense_init)
 
         return defense_layer
-    
 
     def init_skip_defense_layer(self):
         pass
         # skip = nn.Linear(in_features, self.config.dataset.n_classes, bias=False)
-    
-
     
     def train_one_epoch(self, train_loader):
         
