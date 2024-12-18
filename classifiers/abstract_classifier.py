@@ -3,11 +3,7 @@ import torch.nn as nn
 import numpy as np
 import wandb
 from tqdm import tqdm
-import omegaconf
-from omegaconf import OmegaConf
 
-from classifiers.defense_utils import ElementwiseLinear
-from utils.plotting import plot_tensor
 
 
 class AbstractClassifier(nn.Module):
@@ -27,14 +23,6 @@ class AbstractClassifier(nn.Module):
         if config.model.criterion == "MSE":
             self.criterion = nn.MSELoss()
             self.criterionSum = nn.MSELoss(reduction='sum')
-
-        ## Defenses
-        if config.defense.name == "drop_layer":
-            self.input_defense_layer = self.init_input_defense_layer()
-            if self.config.defense.penalty == "skip_lasso":
-                self.skip_defense_layer = self.init_skip_defense_layer()
-        else:
-            self.input_defense_layer = None
         
         if config.defense.name == "struppek":
             self.criterion.label_smoothing = config.defense.alpha
@@ -43,25 +31,6 @@ class AbstractClassifier(nn.Module):
     def init_model(self):
         model = None
         return model
-
-
-    def init_input_defense_layer(self):
-
-        if self.config.model.flatten:
-            in_features = (self.config.dataset.input_size[1] * self.config.dataset.input_size[2] * self.config.dataset.input_size[0],)
-        else:
-            in_features = (self.config.dataset.input_size[0], self.config.dataset.input_size[1], self.config.dataset.input_size[2])
-
-        defense_layer = ElementwiseLinear(in_features, w_init=self.config.defense.input_defense_init)
-
-        return defense_layer
-    
-
-    def init_skip_defense_layer(self):
-        pass
-        # skip = nn.Linear(in_features, self.config.dataset.n_classes, bias=False)
-    
-
     
     def train_one_epoch(self, train_loader):
         
@@ -85,24 +54,17 @@ class AbstractClassifier(nn.Module):
             loss.backward()
             self.optimizer.step()
             self.train_step += 1
-            
-            if self.config.defense.name == "drop_layer" and self.config.defense.apply_threshold:
-               self.apply_threshold()
 
-            track_features = self.config.training.wandb.track_features
-            if track_features:
-                if isinstance(track_features, omegaconf.listconfig.ListConfig):
-                    feature_norms = self.get_feature_norms()
-                    for idx, feature_norm in zip(track_features, feature_norms):
-                        wandb.log({f"feature_{idx}" : feature_norm.item(), "train_step": self.train_step})
-                wandb.log({"n_features" : self.n_features_remaining, "train_step" : self.train_step})
-
+            # AbstractClassifiers overwrite this method with anything that needs to be done before the next batch is read
+            self.post_batch()
 
         train_loss = total_loss / loss_calculated
 
         return train_loss
 
-
+    def post_batch(self):
+        pass
+    
     def train_model(self, train_loader, val_loader):
 
         if self.config.training.save_as:
@@ -119,7 +81,7 @@ class AbstractClassifier(nn.Module):
                                               )
 
         if self.config.model.lr_scheduler == "MultiStepLR": 
-            lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer,
+            self.lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer,
                                                              milestones=self.config.model.hyper.milestones,
                                                              gamma=self.config.model.hyper.gamma,
                                                              )
@@ -143,12 +105,13 @@ class AbstractClassifier(nn.Module):
             if self.config.training.wandb.track:
                 wandb.log({"train_loss": train_loss, "train_step": self.train_step, "epoch": epoch+1})
                 if self.config.model.lr_scheduler:
-                    wandb.log({"learning_rate" : lr_scheduler.get_last_lr()[0], "train_step" : self.train_step, "epoch": epoch+1})
+                    wandb.log({"learning_rate" : self.lr_scheduler.get_last_lr()[0], "train_step" : self.train_step, "epoch": epoch+1})
 
             if val_loader and epoch % self.config.training.evaluate_freq == 0:
                 val_loss, val_accuracy = self.evaluate(val_loader)
 
                 _, train_accuracy = self.evaluate(train_loader)
+                del _
                 
                 if self.config.training.verbose:
                     print(f'Train Accuracy: {train_accuracy}')
@@ -171,39 +134,17 @@ class AbstractClassifier(nn.Module):
                         print("Early stopping")
                         break
 
-            if epoch % self.config.training.save_defense_layer_freq == 0:
-                # save defense layer mask plot
-                if self.config.defense.name == "drop_layer" and self.config.defense.plot_mask:
-                    w_first = self.input_defense_layer.weight.data
-                    
-                    n_channels, x_dim, y_dim = self.config.dataset.input_size
-                    if n_channels == 3:
-                        w_norms = torch.linalg.norm(w_first, dim=0)
-                    else: # n_channels == 1
-                        w_norms = w_first.abs() # does the same thing as norm of dim=0 when n_channels is 1, but this is more readable
-                        
-                    w_norms = w_norms.reshape((1, x_dim, y_dim))
-
-                    plt = plot_tensor(w_norms.cpu(), self.save_as)
-                    if self.config.training.wandb.track:
-                        wandb.log({"defense_mask" : plt, "train_step": self.train_step, "epoch": epoch+1})
-
             if self.config.model.lr_scheduler:
-                lr_scheduler.step()
-                
+                self.lr_scheduler.step()
 
-        # save train loss and accuracy
-        final_train_loss, final_train_accuracy = self.evaluate(train_loader)
-        if self.config.training.verbose:
-            print(f'Final train loss: {final_train_loss}') 
-            print(f'Final train accuracy: {final_train_accuracy}')
-        
-        if self.config.training.wandb.track:
-            wandb.log({"final_train_loss": final_train_loss, "train_step": self.train_step, "epoch": epoch+1})
-            wandb.log({"final_train_accuracy": final_train_accuracy, "train_step": self.train_step, "epoch": epoch+1})
+            self.post_epoch(epoch)
                  
         # Load the best model
         self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
+    
+    def post_epoch(self, epoch):
+        pass
+
     
     def evaluate(self, loader):
         self.to(self.device)
@@ -231,23 +172,15 @@ class AbstractClassifier(nn.Module):
         
         return avg_loss, accuracy
 
-    def get_loss(self, output, target): # calculate loss with whatever penalties added 
+    def get_loss(self, output, target): # calculate loss 
         
         loss = self.criterionSum(output, target)
-        
-        if self.config.defense.name == "drop_layer": # normal lasso on first layer weights
-            lasso_pen = self.config.defense.lasso.lambda_ * self.lasso_penalty()
-            loss = loss + lasso_pen
-                
         return loss
 
     def forward(self, x):
         if self.config.model.flatten:
             batch_size = x.shape[0]
             x = torch.reshape(x, (batch_size, -1))
-
-        if self.input_defense_layer is not None:
-            x = self.input_defense_layer(x)
 
         return self.model(x)
 
@@ -266,56 +199,4 @@ class AbstractClassifier(nn.Module):
             
         else:
             state_dict = torch.load(file_path, map_location=map_location, weights_only=True)
-
             self.load_state_dict(state_dict)
-
-    def apply_threshold(self):
-        if self.config.defense.name == "drop_layer":
-            thresh = self.config.defense.lasso.threshold
-            current_w_first = self.input_defense_layer.weight.data # (n_channels, x_dim, y_dim)
-            current_w_norms = torch.linalg.norm(current_w_first, dim=0) # (x_dim, y_dim)
-            below_threshold = current_w_norms <= thresh  # (x_dim, y_dim)
-            new_w_first = current_w_first * ~below_threshold # (n_channels, x_dim, y_dim) x (x_dim, y_dim) = (n_channels, x_dim, y_dim)
-            self.input_defense_layer.weight.data = new_w_first
-            self.n_features_remaining = below_threshold.numel() - below_threshold.sum()
-        else:
-            assert 0 == 1, f"apply_threshold not yet implemented for defense {self.config.defense.name}"
-
-    def lasso_penalty(self): # Lasso penalty on one-dimensional weights
-        
-        w_first = self.input_defense_layer.weight
-        w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels. Performs abs() when n_channels=1, combines RGB values of pixels (group lasso) when n_channels=3
-        
-        if self.config.defense.lasso.smooth:
-            alpha = self.config.defense.lasso.alpha
-            smoothed_norms = (w_norms**2 / (2*alpha)) + (alpha/2) # see eqn. (15) in SGLasso paper
-            final_smoothed_norms = torch.zeros_like(w_norms)
-            final_smoothed_norms[w_norms < alpha] = smoothed_norms[w_norms < alpha]
-            final_smoothed_norms[w_norms >= alpha] = w_norms[w_norms >= alpha] # only use smoothed norms if less than alpha
-            lasso_pen = final_smoothed_norms.sum()
-        else:
-            lasso_pen = w_norms.sum()
-
-        return lasso_pen
-    
-    def get_feature_norms(self):
-        w_first = self.input_defense_layer.weight.data
-        w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels, shape is (x_dim, y_dim)
-        feature_idxs = OmegaConf.to_object(self.config.training.wandb.track_features)
-        
-        if isinstance(feature_idxs[0], list): # like drop_layer, one weight for each feature index, norm is just abs. value
-            w_features = [w_norms[*feature_idx] for feature_idx in feature_idxs]
-            return [torch.abs(w_feature) for w_feature in w_features]
-        
-        elif isinstance(feature_idxs[0], int):
-            if len(w_first.shape) == 1: # just one weight for each feature index, norm is just abs. value
-                w_features = [w_norms[feature_idx] for feature_idx in feature_idxs]
-                return [torch.abs(w_feature) for w_feature in w_features]
-        else:
-            assert 0 == 1, f"feature_idxs[0] is type {type(feature_idxs[0])}, not int or list"
-            
-            # elif len(w_first.shape) == 2: # like SGLNN, take L2 norm of all weights associated with each feature index
-            #     w_features = [w_first[:, feature_idx] for feature_idx in feature_idxs]
-            #     return [torch.linalg.norm(w_feature) for w_feature in w_features]
-
-

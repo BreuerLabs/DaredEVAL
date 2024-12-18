@@ -8,6 +8,7 @@ from omegaconf import OmegaConf
 from data_processing.data_loaders import get_data_loaders
 from classifiers.get_model import get_model
 from utils import wandb_helpers
+from defenses.get_defense import get_defense
 
 @hydra.main(config_path="configuration/classifier", config_name="config.yaml", version_base="1.3")
 def train_classifier(config):
@@ -29,6 +30,9 @@ def train_classifier(config):
     
     # Load the model
     model = get_model(config)
+    
+    # Load defense
+    model = get_defense(config=config, model=model)
     
     # Load trained model weights if given
     if config.training.wandb.run_id:
@@ -53,10 +57,7 @@ def train_classifier(config):
 
     # Save weights in wandb
     if config.training.wandb.track:
-        # wandb.log_model(path=f"classifiers/saved_models/{model.save_as}")
         wandb.save(f"classifiers/saved_models/{model.save_as}")
-        # if config.defense.name == "drop_layer":
-        #     wandb.save(f"classifiers/saved_models/drop-layer-{model.save_as}")
     
     
 if __name__ == "__main__":
