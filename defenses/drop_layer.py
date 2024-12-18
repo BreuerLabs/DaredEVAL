@@ -45,10 +45,10 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                 wandb.log({"n_features" : self.n_features_remaining, "train_step" : self.train_step})
 
         def post_epoch(self, epoch):
-            super(DropLayerClassifier, self).post_epoch()
+            super(DropLayerClassifier, self).post_epoch(epoch)
             if epoch % self.config.training.save_defense_layer_freq == 0:
                 # save defense layer mask plot
-                if self.config.defense.name == "drop_layer" and self.config.defense.plot_mask:
+                if self.config.defense.plot_mask:
                     w_first = self.input_defense_layer.weight.data
                     
                     n_channels, x_dim, y_dim = self.config.dataset.input_size
@@ -57,17 +57,16 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                     else: # n_channels == 1
                         w_norms = w_first.abs() # does the same thing as norm of dim=0 when n_channels is 1, but this is more readable
                         
-                    w_norms = w_norms.reshape((1, x_dim, y_dim))
+                    w_norms = w_norms.reshape((1, x_dim, y_dim)) # (x_dim, y_dim) -> (1, x_dim, y_dim)
 
                     plt = plot_tensor(w_norms.cpu(), self.save_as)
                     if self.config.training.wandb.track:
                         wandb.log({"defense_mask" : plt, "train_step": self.train_step, "epoch": epoch+1})
 
-
-
         def forward(self, x):
             x = self.input_defense_layer(x) # pass through the drop layer first
             x = super(DropLayerClassifier, self).forward(x)
+            return x
 
         def get_loss(self, output, target):
             loss = super(DropLayerClassifier, self).get_loss(output, target)

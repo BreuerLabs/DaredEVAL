@@ -32,7 +32,7 @@ def train_classifier(config):
     model = get_model(config)
     
     # Load defense
-    model = get_defense(model, config)
+    model = get_defense(config=config, model=model)
     
     # Load trained model weights if given
     if config.training.wandb.run_id:
@@ -57,10 +57,7 @@ def train_classifier(config):
 
     # Save weights in wandb
     if config.training.wandb.track:
-        # wandb.log_model(path=f"classifiers/saved_models/{model.save_as}")
         wandb.save(f"classifiers/saved_models/{model.save_as}")
-        # if config.defense.name == "drop_layer":
-        #     wandb.save(f"classifiers/saved_models/drop-layer-{model.save_as}")
     
     
 if __name__ == "__main__":
