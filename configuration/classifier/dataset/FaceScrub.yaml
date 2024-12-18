@@ -1,10 +1,9 @@
-dataset: CelebA
+dataset: FaceScrub
 face_dataset: True
-target_type: identity 
+group: "all" # Options: "actors", "actress", and "all".
 input_size: [3, 224, 224]
-resize: False # Will resize all images to the size given in input_size for all images
-n_classes: 1000 # N most common classes to be chosen among the target type
-
+resize: True # Will resize all images to the size given in input_size for all images
+n_classes: 530 
 
 augment_data: True
 transformations:
