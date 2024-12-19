@@ -34,7 +34,7 @@ def train_classifier(config):
     # Load defense
     model = get_defense(config=config, model=model)
     
-    model.debug_forward(train_loader)
+    # model.debug_forward(train_loader) #! This doesn't work for all AbstractClassifiers
     
     # Load trained model weights if given
     if config.training.wandb.run_id:

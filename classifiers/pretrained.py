@@ -21,6 +21,13 @@ class PreTrainedClassifier(AbstractClassifier):
         if arch.lower() == 'resnet152':
             weights = resnet.ResNet152_Weights.DEFAULT if pretrained else None
             model = resnet.resnet152(weights=weights)
+
+            self.zdim = 2048
+            # pretrained_imagenet_model = torchvision.models.resnet50(pretrained=True)
+            self.feature_extractor = nn.Sequential(*list(model.children())[:-1])
+            self.fc = nn.Linear(self.zdim, self.config.dataset.n_classes)
+            pass
+
         elif arch.lower() == 'resnet18':
             weights = resnet.ResNet18_Weights.DEFAULT if pretrained else None
             model = resnet.resnet18(weights=weights)       
@@ -38,12 +45,21 @@ class PreTrainedClassifier(AbstractClassifier):
                 f'No model with the name {arch} available'
             )
 
-        #! Is this used? It is not defined to do so in the abstract classifier
+        # model.fc is already present and default is n_classes=1000. This will rewrite that if it changes
         if self.config.dataset.n_classes != model.fc.out_features:
             # exchange last layer to match desired numbers of classes
             model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
 
         return model
+    
+    def embed_img(self, x):
+        x = self.feature_extractor(x) #! removed the repeat(1,3,1,1) thing
+        x = x.reshape(x.size(0), x.size(1)) #! this line does seem to be necessary
+        return x
+    
+    def z_to_logits(self, z):
+        logits = self.fc(z)
+        return logits
     
     # Only used when training inception models
     def get_inception_loss(self, inception_output, target):

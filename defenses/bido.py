@@ -16,7 +16,7 @@ def apply_bido_defense(config, model:AbstractClassifier):
             #! TODO: make sure model is initialized correctly
             #! TODO: does this need a super call? How would that work?
             #! TODO: keep track of self.train_step somehow
-            train_loss, train_acc = engine.train_HSIC(self.model,
+            train_loss, train_acc = engine.train_HSIC(self,
                                                       self.criterion.cuda(),
                                                       self.optimizer,
                                                       train_loader,
@@ -31,7 +31,7 @@ def apply_bido_defense(config, model:AbstractClassifier):
         
         def evaluate(self, loader):
             self.to(self.device) #! not sure if this line is necessary
-            loss, accuracy = engine.test_HSIC(self.model,
+            loss, accuracy = engine.test_HSIC(self,
                                               self.criterion.cuda(),
                                               loader,
                                               self.config.defense.a1,
@@ -42,6 +42,13 @@ def apply_bido_defense(config, model:AbstractClassifier):
                                               )
             
             return loss, accuracy
+
+        def forward(self, x): # adapted from DefendMI/BiDO/model.py
+            # embed_img() and z_to_logits() must be defined in the non-defended classifier in order to apply BiDO
+            z = self.embed_img(x)
+            logits = self.z_to_logits(z)
+
+            return z, logits
         
     bido_defended_model = BiDOClassifier(config)
 
