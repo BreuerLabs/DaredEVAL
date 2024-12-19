@@ -16,23 +16,23 @@ class PreTrainedClassifier(AbstractClassifier):
         super(PreTrainedClassifier, self).init_model()
         self.n_channels = self.config.dataset.input_size[0]
 
-        arch = self.config.model.architecture
+        arch = self.config.model.architecture.lower()
         pretrained = self.config.model.pretrained
-        if arch.lower() == 'resnet152':
-            weights = resnet.ResNet152_Weights.DEFAULT if pretrained else None
-            model = resnet.resnet152(weights=weights)
+        if 'resnet' in arch:
+            if arch == 'resnet152':
+                weights = resnet.ResNet152_Weights.DEFAULT if pretrained else None
+                model = resnet.resnet152(weights=weights)
+                self.zdim = 2048 # output dimension of self.feature_extractor below
+            elif arch == 'resnet18':
+                weights = resnet.ResNet18_Weights.DEFAULT if pretrained else None
+                model = resnet.resnet18(weights=weights)
+                self.zdim = 512
 
-            self.zdim = 2048
             # pretrained_imagenet_model = torchvision.models.resnet50(pretrained=True)
             self.feature_extractor = nn.Sequential(*list(model.children())[:-1])
-            self.fc = nn.Linear(self.zdim, self.config.dataset.n_classes)
-            pass
-
-        elif arch.lower() == 'resnet18':
-            weights = resnet.ResNet18_Weights.DEFAULT if pretrained else None
-            model = resnet.resnet18(weights=weights)       
+            self.fc = nn.Linear(self.zdim, self.config.dataset.n_classes)      
         
-        elif 'inception' in arch.lower():
+        elif 'inception' in arch:
             weights = inception.Inception_V3_Weights.DEFAULT if pretrained else None
             model = inception.inception_v3(weights=weights,
                                            aux_logits=True,
@@ -52,7 +52,7 @@ class PreTrainedClassifier(AbstractClassifier):
 
         return model
     
-    def embed_img(self, x):
+    def embed_img(self, x): # only for models defended with bido
         x = self.feature_extractor(x) #! removed the repeat(1,3,1,1) thing
         x = x.reshape(x.size(0), x.size(1)) #! this line does seem to be necessary
         return x
