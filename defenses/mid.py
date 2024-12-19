@@ -21,6 +21,9 @@ def apply_MID_defense(config, model:AbstractClassifier):
             self.st_layer = nn.Linear(self.feat_dim, self.k * 2) 
             self.fc_layer = nn.Linear(self.k, self.n_classes)
             
+            # self.criterion = CrossEntropyLoss #! TODO: Figure out if nescessary to use their implementation
+            # self.criterionSum = CrossEntropyLoss 
+            
         def debug_forward(self, dataloader):
             dataset = dataloader.dataset
             x, y = dataset[0]
