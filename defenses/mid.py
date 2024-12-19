@@ -21,6 +21,18 @@ def apply_MID_defense(config, model:AbstractClassifier):
             self.st_layer = nn.Linear(self.feat_dim, self.k * 2) 
             self.fc_layer = nn.Linear(self.k, self.n_classes)
             
+        def debug_forward(self, dataloader):
+            dataset = dataloader.dataset
+            x, y = dataset[0]
+            x, y = x.to(self.device), y.to(self.device)
+            
+            feature, mu, std, out = self(x)
+            
+            return feature, mu, std, out
+            
+            
+            
+            
         def train_one_epoch(self, train_loader):
             self.train()
             total_loss = 0
