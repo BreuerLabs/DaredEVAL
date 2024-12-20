@@ -29,7 +29,7 @@ class PreTrainedClassifier(AbstractClassifier):
                 self.zdim = 512
 
             # pretrained_imagenet_model = torchvision.models.resnet50(pretrained=True)
-            self.feature_extractor = nn.Sequential(*list(model.children())[:-1])
+            self.feature_extractor = nn.Sequential(*list(model.children())[:-1]) #! make sure this loads pretrained weights
             self.fc = nn.Linear(self.zdim, self.config.dataset.n_classes)      
         
         elif 'inception' in arch:
@@ -53,9 +53,9 @@ class PreTrainedClassifier(AbstractClassifier):
         return model
     
     def embed_img(self, x): # only for models defended with bido
-        x = self.feature_extractor(x) #! removed the repeat(1,3,1,1) thing
-        x = x.reshape(x.size(0), x.size(1)) #! this line does seem to be necessary
-        return x
+        z = self.feature_extractor(x) #! removed the repeat(1,3,1,1) thing
+        z = z.reshape(z.size(0), z.size(1)) #! this line does seem to be necessary
+        return z
     
     def z_to_logits(self, z):
         logits = self.fc(z)
