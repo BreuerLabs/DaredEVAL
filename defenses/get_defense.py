@@ -1,6 +1,7 @@
 from defenses.label_smoothing import apply_label_smoothing_defense
 from defenses.drop_layer import apply_drop_layer_defense
 from defenses.bido import apply_bido_defense
+from defenses.tldmi import apply_TLDMI_defense
 
 def get_defense(config, model):
     
@@ -14,6 +15,9 @@ def get_defense(config, model):
 
     elif defense_name == "bido":
         model = apply_bido_defense(config, model)
+
+    elif defense_name == "tldmi":
+        model = apply_TLDMI_defense(config, model)
 
     elif defense_name == "no_defense":
         pass # model stays as is

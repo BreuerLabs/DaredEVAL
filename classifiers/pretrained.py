@@ -45,11 +45,6 @@ class PreTrainedClassifier(AbstractClassifier):
                 f'No model with the name {arch} available'
             )
 
-        # model.fc is already present and default is n_classes=1000. This will rewrite that if it changes
-        if self.config.dataset.n_classes != model.fc.out_features:
-            # exchange last layer to match desired numbers of classes
-            model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
-
         return model
     
     def embed_img(self, x): # only for models defended with bido
