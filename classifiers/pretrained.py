@@ -29,7 +29,7 @@ class PreTrainedClassifier(AbstractClassifier):
                 self.zdim = 512
 
             # pretrained_imagenet_model = torchvision.models.resnet50(pretrained=True)
-            self.feature_extractor = nn.Sequential(*list(model.children())[:-1]) #! make sure this loads pretrained weights
+            self.feature_extractor = nn.Sequential(*list(model.children())[:-1])
             self.fc = nn.Linear(self.zdim, self.config.dataset.n_classes)      
         
         elif 'inception' in arch:

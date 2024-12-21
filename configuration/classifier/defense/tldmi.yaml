@@ -1,2 +1,2 @@
 name: "tldmi"
-freeze_layers: 0
+freeze_layers: 6 # makes theta_C = 8.9M for ResNet-18, used in TL-DMI paper
