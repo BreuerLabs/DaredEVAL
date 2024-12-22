@@ -1,9 +1,9 @@
 from classifiers.cnn import CNN
 from classifiers.mlp import MLP
-from classifiers.lassonet_mlp import LassoNetMLP
-from classifiers.sglnn import SGLNN
+from classifiers.classifier_archive.lassonet_mlp import LassoNetMLP
+from classifiers.classifier_archive.sglnn import SGLNN
 # from classifiers.bitnet import BitNet
-from classifiers.bido import BiDO
+from classifiers.classifier_archive.bido import BiDO
 from classifiers.pretrained import PreTrainedClassifier
 # from classifiers.drop_layer import DropLayer
 
