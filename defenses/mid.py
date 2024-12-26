@@ -2,7 +2,6 @@ import torchvision
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-from torch.nn.modules.loss import _Loss
 
 from classifiers.abstract_classifier import AbstractClassifier
 
@@ -11,101 +10,95 @@ def apply_MID_defense(config, model:AbstractClassifier):
     class MID(model.__class__):
             
         def __init__(self, config):
-            super(MID, self).__init__(config)
-            self.config = config
-            self.feature = model.features
-            self.feat_dim = 512 * 2 * 2 #! TODO: Read from model
+            super(MID, self).__init__(config)            
+            list_of_layers = list(model.model.children())
+            last_layer = list_of_layers[-1]
+            # self.feat_dim = 512 * 2 * 2
+            self.feat_dim = last_layer.in_features
             self.k = self.feat_dim // 2
             self.n_classes = config.dataset.n_classes
             
-            self.st_layer = nn.Linear(self.feat_dim, self.k * 2) 
+            self.model.model.fc = nn.Identity() # removes final classification layer
+            
+            self.st_layer = nn.Linear(self.feat_dim, self.k * 2)
             self.fc_layer = nn.Linear(self.k, self.n_classes)
             
-            # self.criterion = CrossEntropyLoss #! TODO: Figure out if nescessary to use their implementation
-            # self.criterionSum = CrossEntropyLoss 
-            
-        def debug_forward(self, dataloader):
-            dataset = dataloader.dataset
-            x, y = dataset[0]
-            x, y = x.to(self.device), y.to(self.device)
-            
-            feature, mu, std, out = self(x)
-            
-            return feature, mu, std, out
-            
-            
-            
-            
-        def train_one_epoch(self, train_loader):
-            self.train()
-            total_loss = 0
-            loss_calculated = 0
-            for batch_idx, (data, target) in enumerate(train_loader):
-                data, target = data.to(self.device), target.to(self.device)
-                bs = data.size(0)
-                target = target.view(-1)
-                
-                ___, mu, std, out_prob = model(data)
-                cross_loss = self.criterion(out_prob, target)
-                # loss = -0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-                info_loss = - 0.5 * (1 + 2 * std.log() - mu.pow(2) - std.pow(2)).sum(dim=1).mean()
-                loss = cross_loss + self.config.defense.beta * info_loss
-
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-
-                out_target = torch.argmax(out_prob, dim=1).view(-1)
-                ACC += torch.sum(target == out_target).item()
-                total_loss += loss.item() * bs
-                cnt += bs                            #? What is this??
-            
-            train_loss = total_loss / loss_calculated
-
-            return train_loss
-                
         def forward(self, x, mode="train"):
-            feature = self.feature(x)
+            feature = self.model(x)
+
             feature = feature.view(feature.size(0), -1)
             
             statis = self.st_layer(feature)
+            
             mu, std = statis[:, :self.k], statis[:, self.k:]
             
-            std = F.softplus(std-5, beta=1)
-            eps = torch.FloatTensor(std.size()).normal_().cuda()
+            std = F.softplus(std-5, beta=1) #! Parameters?
+            eps = torch.FloatTensor(std.size()).normal_().to(self.device)
             res = mu + std * eps
             out = self.fc_layer(res)
+            
+            __, iden = torch.max(out, dim=1)
+            iden = iden.view(-1, 1)
         
             return [feature, mu, std, out]
         
         def predict(self, x):
-            feature = self.feature(x)
-            feature = feature.view(feature.size(0), -1)
-            statis = self.st_layer(feature)
-            mu, std = statis[:, :self.k], statis[:, self.k:]
+            feature, mu, std, out = self(x)
             
-            std = F.softplus(std-5, beta=1)
-            eps = torch.FloatTensor(std.size()).normal_().cuda()
-            res = mu + std * eps
-            out = self.fc_layer(res)
+            out = torch.argmax(out, dim=1)
         
             return out
+
+        def debug_forward(self, dataloader):
+            self.to(self.device)
+            dataset = dataloader.dataset
+            x, y = dataset[0]
+            x = x.to(self.device)
+            
+            x = x.unsqueeze(0)
+            
+            feature, mu, std, out = self(x)
+            
+            return [feature, mu, std, out]
         
-    class CrossEntropyLoss(_Loss):
-        def forward(self, out, gt, mode="reg"):
-            bs = out.size(0)
-            loss = - torch.mul(gt.float(), torch.log(out.float() + 1e-7))
-            if mode == "dp":
-                loss = torch.sum(loss, dim=1).view(-1)
-            else:
-                loss = torch.sum(loss) / bs
+        
+        def get_loss(self, output, target):
+            ___, mu, std, out_prob = output
+            cross_loss = self.criterionSum(out_prob, target)
+            info_loss = - 0.5 * (1 + 2 * std.log() - mu.pow(2) - std.pow(2)).sum(dim=1).sum()
+            loss = cross_loss + self.config.defense.beta * info_loss
+        
             return loss
+        
+        def evaluate(self, loader):
+            self.to(self.device)
+            self.eval()
+            
+            correct = 0
+            total_loss = 0
+            total_instances = 0
+            
+            with torch.no_grad():
+                for batch_idx, (data, target) in enumerate(loader):
+                    data, target = data.to(self.device), target.to(self.device)
+                    output = self(data)
 
-    class BinaryLoss(_Loss):
-        def forward(self, out, gt):
-            bs = out.size(0)
-            loss = - (gt * torch.log(out.float()+1e-7) + (1-gt) * torch.log(1-out.float()+1e-7))
-            loss = torch.mean(loss)
-            return loss
+                    loss = self.get_loss(output, target)
 
-    return MID
+                    total_loss += loss.item()
+                    
+                    total_instances += len(data)
+                    
+                    _, _, _, out = output #! This is the change
+                    
+                    pred = torch.argmax(out, dim=1)
+                    correct += (pred == target).sum().item()
+            
+            avg_loss = total_loss / total_instances
+            accuracy = correct / total_instances
+            
+            return avg_loss, accuracy
+            
+    protected_model = MID(config)
+    
+    return protected_model
