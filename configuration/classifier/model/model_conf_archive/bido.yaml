@@ -33,4 +33,4 @@ hyper:
   gamma: 0.1
   beta2: 0.999
   milestones: False # Ex. [75, 90]
-  gamma: False # Ex. 0.1, factor by which lr changes at each milestone for MultiStepLR
+  # gamma: False # Ex. 0.1, factor by which lr changes at each milestone for MultiStepLR
