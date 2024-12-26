@@ -2,23 +2,15 @@ import torchvision
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-from torch.nn.modules.loss import _Loss
 
 from classifiers.abstract_classifier import AbstractClassifier
 
 def apply_MID_defense(config, model:AbstractClassifier):
     
-    
     class MID(model.__class__):
             
         def __init__(self, config):
-            super(MID, self).__init__(config)
-            
-            
-            self.config = config
-            # self.original_model = model
-            
-            
+            super(MID, self).__init__(config)            
             list_of_layers = list(model.model.children())
             last_layer = list_of_layers[-1]
             # self.feat_dim = 512 * 2 * 2
@@ -26,29 +18,10 @@ def apply_MID_defense(config, model:AbstractClassifier):
             self.k = self.feat_dim // 2
             self.n_classes = config.dataset.n_classes
             
-            self.model = model
-            
             self.model.model.fc = nn.Identity() # removes final classification layer
-            
             
             self.st_layer = nn.Linear(self.feat_dim, self.k * 2)
             self.fc_layer = nn.Linear(self.k, self.n_classes)
-                
-            # self.output_layer = nn.Sequential(nn.BatchNorm2d(self.feat_dim),
-            #                                 nn.Dropout(),
-            #                                 nn.Flatten(),
-            #                                 nn.Linear(self.feat_dim * 4 * 4, self.feat_dim),
-            #                                 nn.BatchNorm1d(self.feat_dim))  
-
-            # self.st_layer = nn.Linear(self.feat_dim, self.k * 2)
-            
-            # self.fc_layer = nn.Sequential(
-                                        # nn.Linear(self.k, self.n_classes)
-                                            # )
-                                    #,nn.Softmax(dim = 1)) #! Probably not needed when using our structure.
-                    
-            # self.criterion = CrossEntropyLoss #! TODO: Figure out if nescessary to use their implementation
-            # self.criterionSum = CrossEntropyLoss 
             
         def forward(self, x, mode="train"):
             feature = self.model(x)
@@ -113,9 +86,10 @@ def apply_MID_defense(config, model:AbstractClassifier):
                     loss = self.get_loss(output, target)
 
                     total_loss += loss.item()
+                    
                     total_instances += len(data)
                     
-                    _, _, _, out = output
+                    _, _, _, out = output #! This is the change
                     
                     pred = torch.argmax(out, dim=1)
                     correct += (pred == target).sum().item()
@@ -128,21 +102,3 @@ def apply_MID_defense(config, model:AbstractClassifier):
     protected_model = MID(config)
     
     return protected_model
-
-
-class CrossEntropyLoss(_Loss):
-        def forward(self, out, gt, mode="reg"):
-            bs = out.size(0)
-            loss = - torch.mul(gt.float(), torch.log(out.float() + 1e-7))
-            if mode == "dp":
-                loss = torch.sum(loss, dim=1).view(-1)
-            else:
-                loss = torch.sum(loss) / bs
-            return loss
-
-class BinaryLoss(_Loss):
-    def forward(self, out, gt):
-        bs = out.size(0)
-        loss = - (gt * torch.log(out.float()+1e-7) + (1-gt) * torch.log(1-out.float()+1e-7))
-        loss = torch.mean(loss)
-        return loss
