@@ -23,10 +23,7 @@ class AbstractClassifier(nn.Module):
         if config.model.criterion == "MSE":
             self.criterion = nn.MSELoss()
             self.criterionSum = nn.MSELoss(reduction='sum')
-        
-        if config.defense.name == "struppek":
-            self.criterion.label_smoothing = config.defense.alpha
-            self.criterionSum.label_smoothing = config.defense.alpha        
+           
 
     def init_model(self):
         model = None
@@ -178,9 +175,9 @@ class AbstractClassifier(nn.Module):
         return loss
 
     def forward(self, x):
-        if self.config.model.flatten:
-            batch_size = x.shape[0]
-            x = torch.reshape(x, (batch_size, -1))
+        # if self.config.model.flatten:
+            # batch_size = x.shape[0]
+            # x = torch.reshape(x, (batch_size, -1))
 
         return self.model(x)
 
