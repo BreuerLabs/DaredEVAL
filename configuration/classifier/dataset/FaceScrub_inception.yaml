@@ -1,0 +1,21 @@
+dataset: FaceScrub
+face_dataset: True
+group: "all" # Options: "actors", "actress", and "all".
+input_size: [3, 299, 299]
+resize: True # Will resize all images to the size given in input_size for all images
+n_classes: 530
+
+augment_data: True
+transformations:
+  RandomResizedCrop:
+    size: [299, 299]
+    scale: [0.85, 1]
+    ratio: [1, 1]
+    antialias: true
+  ColorJitter:
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0.1
+    hue: 0.1
+  RandomHorizontalFlip:
+    p: 0.5
