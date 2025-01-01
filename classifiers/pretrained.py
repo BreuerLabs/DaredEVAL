@@ -28,17 +28,19 @@ class PreTrainedClassifier(AbstractClassifier):
                 model = resnet.resnet18(weights=weights)
                 self.zdim = 512
 
-            # pretrained_imagenet_model = torchvision.models.resnet50(pretrained=True)
+            if self.config.dataset.n_classes != model.fc.out_features:
+                # exchange the last layer to match the desired numbers of classes
+                model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
+
+            # for use with bido defense, which needs access before the final fc layer
             self.feature_extractor = nn.Sequential(*list(model.children())[:-1])
-            self.fc = nn.Linear(self.zdim, self.config.dataset.n_classes)      
+            self.fc = nn.Linear(self.zdim, self.config.dataset.n_classes) #! we have two .fc's right now, we should fix this eventually but I think it works atm
         
         elif 'inception' in arch:
             weights = inception.Inception_V3_Weights.DEFAULT if pretrained else None
             model = inception.inception_v3(weights=weights,
                                            aux_logits=True,
-                                           init_weights=False)
-            
-            return model    
+                                           init_weights=False)   
             
         else:
             raise RuntimeError(
