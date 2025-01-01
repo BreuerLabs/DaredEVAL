@@ -81,6 +81,8 @@ def get_datasets(config, train_transform, test_transform):
     train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size], generator=generator1)
     
     train_dataset = AttackDataset(train_dataset)
+
+    val_dataset.transform = test_transform #! don't do train transforms on val dataset
     val_dataset = AttackDataset(val_dataset)
     
     #! Maybe also do: test_dataset = AttackDataset(test_dataset)

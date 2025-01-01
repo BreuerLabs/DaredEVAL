@@ -29,7 +29,7 @@ from Plug_and_Play_Attacks.utils.wandb import *
 from data_processing.datasets import get_datasets
 from data_processing.data_augmentation import get_transforms
 
-def attack(config, target_dataset, target_model, evaluation_model, our_config, wandb_run = None):
+def attack(config, target_dataset, target_model, evaluation_model, target_config, wandb_run = None):
     ####################################
     #        Attack Preparation        #
     ####################################
@@ -306,11 +306,11 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
         target_transform_list = [T.Resize((299, 299), antialias=True)] #! TODO: Use parameters
         
         # This is to only use the transformation shown above
-        our_config_no_aug = our_config
-        our_config_no_aug.dataset.augment_data = False
+        target_config_no_aug = target_config
+        target_config_no_aug.dataset.augment_data = False
         
-        target_transform  = get_transforms(our_config_no_aug, target_transform_list, train=False) # Train is false to not get the data augmentations
-        training_dataset, _, _ = get_datasets(our_config, train_transform= target_transform, test_transform=None)
+        target_transform  = get_transforms(target_config_no_aug, target_transform_list, train=False) # Train is false to not get the data augmentations
+        training_dataset, _, _ = get_datasets(target_config, train_transform= target_transform, test_transform=None)
         
         # create datasets
         attack_dataset = TensorDataset(final_w, final_targets)
@@ -381,14 +381,14 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
         target_transform_list = [T.Resize((299, 299), antialias=True)] #! TODO: Use parameters TODO: Maybe add cropping
         
         # This is to only use the transformation shown above
-        our_config_no_aug = our_config
-        our_config_no_aug.dataset.augment_data = False
+        target_config_no_aug = target_config
+        target_config_no_aug.dataset.augment_data = False
         
-        target_transform  = get_transforms(config=our_config_no_aug, 
+        target_transform  = get_transforms(config=target_config_no_aug, 
                                            extra_augmentations=target_transform_list, 
                                            train=False)
         
-        training_dataset, _, _ = get_datasets(config=our_config, 
+        training_dataset, _, _ = get_datasets(config=target_config, 
                                               train_transform=target_transform,
                                               test_transform=None)
         ### 
@@ -425,7 +425,7 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
               avg_dist_inception.cpu().item())
         
         # Compute feature distance only for facial images #! TODO: Still not modified
-        if our_config.dataset.face_dataset:
+        if target_config.dataset.face_dataset:
             # Load FaceNet model for face recognition
             facenet = InceptionResnetV1(pretrained='vggface2')
             facenet = torch.nn.DataParallel(facenet, device_ids=gpu_devices)
@@ -443,14 +443,14 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
             target_transform_list = [T.Resize((face_net_img_size, face_net_img_size), antialias=True)] #! TODO: Maybe add cropping
             
             # This is to only use the transformation shown above
-            our_config_no_aug = our_config
-            our_config_no_aug.dataset.augment_data = False
+            target_config_no_aug = target_config
+            target_config_no_aug.dataset.augment_data = False
             
-            target_transform  = get_transforms(config=our_config_no_aug, 
+            target_transform  = get_transforms(config=target_config_no_aug, 
                                                extra_augmentations=target_transform_list, 
                                                train=False)
             
-            training_dataset_facenet, _, _ = get_datasets(config=our_config, 
+            training_dataset_facenet, _, _ = get_datasets(config=target_config, 
                                                           train_transform=target_transform, 
                                                           test_transform=None)
             ### 
@@ -535,7 +535,7 @@ def attack(config, target_dataset, target_model, evaluation_model, our_config, w
         facenet = torch.nn.DataParallel(facenet, device_ids=gpu_devices)
         facenet.to(device)
         facenet.eval()
-        if our_config.dataset.face_dataset:
+        if target_config.dataset.face_dataset:
             log_nearest_neighbors(log_imgs,
                                   log_targets,
                                   facenet,

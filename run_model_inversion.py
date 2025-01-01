@@ -6,6 +6,7 @@ import torch
 import sys
 
 from classifiers.get_model import get_model
+from defenses.get_defense import get_defense
 from data_processing.data_loaders import get_data_loaders
 from data_processing.datasets import get_datasets
 from data_processing.data_augmentation import get_transforms
@@ -47,7 +48,12 @@ def run_model_inversion(attack_config):
     
     target_model = get_model(target_config)
 
+    # Load defense
+    target_model = get_defense(config=target_config, model=target_model)
+
     target_model.load_model(target_weights_path)
+
+
     
     test_loss, test_accuracy = target_model.evaluate(test_loader)
     print("test_loss", test_loss)
@@ -79,7 +85,7 @@ def run_model_inversion(attack_config):
             target_dataset = train_dataset,
             target_model = target_model,
             evaluation_model = evaluation_model,
-            our_config = attack_config,
+            target_config = target_config,
             wandb_run = wandb_run,
             )
    

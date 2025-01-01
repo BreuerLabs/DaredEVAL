@@ -19,9 +19,9 @@ def convert_configs(target_config, attack_config):
     
     new_dict.update(OmegaConf.to_container(attack_config.model, resolve = True))
     
-    new_dict["dataset"] = attack_config.dataset.dataset
+    new_dict["dataset"] = target_config.dataset.dataset
     new_dict["seed"] = attack_config.training.seed
-    new_dict['evaluation_model']['num_classes'] = attack_config.dataset.n_classes
+    new_dict['evaluation_model']['num_classes'] = target_config.dataset.n_classes
     new_dict['candidates']['candidate_search']['resize'] = target_config.dataset.input_size[1]
     
     # Convert wandb configuration
