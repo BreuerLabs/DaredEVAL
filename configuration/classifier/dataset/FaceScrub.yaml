@@ -4,6 +4,7 @@ group: "all" # Options: "actors", "actress", and "all".
 input_size: [3, 224, 224]
 resize: True # Will resize all images to the size given in input_size for all images
 n_classes: 530 
+val_drop_last: False # Whether drop_last=True or False on the validation and test dataloaders
 
 augment_data: True
 transformations:

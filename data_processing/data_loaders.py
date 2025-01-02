@@ -15,6 +15,14 @@ def get_data_loaders(config):
                                                             test_transform=test_trainsform)
 
     num_workers = config.training.dataloader_num_workers
+
+    try:
+        val_drop_last = config.dataset.val_drop_last
+
+    except Exception as e:
+        print("Warning: val_drop_last not in struct, automatically setting to False")
+        val_drop_last = False
+
     train_loader = torch.utils.data.DataLoader(train_dataset,
                                             batch_size=config.model.hyper.batch_size,
                                             shuffle=True,
@@ -27,13 +35,13 @@ def get_data_loaders(config):
                                             shuffle=False,
                                             num_workers=num_workers,
                                             pin_memory=True,
-                                            drop_last=False,)
+                                            drop_last=val_drop_last,)
     test_loader = torch.utils.data.DataLoader(test_dataset,
                                             batch_size=config.model.hyper.batch_size,
                                             shuffle=False,
                                             num_workers=num_workers,
                                             pin_memory=True,
-                                            drop_last=False,)
+                                            drop_last=val_drop_last,)
     
     print(f"Data loaders for {config.dataset.dataset} loaded successfully")
     
