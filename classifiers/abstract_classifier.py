@@ -175,10 +175,6 @@ class AbstractClassifier(nn.Module):
         return loss
 
     def forward(self, x):
-        # if self.config.model.flatten:
-            # batch_size = x.shape[0]
-            # x = torch.reshape(x, (batch_size, -1))
-
         return self.model(x)
 
     def predict(self, X):

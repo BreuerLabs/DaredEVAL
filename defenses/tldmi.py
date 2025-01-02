@@ -20,12 +20,12 @@ def apply_TLDMI_defense(config, model:AbstractClassifier):
                         # num_trainable = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
 
-        def forward(self, x): # adapted from DefendMI/BiDO/model.py
-            # embed_img() and z_to_logits() must be defined in the non-defended classifier in order to apply BiDO
-            z = self.embed_img(x)
-            logits = self.z_to_logits(z)
+        # def forward(self, x): # adapted from DefendMI/BiDO/model.py
+        #     # embed_img() and z_to_logits() must be defined in the non-defended classifier in order to apply TLDMI
+        #     z = self.embed_img(x)
+        #     logits = self.z_to_logits(z)
 
-            return logits
+        #     return logits
 
     tldmi_defended_model = TLDMI(config)
 
