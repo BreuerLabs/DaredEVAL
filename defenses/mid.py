@@ -11,14 +11,14 @@ def apply_MID_defense(config, model:AbstractClassifier):
             
         def __init__(self, config):
             super(MID, self).__init__(config)            
-            list_of_layers = list(model.model.children())
+            list_of_layers = list(self.model.children())
             last_layer = list_of_layers[-1]
             # self.feat_dim = 512 * 2 * 2
             self.feat_dim = last_layer.in_features
             self.k = self.feat_dim // 2
             self.n_classes = config.dataset.n_classes
             
-            self.model.model.fc = nn.Identity() # removes final classification layer
+            self.model.fc = nn.Identity() # removes final classification layer
             
             self.st_layer = nn.Linear(self.feat_dim, self.k * 2)
             self.fc_layer = nn.Linear(self.k, self.n_classes)
