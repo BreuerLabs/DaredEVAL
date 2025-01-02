@@ -13,9 +13,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
         
         def __init__(self, config):
             super(DropLayerClassifier, self).__init__(config)
-            self.input_defense_layer = self.init_input_defense_layer()
-            if self.config.defense.penalty == "skip_lasso":
-                self.skip_defense_layer = self.init_skip_defense_layer()            
+            self.input_defense_layer = self.init_input_defense_layer()        
 
         def init_input_defense_layer(self):
             if self.config.model.flatten:
@@ -26,10 +24,6 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             defense_layer = ElementwiseLinear(in_features, w_init=self.config.defense.input_defense_init)
 
             return defense_layer
-
-        def init_skip_defense_layer(self):
-            pass # not yet implemented
-            # skip = nn.Linear(in_features, self.config.dataset.n_classes, bias=False)
 
         def post_batch(self):
             super(DropLayerClassifier, self).post_batch()
@@ -121,6 +115,21 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                 # elif len(w_first.shape) == 2: # like SGLNN, take L2 norm of all weights associated with each feature index
                 #     w_features = [w_first[:, feature_idx] for feature_idx in feature_idxs]
                 #     return [torch.linalg.norm(w_feature) for w_feature in w_features]
+
+        def load_model(self, file_path, map_location = None):
+            if map_location is None:
+                state_dict = torch.load(file_path, weights_only=True)
+                self.load_state_dict(state_dict)
+                
+            else:
+                state_dict = torch.load(file_path, map_location=map_location, weights_only=True)
+                self.load_state_dict(state_dict)
+
+            if self.config.defense.load_only_defense_layer:
+                self.model = self.init_model() # replace the loaded model with an unloaded model
+                for param in self.input_defense_layer.parameters(): # freeze the defense layer during training
+                    param.requires_grad = False
+
 
     drop_layer_defended_model = DropLayerClassifier(config)
 

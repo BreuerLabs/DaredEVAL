@@ -1,5 +1,5 @@
 name: "drop_layer"
-penalty: "lasso" # False, "skip_lasso"
+penalty: "lasso" # else False
 apply_threshold: True
 lasso:
   lambda_: 0.1
@@ -10,3 +10,4 @@ lasso:
   
 input_defense_init: 0.5 # needs to be a float I think
 plot_mask: True
+load_only_defense_layer: False
