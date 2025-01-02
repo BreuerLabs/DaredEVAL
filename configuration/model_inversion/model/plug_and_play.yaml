@@ -11,7 +11,7 @@ evaluation_model:
 candidates:
   num_candidates: 20
   candidate_search:
-    search_space_size: 5000
+    search_space_size: 2000
     center_crop: 800
     resize: 224
     horizontal_flip: true
@@ -21,8 +21,8 @@ candidates:
 
 attack:
   batch_size: 25
-  num_epochs: 70
-  targets: [0,1,2,3,4,5,6,7,8,9] # can be an int, list of ints, or "all"
+  num_epochs: 50
+  targets: [0,1,2,3,4,265,266,267,268,269] # can be an int, list of ints, or "all"
   discriminator_loss_weight: 0.0
   single_w: true
   clip: false
