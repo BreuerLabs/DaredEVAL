@@ -64,6 +64,8 @@ class AbstractClassifier(nn.Module):
     
     def train_model(self, train_loader, val_loader):
 
+        self.pre_train()
+        
         if self.config.training.save_as:
             self.save_as = self.config.training.save_as + ".pth"
         elif self.config.training.wandb.track:
@@ -138,6 +140,9 @@ class AbstractClassifier(nn.Module):
                  
         # Load the best model
         self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
+    
+    def pre_train(self):
+        pass
     
     def post_epoch(self, epoch):
         pass

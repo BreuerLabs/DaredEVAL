@@ -116,15 +116,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                 #     w_features = [w_first[:, feature_idx] for feature_idx in feature_idxs]
                 #     return [torch.linalg.norm(w_feature) for w_feature in w_features]
 
-        def load_model(self, file_path, map_location = None):
-            if map_location is None:
-                state_dict = torch.load(file_path, weights_only=True)
-                self.load_state_dict(state_dict)
-                
-            else:
-                state_dict = torch.load(file_path, map_location=map_location, weights_only=True)
-                self.load_state_dict(state_dict)
-
+        def pre_train(self):
             if self.config.defense.load_only_defense_layer:
                 self.model = self.init_model() # replace the loaded model with an unloaded model
                 for param in self.input_defense_layer.parameters(): # freeze the defense layer during training
