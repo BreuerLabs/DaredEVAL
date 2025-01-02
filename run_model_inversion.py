@@ -21,6 +21,7 @@ from utils import wandb_helpers, load_trained_models
 
 @hydra.main(config_path="configuration/model_inversion", config_name="config.yaml", version_base="1.3")
 def run_model_inversion(attack_config):
+
     
     if torch.cuda.is_available() and attack_config.training.device != "cuda":
         question = f"\nCuda is available but not configured from command to be used! Do you wish to use cuda instead of {attack_config.training.device}?\nType y to use cuda, enter if not:"
@@ -30,9 +31,18 @@ def run_model_inversion(attack_config):
         if use_cuda.lower().strip() == "y":
             attack_config.training.device = 'cuda'
 
+    if attack_config.training.device == 'cuda':
+        try:
+            wait_for_gpu = attack_config.wait_for_gpu
+        except Exception as e:
+            print("Warning: wait_for_gpu not in struct, automatically setting to False")
+            wait_for_gpu = False
+        
+        pick_gpu(wait=wait_for_gpu) # choose an active GPU or sleep until a GPU is active
+
+
     if attack_config.training.wandb.track:
         wandb_run = wandb_helpers.wandb_init(attack_config)
-         
     else:
         wandb_run = None
 
@@ -92,5 +102,4 @@ def run_model_inversion(attack_config):
     print("done")
     
 if __name__ == "__main__":
-    # pick_gpu()
     run_model_inversion()
