@@ -9,7 +9,7 @@ evaluation_model:
   # weights: classifiers/saved_models/soft-wood-101.pth # link to weight file
 
 candidates:
-  num_candidates: 20
+  num_candidates: 200
   candidate_search:
     search_space_size: 2000
     center_crop: 800

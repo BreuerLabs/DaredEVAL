@@ -10,6 +10,7 @@ from defenses.get_defense import get_defense
 from data_processing.data_loaders import get_data_loaders
 from data_processing.datasets import get_datasets
 from data_processing.data_augmentation import get_transforms
+from utils.test_cuda import pick_gpu
 
 from Plug_and_Play_Attacks.utils.attack_config_parser import AttackConfigParser
 from model_inversion.plug_and_play.our_attack import attack
@@ -92,4 +93,5 @@ def run_model_inversion(attack_config):
     print("done")
     
 if __name__ == "__main__":
+    # pick_gpu()
     run_model_inversion()
