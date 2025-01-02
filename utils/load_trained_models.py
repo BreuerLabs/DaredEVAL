@@ -9,12 +9,12 @@ def get_target_config_and_weights(attack_config):
     if attack_config.target_wandb_id:
         target_config, run_name = wandb_helpers.get_config(entity   = attack_config.training.wandb.entity,
                                                            project  = attack_config.training.wandb.target_project,
-                                                           wandb_id = attack_config.target_wandb_id)
+                                                           run_id = attack_config.target_wandb_id)
         
         target_weights_path = wandb_helpers.get_weights(
                                                         entity   = attack_config.training.wandb.entity,
                                                         project  = attack_config.training.wandb.target_project,
-                                                        wandb_id = attack_config.target_wandb_id,
+                                                        run_id = attack_config.target_wandb_id,
                                                         save_as  = target_config.training.save_as) # This is target config to get the right file name
         
     # If targeting a local runs
@@ -43,13 +43,13 @@ def get_evaluation_config_and_weights(attack_config):
         evaluation_config, run_name = wandb_helpers.get_config(
                                                                 entity   = attack_config.training.wandb.entity,
                                                                 project  = attack_config.training.wandb.evaluation_project,
-                                                                wandb_id = attack_config.model.evaluation_model.wandb_id,
+                                                                run_id = attack_config.model.evaluation_model.wandb_id,
                                                                 )
                     
         evaluation_weights_path = wandb_helpers.get_weights(
                                                             entity   = evaluation_config.training.wandb.entity,
                                                             project  = evaluation_config.training.wandb.project,
-                                                            wandb_id = attack_config.model.evaluation_model.wandb_id,
+                                                            run_id = attack_config.model.evaluation_model.wandb_id,
                                                             save_as  = evaluation_config.training.save_as)
         
     # If using a local run

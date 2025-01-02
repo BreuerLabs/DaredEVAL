@@ -38,7 +38,7 @@ def wandb_init(config):
     return run
         
         
-def get_config(entity, project, wandb_id):
+def get_config(entity, project, run_id):
     
     def remove_value_keys(config):
         """Removes the 'value' key from each top-level key in the dictionary if it exists."""
@@ -54,7 +54,7 @@ def get_config(entity, project, wandb_id):
         return cleaned_config
         
     api = wandb.Api()
-    run = api.run(f"{entity}/{project}/{wandb_id}")
+    run = api.run(f"{entity}/{project}/{run_id}")
         
     # Download the YAML config file
     target_config = run.file("config.yaml").download(replace=True)
@@ -69,10 +69,10 @@ def get_config(entity, project, wandb_id):
     
     return target_config, run.name
     
-def get_weights(entity, project, wandb_id, save_as = None):
+def get_weights(entity, project, run_id, save_as = None):
 
     api = wandb.Api()
-    run = api.run(f"{entity}/{project}/{wandb_id}")
+    run = api.run(f"{entity}/{project}/{run_id}")
     
     filename = save_as if save_as else run.name
     file_path = f"classifiers/saved_models/{filename}.pth"

@@ -37,11 +37,11 @@ def train_classifier(config):
     # model.debug_forward(train_loader) #! This doesn't work for all AbstractClassifiers
     
     # Load trained model weights if given
-    if config.training.wandb.run_id:
+    if config.training.wandb.load_from_run_id:
         model_weights_path = wandb_helpers.get_weights(
                                                         entity   = config.training.wandb.entity,
                                                         project  = config.training.wandb.project,
-                                                        wandb_id = config.training.wandb.run_id,
+                                                        run_id = config.training.wandb.load_from_run_id,
         )
         model.load_model(model_weights_path)
 

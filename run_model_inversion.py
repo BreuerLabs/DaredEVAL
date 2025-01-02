@@ -52,10 +52,9 @@ def run_model_inversion(attack_config):
     # Load defense
     target_model = get_defense(config=target_config, model=target_model)
 
+    # Load model weights
     target_model.load_model(target_weights_path)
 
-
-    
     test_loss, test_accuracy = target_model.evaluate(test_loader)
     print("test_loss", test_loss)
     print("test_accuracy", test_accuracy)
