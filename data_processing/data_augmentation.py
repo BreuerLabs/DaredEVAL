@@ -76,6 +76,16 @@ def get_transforms(config, extra_augmentations:list = [], train = True): #! TODO
         all_transformations = augmentations + base_transformations
         
         transform = transforms.Compose(all_transformations)
+        
+        
+    elif config.dataset.dataset == "stanford_dogs":
+        base_transformations = ([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+        
+        all_transformations = augmentations + base_transformations
+        
+        transform = transforms.Compose(all_transformations)
     
     else:
         raise ValueError(f"Unknown dataset: {config.dataset.dataset}")

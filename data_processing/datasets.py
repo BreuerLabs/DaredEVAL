@@ -5,6 +5,7 @@ import os
 
 from data_processing.celeba import CelebA_N_most_common
 import data_processing.facescrub as facescrub
+import data_processing.stanford_dogs as stanford_dogs
 
 def get_datasets(config, train_transform, test_transform):
     """Dynamically loads datasets based on the configuration."""
@@ -44,6 +45,31 @@ def get_datasets(config, train_transform, test_transform):
                                             split_seed = config.training.seed,
                                             transform = test_transform)
         
+    elif config.dataset.dataset == "stanford_dogs":
+        # Only runs if it is not downloaded
+        stanford_dogs.download()
+        stanford_dogs.process()
+        
+        full_train_dataset = stanford_dogs.StanfordDogs(train=True,
+                                                        cropped=config.dataset.cropped,
+                                                        split_seed=config.training.seed,
+                                                        transform=train_transform,
+                                                        root="data/stanford_dogs",
+                                                        )
+        
+        full_val_dataset = stanford_dogs.StanfordDogs(train=True,
+                                                        cropped=config.dataset.cropped,
+                                                        split_seed=config.training.seed,
+                                                        transform=test_transform,
+                                                        root="data/stanford_dogs",
+                                                        )
+    
+        test_dataset = stanford_dogs.StanfordDogs(train=False,
+                                                    cropped=config.dataset.cropped,
+                                                    split_seed=config.training.seed,
+                                                    transform=test_transform,
+                                                    root="data/stanford_dogs",
+                                                    )
         
     elif config.dataset.dataset == "CelebA": 
         necessary_files = ["data/celeba/list_eval_partition.txt", 
