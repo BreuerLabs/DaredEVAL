@@ -1,0 +1,22 @@
+dataset: stanford_dogs
+face_dataset: False
+input_size: [3, 224, 224]
+resize: True # Will resize all images to the size given in input_size for all images
+n_classes: 120
+val_drop_last: False # Whether drop_last=True or False on the validation and test dataloaders
+cropped: True
+
+augment_data: True
+transformations:
+  RandomResizedCrop:
+    size: [224, 224]
+    scale: [0.85, 1]
+    ratio: [1, 1]
+    antialias: true
+  ColorJitter:
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0.1
+    hue: 0.1
+  RandomHorizontalFlip:
+    p: 0.5
