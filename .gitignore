@@ -19,3 +19,4 @@ config.yaml
 /stylegan2-ada-pytorch
 /Plug_and_Play_Attacks
 /Defend_MI
+/venv

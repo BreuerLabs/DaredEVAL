@@ -22,7 +22,7 @@ candidates:
 
 attack:
   batch_size: 25 # Batch size per GPU.
-  num_epochs: 10 # Number of optimization iterations per batch.
+  num_epochs: 3 # Number of optimization iterations per batch.
   targets: 0 # Specify the targeted classes, either a single class index, a list of indices, or all.
   discriminator_loss_weight: 0.0 # Add discriminator weight.
   single_w: true # Optimize a single 512-vector. Otherwise, a distinct vector for each AdaIn operation is optimized.
