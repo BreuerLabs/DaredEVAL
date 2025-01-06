@@ -20,7 +20,7 @@ def process_json_output(output):
         print("The output is not valid JSON.")
         return None
     
-def end_lambdalabs_instance():
+def terminate_lambdalabs_instance():
 
     # get LL api key
     f = open("utils/lambdalabs/lambdalabs_api_key.txt")
