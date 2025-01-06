@@ -21,12 +21,18 @@ def process_json_output(output):
         return None
     
 def end_lambdalabs_instance():
+
+    # get LL api key
+    f = open("utils/lambdalabs/lambdalabs_api_key.txt")
+    api_key = f.read()
+
     # get current IP address
-    ip = socket.gethostname()
-    command = "curl -u secret_breuer-labs_c17dc1abad344b1eb25a1388a5d27073.MU4HQ3VE0DND231nvWRoHt3b6SVmC7kZ: https://cloud.lambdalabs.com/api/v1/instances"
+    ip = socket.gethostname().replace("-", ".")
+
+    # search for IP address in current running Lambda Labs instances
+    command = f"curl -u {api_key}: https://cloud.lambdalabs.com/api/v1/instances"
     output = execute_shell_command(command)
     all_vms_json = process_json_output(output)
-
     found_ip = False
     for vm in all_vms_json['data']:
         if vm['ip'] == ip:
@@ -38,7 +44,8 @@ def end_lambdalabs_instance():
         print("LambdaLabs IP not found, no instance will be terminated")
         return
 
-    command_2 = f"curl -u secret_breuer-labs_c17dc1abad344b1eb25a1388a5d27073.MU4HQ3VE0DND231nvWRoHt3b6SVmC7kZ: https://cloud.lambdalabs.com/api/v1/instance-operations/terminate -d '{{\"instance_ids\":[\"{vm_id}\"]}}'"
+    # terminate VM if IP address found
+    command_2 = f"curl -u {api_key}: https://cloud.lambdalabs.com/api/v1/instance-operations/terminate -d '{{\"instance_ids\":[\"{vm_id}\"]}}'"
     output = execute_shell_command(command_2)
     print(output)
 

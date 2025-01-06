@@ -6,6 +6,7 @@
 .pt
 **__pycache__**
 secret.txt
+/utils/lambdalabs/lambdalabs_api_key.txt
 /outputs
 /wandb
 *.DS_Store
