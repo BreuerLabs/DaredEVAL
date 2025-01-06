@@ -50,5 +50,5 @@ def terminate_lambdalabs_instance():
     print(output)
 
 if __name__ == "__main__":
-    end_lambdalabs_instance()
+    terminate_lambdalabs_instance()
     
