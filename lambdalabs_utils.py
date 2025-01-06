@@ -22,8 +22,7 @@ def process_json_output(output):
     
 def end_lambdalabs_instance():
     # get current IP address
-    hostname = socket.gethostname()
-    ip = socket.gethostbyname(hostname)
+    ip = socket.gethostname()
     command = "curl -u secret_breuer-labs_c17dc1abad344b1eb25a1388a5d27073.MU4HQ3VE0DND231nvWRoHt3b6SVmC7kZ: https://cloud.lambdalabs.com/api/v1/instances"
     output = execute_shell_command(command)
     all_vms_json = process_json_output(output)
