@@ -7,8 +7,9 @@ from omegaconf import OmegaConf
 
 from data_processing.data_loaders import get_data_loaders
 from classifiers.get_model import get_model
-from utils import wandb_helpers
 from defenses.get_defense import get_defense
+from utils import wandb_helpers
+from utils.lambdalabs.terminate import terminate_lambdalabs_instance
 
 @hydra.main(config_path="configuration/classifier", config_name="config.yaml", version_base="1.3")
 def train_classifier(config):
@@ -60,6 +61,11 @@ def train_classifier(config):
     # Save weights in wandb
     if config.training.wandb.track:
         wandb.save(f"classifiers/saved_models/{model.save_as}")
+
+    # Terminate LL instance if applicable
+    if config.LL_terminate_on_end:
+        print("Terminating current Lambda Labs instance... ")
+        terminate_lambdalabs_instance()
     
     
 if __name__ == "__main__":

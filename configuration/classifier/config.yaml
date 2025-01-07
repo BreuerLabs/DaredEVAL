@@ -5,3 +5,5 @@ defaults:
   - training: default # Yaml file with training specific parameters
   - defense: no_defense # "drop_layer", "no_defense"
 
+LL_terminate_on_end: False
+

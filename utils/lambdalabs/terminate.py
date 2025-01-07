@@ -51,7 +51,4 @@ def terminate_lambdalabs_instance():
     command_2 = f"curl -u {api_key}: https://cloud.lambdalabs.com/api/v1/instance-operations/terminate -d '{{\"instance_ids\":[\"{vm_id}\"]}}'"
     output = execute_shell_command(command_2)
     print(output)
-
-if __name__ == "__main__":
-    terminate_lambdalabs_instance()
     

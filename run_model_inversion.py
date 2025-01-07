@@ -102,7 +102,9 @@ def run_model_inversion(attack_config):
    
     print("done")
 
-    terminate_lambdalabs_instance()
+    if attack_config.LL_terminate_on_end:
+        print("Terminating current Lambda Labs instance... ")
+        terminate_lambdalabs_instance()
     
 if __name__ == "__main__":
     run_model_inversion()
