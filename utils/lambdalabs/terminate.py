@@ -31,7 +31,7 @@ def terminate_lambdalabs_instance():
 
     # search for IP address in current running Lambda Labs instances
     command = f"curl -u {api_key}: https://cloud.lambdalabs.com/api/v1/instances"
-    import pdb; pdb.set_trace() # debug
+    # import pdb; pdb.set_trace() # debug
     output = execute_shell_command(command)
     all_vms_json = process_json_output(output)
     found_ip = False
