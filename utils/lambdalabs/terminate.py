@@ -24,7 +24,7 @@ def terminate_lambdalabs_instance():
 
     # get LL api key
     f = open("utils/lambdalabs/lambdalabs_api_key.txt")
-    api_key = f.read()
+    api_key = f.readline()
 
     # get current IP address
     ip = socket.gethostname().replace("-", ".")
