@@ -5,6 +5,9 @@ from omegaconf import OmegaConf
 
 from classifiers.abstract_classifier import AbstractClassifier
 from classifiers.defense_utils import ElementwiseLinear
+from classifiers.get_model import get_model
+# from defenses.get_defense import get_defense
+from utils import wandb_helpers, load_trained_models
 from utils.plotting import plot_tensor
 
 def apply_drop_layer_defense(config, model:AbstractClassifier):
@@ -13,8 +16,24 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
         
         def __init__(self, config):
             super(DropLayerClassifier, self).__init__(config)
-            self.input_defense_layer = self.init_input_defense_layer()        
+            self.input_defense_layer = self.init_input_defense_layer()
 
+            # if using adaptive group lasso, load pre-adapted defense layer weights
+            try:
+                self.adaptive = config.defense.lasso.adaptive
+            except Exception as e:
+                print("Warning: config.defense.adaptive not in struct. Default setting to False.")
+                self.adaptive = False
+            
+            if self.adaptive:
+                pre_adapted_defense_layer = self.get_pre_adapted_defense_layer() # note this is a Tensor, as opposed to self.input_defense_layer which is an ElementwiseLinear module
+                assert pre_adapted_defense_layer.shape == self.input_defense_layer.weight.data.shape, "pre-adapted defense layer and current defense layer are different shapes"
+                self.pre_adapted_defense_layer_norms = torch.linalg.norm(pre_adapted_defense_layer, dim=0).to(self.device) # we only need the norms
+
+                # if a pre-adapted pixel norm is 0, make the same pixel norm 0 in our current model
+                self.input_defense_layer.weight.data[pre_adapted_defense_layer == 0] = 0
+            
+                
         def init_input_defense_layer(self):
             if self.config.model.flatten:
                 in_features = (self.config.dataset.input_size[1] * self.config.dataset.input_size[2] * self.config.dataset.input_size[0],)
@@ -64,16 +83,22 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
 
         def get_loss(self, output, target):
             loss = super(DropLayerClassifier, self).get_loss(output, target)
-            if self.config.defense.penalty == "lasso": # add lasso penalty term to loss
+            if self.config.defense.penalty in {"lasso", "elasticnet"}: # add lasso penalty term to loss
                 lasso_pen = self.config.defense.lasso.lambda_ * self.lasso_penalty()
                 loss = loss + lasso_pen
             
             return loss
 
-        def lasso_penalty(self): # Lasso penalty on one-dimensional weights
+        def lasso_penalty(self): # Penalty on one-dimensional weights
         
             w_first = self.input_defense_layer.weight
             w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels. Performs abs() when n_channels=1, combines RGB values of pixels (group lasso) when n_channels=3
+
+            if self.adaptive: # Calculate GL+AGL (Dinh and Ho, 2020)
+                eps = torch.tensor(1e-8) # to avoid division by zero
+                adaptive_gamma = torch.tensor(self.config.defense.lasso.adaptive_gamma)
+                w_norms = torch.div(w_norms, torch.pow(self.pre_adapted_defense_layer_norms, adaptive_gamma)+eps)
+                pass
             
             if self.config.defense.lasso.smooth:
                 alpha = self.config.defense.lasso.alpha
@@ -81,10 +106,9 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                 final_smoothed_norms = torch.zeros_like(w_norms)
                 final_smoothed_norms[w_norms < alpha] = smoothed_norms[w_norms < alpha]
                 final_smoothed_norms[w_norms >= alpha] = w_norms[w_norms >= alpha] # only use smoothed norms if less than alpha
-                lasso_pen = final_smoothed_norms.sum()
-            else:
-                lasso_pen = w_norms.sum()
+                w_norms = final_smoothed_norms
 
+            lasso_pen = w_norms.sum()
             return lasso_pen
 
         def apply_threshold(self):
@@ -112,15 +136,34 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             else:
                 assert 0 == 1, f"feature_idxs[0] is type {type(feature_idxs[0])}, not int or list"
                 
-                # elif len(w_first.shape) == 2: # like SGLNN, take L2 norm of all weights associated with each feature index
-                #     w_features = [w_first[:, feature_idx] for feature_idx in feature_idxs]
-                #     return [torch.linalg.norm(w_feature) for w_feature in w_features]
-
         def pre_train(self):
             if self.config.defense.load_only_defense_layer:
                 self.model = self.init_model() # replace the loaded model with an unloaded model
                 for param in self.input_defense_layer.parameters(): # freeze the defense layer during training
                     param.requires_grad = False
+
+        def get_pre_adapted_defense_layer(self):
+            # loads the whole pre-adapted model, and keeps only the input defense layer weights.
+            pre_adapted_config, _ = wandb_helpers.get_config(
+                entity=self.config.defense.lasso.pre_adapted_entity,
+                project=self.config.defense.lasso.pre_adapted_project,
+                run_id=self.config.defense.lasso.pre_adapted_run_id,
+            )
+
+            pre_adapted_weights_path = wandb_helpers.get_weights(
+                entity=self.config.defense.lasso.pre_adapted_entity,
+                project=self.config.defense.lasso.pre_adapted_project,
+                run_id=self.config.defense.lasso.pre_adapted_run_id,
+            )
+            
+            pre_adapted_model = get_model(pre_adapted_config)
+
+            pre_adapted_model.input_defense_layer = self.init_input_defense_layer() # placeholder defense layer needed to load in the pre-adapted defense layer
+
+            # Load model weights
+            pre_adapted_model.load_model(pre_adapted_weights_path)
+
+            return pre_adapted_model.input_defense_layer.weight.data
 
 
     drop_layer_defended_model = DropLayerClassifier(config)
