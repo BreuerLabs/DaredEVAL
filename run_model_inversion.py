@@ -50,7 +50,7 @@ def run_model_inversion(attack_config):
     target_config, target_weights_path = load_trained_models.get_target_config_and_weights(attack_config)
         
     # Load data
-    transform = get_transforms(target_config, train=False) # To not get 
+    transform = get_transforms(target_config, train=False)
     
     train_dataset, _, _ = get_datasets(config=target_config,
                                                             train_transform=transform,
