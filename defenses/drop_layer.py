@@ -83,13 +83,14 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
 
         def get_loss(self, output, target):
             loss = super(DropLayerClassifier, self).get_loss(output, target)
-            if self.config.defense.penalty in {"lasso", "elasticnet"}: # add lasso penalty term to loss
-                lasso_pen = self.config.defense.lasso.lambda_ * self.lasso_penalty()
-                loss = loss + lasso_pen
+
+            if self.config.defense.penalty: # add penalty term to loss
+                lasso_pen, ridge_pen = self.get_penalties()
+                loss = loss + (self.config.defense.lasso.lambda_ * lasso_pen) + (self.config.defense.lasso.ridge_lambda * ridge_pen)
             
             return loss
 
-        def lasso_penalty(self): # Penalty on one-dimensional weights
+        def get_penalties(self): # Penalty on one-dimensional weights
         
             w_first = self.input_defense_layer.weight
             w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels. Performs abs() when n_channels=1, combines RGB values of pixels (group lasso) when n_channels=3
@@ -97,19 +98,12 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             if self.adaptive: # Calculate GL+AGL (Dinh and Ho, 2020)
                 eps = torch.tensor(1e-8) # to avoid division by zero
                 adaptive_gamma = torch.tensor(self.config.defense.lasso.adaptive_gamma)
-                w_norms = torch.div(w_norms, torch.pow(self.pre_adapted_defense_layer_norms, adaptive_gamma)+eps)
-                pass
-            
-            if self.config.defense.lasso.smooth:
-                alpha = self.config.defense.lasso.alpha
-                smoothed_norms = (w_norms**2 / (2*alpha)) + (alpha/2) # see eqn. (15) in SGLasso paper
-                final_smoothed_norms = torch.zeros_like(w_norms)
-                final_smoothed_norms[w_norms < alpha] = smoothed_norms[w_norms < alpha]
-                final_smoothed_norms[w_norms >= alpha] = w_norms[w_norms >= alpha] # only use smoothed norms if less than alpha
-                w_norms = final_smoothed_norms
+                adaptive_w_norms = torch.div(w_norms, torch.pow(self.pre_adapted_defense_layer_norms, adaptive_gamma)+eps)
 
-            lasso_pen = w_norms.sum()
-            return lasso_pen
+            lasso_penalty = adaptive_w_norms.sum() if self.adaptive else w_norms.sum()
+            ridge_penalty = torch.pow(torch.linalg.norm(w_norms), 2)
+
+            return lasso_penalty, ridge_penalty
 
         def apply_threshold(self):
             thresh = self.config.defense.lasso.threshold
