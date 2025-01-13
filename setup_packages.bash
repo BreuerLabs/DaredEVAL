@@ -3,12 +3,9 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Step 2: Rest of setup
+# git update
 echo "Pulling latest updates..."
 git pull
-
-# Create a screen session
-screen -S pnp -dm bash
 
 # Install necessary packages and set up the environment
 echo "Installing required packages..."
@@ -23,4 +20,4 @@ python -m pip install -r requirements.txt
 python -m pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
 
 
-echo "Setup complete!"
+echo "Setup complete! Remember to activate the venv with 'source ./venv/bin/activate', and you can use 'screen' if you like."
