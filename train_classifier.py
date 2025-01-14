@@ -4,6 +4,7 @@ import wandb
 import os
 import torch
 from omegaconf import OmegaConf
+import torch.nn as nn
 
 from data_processing.data_loaders import get_data_loaders
 from classifiers.get_model import get_model
@@ -43,6 +44,13 @@ def train_classifier(config):
                                                         run_id = config.training.wandb.load_from_run_id,
         )
         model.load_model(model_weights_path)
+
+    # Distribute model on GPU's
+    if torch.cuda.device_count() > 1:
+        print(f"Using {torch.cuda.device_count()} GPUs!")
+        model = nn.DataParallel(model)
+    elif torch.cuda.is_available():
+        print("Using a single GPU!")
 
     # Train the model
     model.train_model(train_loader, val_loader)
