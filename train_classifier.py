@@ -49,12 +49,14 @@ def train_classifier(config):
     if torch.cuda.device_count() > 1:
         print(f"Using {torch.cuda.device_count()} GPUs!")
         model = nn.DataParallel(model)
-    elif torch.cuda.is_available():
-        print("Using a single GPU!")
-
-    # Train the model
-    model.train_model(train_loader, val_loader)
+        
+        # Train the model
+        model.module.train_model(train_loader, val_loader)
     
+    else:
+        # Train the model
+        model.train_model(train_loader, val_loader)
+        
     test_loss, test_accuracy = model.evaluate(test_loader)
     
     if config.training.wandb.track:
