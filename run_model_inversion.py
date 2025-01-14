@@ -32,14 +32,14 @@ def run_model_inversion(attack_config):
         if use_cuda.lower().strip() == "y":
             attack_config.training.device = 'cuda'
 
-    if attack_config.training.device == 'cuda':
-        try:
-            wait_for_gpu = attack_config.wait_for_gpu
-        except Exception as e:
-            print("Warning: wait_for_gpu not in struct, automatically setting to False")
-            wait_for_gpu = False
+    # if attack_config.training.device == 'cuda':
+    #     try:
+    #         wait_for_gpu = attack_config.wait_for_gpu
+    #     except Exception as e:
+    #         print("Warning: wait_for_gpu not in struct, automatically setting to False")
+    #         wait_for_gpu = False
         
-        pick_gpu(wait=wait_for_gpu) # choose an active GPU or sleep until a GPU is active
+    # pick_gpu(wait=wait_for_gpu) # choose an active GPU or sleep until a GPU is active
 
 
     if attack_config.training.wandb.track:
