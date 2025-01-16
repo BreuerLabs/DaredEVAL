@@ -19,9 +19,6 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             super(DropLayerClassifier, self).__init__(config)
             self.input_defense_layer = self.init_input_defense_layer()
 
-            if torch.cuda.device_count() > 1:
-                self.input_defense_layer = nn.DataParallel(self.input_defense_layer)
-
             # if using adaptive group lasso, load pre-adapted defense layer weights
             try:
                 self.adaptive = config.defense.lasso.adaptive
