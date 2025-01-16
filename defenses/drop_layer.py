@@ -156,6 +156,8 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             pre_adapted_model.input_defense_layer = self.init_input_defense_layer() # placeholder defense layer needed to load in the pre-adapted defense layer
 
             # Load model weights
+            if torch.cuda.device_count() > 1:
+                pre_adapted_model.model = nn.DataParallel(pre_adapted_model.model)
             pre_adapted_model.load_model(pre_adapted_weights_path)
 
             return pre_adapted_model.input_defense_layer.weight.data

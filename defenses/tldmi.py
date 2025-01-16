@@ -15,8 +15,12 @@ def apply_TLDMI_defense(config, model:AbstractClassifier):
             elif config.defense.freeze_layers > 0:
                 for i, child in enumerate(self.feature_extractor.children()):
                     if i <= config.defense.freeze_layers:
-                        for param in child.parameters():
+                        for j, param in enumerate(child.parameters()):
                             param.requires_grad = False
+                            num_trainable = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+                            if num_trainable < 45000000:
+                                pass
+                        
 
             num_trainable = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
             total_params = sum(p.numel() for p in self.model.parameters())
