@@ -4,6 +4,7 @@ import wandb
 import os
 import torch
 from omegaconf import OmegaConf
+import torch.nn as nn
 
 from data_processing.data_loaders import get_data_loaders
 from classifiers.get_model import get_model
@@ -46,7 +47,7 @@ def train_classifier(config):
 
     # Train the model
     model.train_model(train_loader, val_loader)
-    
+        
     test_loss, test_accuracy = model.evaluate(test_loader)
     
     if config.training.wandb.track:
