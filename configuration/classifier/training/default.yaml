@@ -1,4 +1,4 @@
-evaluate_freq: 1  # Evaluation frequency
+evaluate_freq: 5  # Evaluation frequency
 save_as: False # What to save the model as, if False, then it is saved as the wandb run name
 verbose: 1  # 0: silent, 1: progress bar, 2: one line per epoch
 device: "cuda"  # Options: "cuda", "mps", "cpu"

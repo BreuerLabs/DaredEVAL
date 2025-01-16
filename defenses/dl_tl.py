@@ -1,25 +1,12 @@
-import torch
-import wandb
-from omegaconf.listconfig import ListConfig
-from omegaconf import OmegaConf
-
 from classifiers.abstract_classifier import AbstractClassifier
-from classifiers.defense_utils import ElementwiseLinear
-from classifiers.get_model import get_model
-# from defenses.get_defense import get_defense
-from utils import wandb_helpers, load_trained_models
-from utils.plotting import plot_tensor
 
-def apply_drop_layer_defense(config, model:AbstractClassifier):
+def apply_DLTL_defense(config, model:AbstractClassifier):
     
-    class DropLayerClassifier(model.__class__):
+    class DLTL(model.__class__):
         
         def __init__(self, config):
-            super(DropLayerClassifier, self).__init__(config)
+            super(DLTLClassifier, self).__init__(config)
             self.input_defense_layer = self.init_input_defense_layer()
-
-            if torch.cuda.device_count() > 1:
-                self.input_defense_layer = nn.DataParallel(self.input_defense_layer)
 
             # if using adaptive group lasso, load pre-adapted defense layer weights
             try:
@@ -35,6 +22,18 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
 
                 # if a pre-adapted pixel norm is 0, make the same pixel norm 0 in our current model
                 self.input_defense_layer.weight.data[pre_adapted_defense_layer == 0] = 0
+            
+            # num_trainable = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+            if config.defense.freeze_layers == 0:
+                for param in self.model.parameters():
+                    param.requires_grad = False
+
+            elif config.defense.freeze_layers > 0:
+                for i, child in enumerate(self.feature_extractor.children()):
+                    if i <= config.defense.freeze_layers:
+                        for param in child.parameters():
+                            param.requires_grad = False
+                        # num_trainable = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
             
                 
         def init_input_defense_layer(self):
@@ -162,7 +161,6 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
 
             return pre_adapted_model.input_defense_layer.weight.data
 
+    dltl_defended_model = DLTL(config)
 
-    drop_layer_defended_model = DropLayerClassifier(config)
-
-    return drop_layer_defended_model
+    return dltl_defended_model

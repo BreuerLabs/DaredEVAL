@@ -1,0 +1,20 @@
+name: "DLTL"
+penalty: True
+apply_threshold: True
+lasso:
+  lambda_: 0.025
+  threshold: 0.0025
+  alpha: 0.04 # smoothing hyperparameter, see Zhang et al. 2020
+  warm_start: False # else multiplication factor after each epoch for lambda, see 'warm starts' in LassoNet paper (not yet implemented)
+  ridge_lambda: 0
+  adaptive: False # "Group Lasso + Adaptive Group Lasso" (GL+AGL), see (Dinh and Ho, 2020)
+  adaptive_gamma: 1 
+  pre_adapted_run_id: "evb0kswf"
+  pre_adapted_entity: "BreuerLab"
+  pre_adapted_project: "ModelInversion"
+  
+input_defense_init: 0.5 # needs to be a float I think
+plot_mask: True
+load_only_defense_layer: True
+
+freeze_layers: 6 # makes theta_C = 8.9M for ResNet-18, used in TL-DMI paper
