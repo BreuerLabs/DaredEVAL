@@ -17,9 +17,10 @@ def apply_TLDMI_defense(config, model:AbstractClassifier):
                     if i <= config.defense.freeze_layers:
                         for param in child.parameters():
                             param.requires_grad = False
-                        num_trainable = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-                        total_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-                        print(f"training {num_trainable} out of {total_params} parameters")
+
+            num_trainable = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+            total_params = sum(p.numel() for p in self.model.parameters())
+            print(f"training {num_trainable} out of {total_params} parameters")
 
 
         # def forward(self, x): # adapted from DefendMI/BiDO/model.py
