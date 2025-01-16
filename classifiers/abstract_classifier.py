@@ -66,6 +66,12 @@ class AbstractClassifier(nn.Module):
 
         self.pre_train()
         
+        # Distribute model on GPU's
+        if torch.cuda.device_count() > 1:
+            print(f"Using {torch.cuda.device_count()} GPUs!")
+            self.model = nn.DataParallel(self.model)
+    
+        
         if self.config.training.save_as:
             self.save_as = self.config.training.save_as + ".pth"
         elif self.config.training.wandb.track:

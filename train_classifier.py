@@ -45,17 +45,8 @@ def train_classifier(config):
         )
         model.load_model(model_weights_path)
 
-    # Distribute model on GPU's
-    if torch.cuda.device_count() > 1:
-        print(f"Using {torch.cuda.device_count()} GPUs!")
-        model = nn.DataParallel(model)
-        
-        # Train the model
-        model.module.train_model(train_loader, val_loader)
-    
-    else:
-        # Train the model
-        model.train_model(train_loader, val_loader)
+    # Train the model
+    model.train_model(train_loader, val_loader)
         
     test_loss, test_accuracy = model.evaluate(test_loader)
     
