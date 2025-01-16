@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import wandb
 from omegaconf.listconfig import ListConfig
 from omegaconf import OmegaConf
