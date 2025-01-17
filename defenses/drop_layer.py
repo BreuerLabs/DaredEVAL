@@ -33,6 +33,16 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
 
                 # if a pre-adapted pixel norm is 0, make the same pixel norm 0 in our current model
                 self.input_defense_layer.weight.data[pre_adapted_defense_layer == 0] = 0
+
+            if self.config.defense.apply_threshold:
+                try:
+                    self.initial_threshold = self.config.defense.lasso.initial_threshold
+                    self.change_threshold_epoch = self.config.defense.lasso.change_threshold_epoch
+                except Exception as e:
+                    print("Warning: initial_threshold not found in struct, default setting to 1e-6")
+                    print("Warning: change_threshold_epoch not found in struct, default setting to 10")
+            
+                self.threshold = self.initial_threshold
             
                 
         def init_input_defense_layer(self):
@@ -47,7 +57,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
 
         def post_batch(self):
             super(DropLayerClassifier, self).post_batch()
-            if self.config.defense.name == "drop_layer" and self.config.defense.apply_threshold:
+            if self.config.defense.apply_threshold:
                self.apply_threshold()
 
             track_features = self.config.training.wandb.track_features
@@ -76,6 +86,10 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                     plt = plot_tensor(w_norms.cpu(), self.save_as)
                     if self.config.training.wandb.track:
                         wandb.log({"defense_mask" : plt, "train_step": self.train_step, "epoch": epoch+1})
+
+            if self.config.defense.apply_threshold:
+                if epoch == self.change_threshold_epoch: # change from 'initial_threshold' to 'threshold' when epoch == change_threshold_epoch
+                    self.threshold = self.config.defense.threshold
 
         def forward(self, x):
             x = self.input_defense_layer(x) # pass through the drop layer first
@@ -107,10 +121,10 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             return lasso_penalty, ridge_penalty
 
         def apply_threshold(self):
-            thresh = self.config.defense.lasso.threshold
+            
             current_w_first = self.input_defense_layer.weight.data # (n_channels, x_dim, y_dim)
             current_w_norms = torch.linalg.norm(current_w_first, dim=0) # (x_dim, y_dim)
-            below_threshold = current_w_norms <= thresh  # (x_dim, y_dim)
+            below_threshold = current_w_norms <= self.threshold  # (x_dim, y_dim)
             new_w_first = current_w_first * ~below_threshold # (n_channels, x_dim, y_dim) x (x_dim, y_dim) = (n_channels, x_dim, y_dim)
             self.input_defense_layer.weight.data = new_w_first
             self.n_features_remaining = below_threshold.numel() - below_threshold.sum()
@@ -157,7 +171,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
 
             # Load model weights
             if torch.cuda.device_count() > 1:
-                pre_adapted_model.model = nn.DataParallel(pre_adapted_model.model)
+                pre_adapted_model.model = nn.DataParallel(pre_adapted_model.model) # hacky workaround, fix this eventually
             pre_adapted_model.load_model(pre_adapted_weights_path)
 
             return pre_adapted_model.input_defense_layer.weight.data
