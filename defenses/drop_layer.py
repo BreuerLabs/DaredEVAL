@@ -163,7 +163,6 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                         param.requires_grad = False
 
             if torch.cuda.device_count() > 1:
-                print(f"Using {torch.cuda.device_count()} GPUs!")
                 self.mask_layer = nn.DataParallel(self.mask_layer) # self.model will be put on DataParallel in super train_model call
 
             super(DropLayerClassifier, self).train_model(train_loader, val_loader)
