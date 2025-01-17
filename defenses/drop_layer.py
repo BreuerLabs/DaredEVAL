@@ -89,7 +89,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
 
             if self.config.defense.apply_threshold:
                 if epoch == self.change_threshold_epoch: # change from 'initial_threshold' to 'threshold' when epoch == change_threshold_epoch
-                    self.threshold = self.config.defense.threshold
+                    self.threshold = self.config.defense.lasso.threshold
 
         def forward(self, x):
             x = self.input_defense_layer(x) # pass through the drop layer first
