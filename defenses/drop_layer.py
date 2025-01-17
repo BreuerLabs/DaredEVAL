@@ -27,12 +27,12 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                 self.adaptive = False
             
             if self.adaptive:
-                pre_adapted_defense_layer = self.get_pre_adapted_defense_layer() # note this is a Tensor, as opposed to self.mask_layer which is an ElementwiseLinear module
-                assert pre_adapted_defense_layer.shape == self.get_mask().data.shape, "pre-adapted defense layer and current defense layer are different shapes"
-                self.pre_adapted_defense_layer_norms = torch.linalg.norm(pre_adapted_defense_layer, dim=0).to(self.device) # we only need the norms
+                pre_adapted_mask_layer = self.get_pre_adapted_mask_layer() # note this is a Tensor, as opposed to self.mask_layer which is an ElementwiseLinear module
+                assert pre_adapted_mask_layer.shape == self.get_mask().data.shape, "pre-adapted defense layer and current defense layer are different shapes"
+                self.pre_adapted_mask_layer_norms = torch.linalg.norm(pre_adapted_mask_layer, dim=0).to(self.device) # we only need the norms
 
                 # if a pre-adapted pixel norm is 0, make the same pixel norm 0 in our current model
-                self.get_mask().data[pre_adapted_defense_layer == 0] = 0
+                self.get_mask().data[pre_adapted_mask_layer == 0] = 0
 
             if self.config.defense.apply_threshold:
                 try:
@@ -120,7 +120,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             if self.adaptive: # Calculate GL+AGL (Dinh and Ho, 2020)
                 eps = torch.tensor(1e-8) # to avoid division by zero
                 adaptive_gamma = torch.tensor(self.config.defense.lasso.adaptive_gamma)
-                adaptive_w_norms = torch.div(w_norms, torch.pow(self.pre_adapted_defense_layer_norms, adaptive_gamma)+eps)
+                adaptive_w_norms = torch.div(w_norms, torch.pow(self.pre_adapted_mask_layer_norms, adaptive_gamma)+eps)
 
             lasso_penalty = adaptive_w_norms.sum() if self.adaptive else w_norms.sum()
             ridge_penalty = torch.pow(torch.linalg.norm(w_norms), 2)
@@ -168,7 +168,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
 
             super(DropLayerClassifier, self).train_model(train_loader, val_loader)
 
-        def get_pre_adapted_defense_layer(self):
+        def get_pre_adapted_mask_layer(self):
             # loads the whole pre-adapted model, and keeps only the mask layer weights.
             pre_adapted_config, _ = wandb_helpers.get_config(
                 entity=self.config.defense.lasso.pre_adapted_entity,
@@ -187,8 +187,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             pre_adapted_model.mask_layer = self.init_mask_layer() # placeholder mask layer needed to load in the pre-adapted mask layer
 
             # Load model weights
-            if torch.cuda.device_count() > 1:
-                pre_adapted_model.model = nn.DataParallel(pre_adapted_model.model) # hacky workaround, fix this eventually
+
             pre_adapted_model.load_model(pre_adapted_weights_path)
 
             return pre_adapted_model.mask_layer.weight.data
