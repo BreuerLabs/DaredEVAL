@@ -63,8 +63,6 @@ class AbstractClassifier(nn.Module):
         pass
     
     def train_model(self, train_loader, val_loader):
-
-        self.pre_train()
         
         # Distribute model on GPU's
         if torch.cuda.device_count() > 1:
@@ -193,14 +191,24 @@ class AbstractClassifier(nn.Module):
     
     def save_model(self, name):
         path = f"classifiers/saved_models/{name}"
-        torch.save(self.state_dict(), path)
+        if isinstance(self.model, nn.DataParallel): # self.model is on DataParallel, need to only save self.model.module
+            state = {
+                    "model": self.model.module.state_dict(),
+                }
+        else:
+            state= {
+                "model": self.model.state_dict(),
+            }
+        torch.save(state, path)
 
         
     def load_model(self, file_path, map_location = None):
         if map_location is None:
-            state_dict = torch.load(file_path, weights_only=True)
-            self.load_state_dict(state_dict)
-            
+            state = torch.load(file_path, weights_only=True)
         else:
-            state_dict = torch.load(file_path, map_location=map_location, weights_only=True)
-            self.load_state_dict(state_dict)
+            state = torch.load(file_path, map_location=map_location, weights_only=True)
+        
+        if isinstance(self.model, nn.DataParallel):
+            self.model.module.load_state_dict(state['model'])
+        else:
+            self.model.load_state_dict(state['model'])

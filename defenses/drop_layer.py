@@ -17,7 +17,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
         
         def __init__(self, config):
             super(DropLayerClassifier, self).__init__(config)
-            self.input_defense_layer = self.init_input_defense_layer()
+            self.mask_layer = self.init_mask_layer()
 
             # if using adaptive group lasso, load pre-adapted defense layer weights
             try:
@@ -27,12 +27,12 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                 self.adaptive = False
             
             if self.adaptive:
-                pre_adapted_defense_layer = self.get_pre_adapted_defense_layer() # note this is a Tensor, as opposed to self.input_defense_layer which is an ElementwiseLinear module
-                assert pre_adapted_defense_layer.shape == self.input_defense_layer.weight.data.shape, "pre-adapted defense layer and current defense layer are different shapes"
+                pre_adapted_defense_layer = self.get_pre_adapted_defense_layer() # note this is a Tensor, as opposed to self.mask_layer which is an ElementwiseLinear module
+                assert pre_adapted_defense_layer.shape == self.get_mask().data.shape, "pre-adapted defense layer and current defense layer are different shapes"
                 self.pre_adapted_defense_layer_norms = torch.linalg.norm(pre_adapted_defense_layer, dim=0).to(self.device) # we only need the norms
 
                 # if a pre-adapted pixel norm is 0, make the same pixel norm 0 in our current model
-                self.input_defense_layer.weight.data[pre_adapted_defense_layer == 0] = 0
+                self.get_mask().data[pre_adapted_defense_layer == 0] = 0
 
             if self.config.defense.apply_threshold:
                 try:
@@ -45,15 +45,22 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                 self.threshold = self.initial_threshold
             
                 
-        def init_input_defense_layer(self):
+        def init_mask_layer(self):
             if self.config.model.flatten:
                 in_features = (self.config.dataset.input_size[1] * self.config.dataset.input_size[2] * self.config.dataset.input_size[0],)
             else:
                 in_features = (self.config.dataset.input_size[0], self.config.dataset.input_size[1], self.config.dataset.input_size[2])
 
-            defense_layer = ElementwiseLinear(in_features, w_init=self.config.defense.input_defense_init)
+            defense_layer = ElementwiseLinear(in_features, w_init=self.config.defense.mask_init)
 
             return defense_layer
+
+        def get_mask(self): # regardless of if DataParallel or not
+            if isinstance(self.mask_layer, nn.DataParallel):
+                return self.mask_layer.module.weight
+            else:
+                return self.mask_layer.weight
+                
 
         def post_batch(self):
             super(DropLayerClassifier, self).post_batch()
@@ -73,7 +80,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             if epoch % self.config.training.save_defense_layer_freq == 0:
                 # save defense layer mask plot
                 if self.config.defense.plot_mask:
-                    w_first = self.input_defense_layer.weight.data
+                    w_first = self.get_mask().data
                     
                     n_channels, x_dim, y_dim = self.config.dataset.input_size
                     if n_channels == 3:
@@ -92,7 +99,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                     self.threshold = self.config.defense.lasso.threshold
 
         def forward(self, x):
-            x = self.input_defense_layer(x) # pass through the drop layer first
+            x = self.mask_layer(x) # pass through the mask layer first
             x = super(DropLayerClassifier, self).forward(x)
             return x
 
@@ -107,7 +114,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
 
         def get_penalties(self): # Penalty on one-dimensional weights
         
-            w_first = self.input_defense_layer.weight
+            w_first = self.get_mask()
             w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels. Performs abs() when n_channels=1, combines RGB values of pixels (group lasso) when n_channels=3
 
             if self.adaptive: # Calculate GL+AGL (Dinh and Ho, 2020)
@@ -122,15 +129,15 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
 
         def apply_threshold(self):
             
-            current_w_first = self.input_defense_layer.weight.data # (n_channels, x_dim, y_dim)
+            current_w_first = self.get_mask().data # (n_channels, x_dim, y_dim)
             current_w_norms = torch.linalg.norm(current_w_first, dim=0) # (x_dim, y_dim)
             below_threshold = current_w_norms <= self.threshold  # (x_dim, y_dim)
             new_w_first = current_w_first * ~below_threshold # (n_channels, x_dim, y_dim) x (x_dim, y_dim) = (n_channels, x_dim, y_dim)
-            self.input_defense_layer.weight.data = new_w_first
+            self.get_mask().data = new_w_first
             self.n_features_remaining = below_threshold.numel() - below_threshold.sum()
 
         def get_feature_norms(self):
-            w_first = self.input_defense_layer.weight.data
+            w_first = self.get_mask().data
             w_norms = torch.linalg.norm(w_first, dim=0) # takes L2 norm over n_channels, shape is (x_dim, y_dim)
             feature_idxs = OmegaConf.to_object(self.config.training.wandb.track_features)
             
@@ -145,14 +152,24 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             else:
                 assert 0 == 1, f"feature_idxs[0] is type {type(feature_idxs[0])}, not int or list"
                 
-        def pre_train(self):
-            if self.config.defense.load_only_defense_layer:
+        def train_model(self, train_loader, val_loader):
+            if self.config.defense.load_only_mask:
                 self.model = self.init_model() # replace the loaded model with an unloaded model
-                for param in self.input_defense_layer.parameters(): # freeze the defense layer during training
-                    param.requires_grad = False
+                if isinstance(self.mask_layer, nn.DataParallel):
+                    for param in self.mask_layer.module.parameters(): # freeze the mask layer during training
+                        param.requires_grad = False
+                else:
+                    for param in self.mask_layer.parameters():
+                        param.requires_grad = False
+
+            if torch.cuda.device_count() > 1:
+                print(f"Using {torch.cuda.device_count()} GPUs!")
+                self.mask_layer = nn.DataParallel(self.mask_layer) # self.model will be put on DataParallel in super train_model call
+
+            super(DropLayerClassifier, self).train_model(train_loader, val_loader)
 
         def get_pre_adapted_defense_layer(self):
-            # loads the whole pre-adapted model, and keeps only the input defense layer weights.
+            # loads the whole pre-adapted model, and keeps only the mask layer weights.
             pre_adapted_config, _ = wandb_helpers.get_config(
                 entity=self.config.defense.lasso.pre_adapted_entity,
                 project=self.config.defense.lasso.pre_adapted_project,
@@ -167,14 +184,42 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             
             pre_adapted_model = get_model(pre_adapted_config)
 
-            pre_adapted_model.input_defense_layer = self.init_input_defense_layer() # placeholder defense layer needed to load in the pre-adapted defense layer
+            pre_adapted_model.mask_layer = self.init_mask_layer() # placeholder mask layer needed to load in the pre-adapted mask layer
 
             # Load model weights
             if torch.cuda.device_count() > 1:
                 pre_adapted_model.model = nn.DataParallel(pre_adapted_model.model) # hacky workaround, fix this eventually
             pre_adapted_model.load_model(pre_adapted_weights_path)
 
-            return pre_adapted_model.input_defense_layer.weight.data
+            return pre_adapted_model.mask_layer.weight.data
+
+        def save_model(self, name):
+            path = f"classifiers/saved_models/{name}"
+            if isinstance(self.model, nn.DataParallel): # self.model and self.mask_layer are on DataParallel
+                state = {
+                    "model": self.model.module.state_dict(),
+                    "mask_layer": self.mask_layer.module.state_dict()
+                }
+            else:
+                state= {
+                    "model": self.model.state_dict(),
+                    "mask_layer": self.mask_layer.state_dict()
+                }
+            torch.save(state, path)
+
+        def load_model(self, file_path, map_location = None):
+            if map_location is None:
+                state = torch.load(file_path, weights_only=True)
+            else:
+                state = torch.load(file_path, map_location=map_location, weights_only=True)  
+
+            if isinstance(self.model, nn.DataParallel):
+                self.model.module.load_state_dict(state['model'])
+                self.mask_layer.module.load_state_dict(state['mask_layer'])
+            else:
+                self.model.load_state_dict(state['model'])
+                self.mask_layer.load_state_dict(state['mask_layer'])
+
 
 
     drop_layer_defended_model = DropLayerClassifier(config)

@@ -15,6 +15,6 @@ lasso:
   pre_adapted_entity: "BreuerLab"
   pre_adapted_project: "ModelInversion"
   
-input_defense_init: 0.5 # needs to be a float I think
+mask_init: 0.5 # needs to be a float I think
 plot_mask: True
-load_only_defense_layer: False
+load_only_mask: False
