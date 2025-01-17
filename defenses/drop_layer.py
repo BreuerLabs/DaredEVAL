@@ -114,9 +114,6 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                 eps = torch.tensor(1e-8) # to avoid division by zero
                 adaptive_gamma = torch.tensor(self.config.defense.lasso.adaptive_gamma)
                 adaptive_w_norms = torch.div(w_norms, torch.pow(self.pre_adapted_defense_layer_norms, adaptive_gamma)+eps)
-                print("w norms mean: ", w_norms.mean())
-                print("adaptive w norms mean: ")
-                import pdb; pdb.set_trace()
 
             lasso_penalty = adaptive_w_norms.sum() if self.adaptive else w_norms.sum()
             ridge_penalty = torch.pow(torch.linalg.norm(w_norms), 2)
