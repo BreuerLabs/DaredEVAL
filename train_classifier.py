@@ -63,9 +63,11 @@ def train_classifier(config):
 
     # Terminate LL instance if applicable
     if config.LL_terminate_on_end:
+        if config.LL_sleep_before_terminate:
+            print("Sleeping before LL termination... ")
+            time.sleep(int(config.LL_sleep_before_terminate))
         print("Terminating current Lambda Labs instance... ")
         terminate_lambdalabs_instance()
-    
     
 if __name__ == "__main__":
     train_classifier()

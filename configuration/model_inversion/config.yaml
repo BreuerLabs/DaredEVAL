@@ -8,3 +8,4 @@ target_wandb_id: "puyleae6" # The wandb id of the run of the target model. This 
 target_config_path: False #"classifiers/saved_configs/cifardropout.yaml" # The path to a config of a trained target model. Weights with the same name must be in classifiers/saved_models
 wait_for_gpu: False
 LL_terminate_on_end: False
+LL_sleep_before_terminate: 3600 # number of seconds to sleep before terminating

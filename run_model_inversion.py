@@ -4,6 +4,7 @@ import wandb
 import os
 import torch
 import sys
+import time
 
 from classifiers.get_model import get_model
 from defenses.get_defense import get_defense
@@ -103,6 +104,9 @@ def run_model_inversion(attack_config):
     print("done")
 
     if attack_config.LL_terminate_on_end:
+        if attack_config.LL_sleep_before_terminate:
+            print("Sleeping before LL termination... ")
+            time.sleep(int(attack_config.LL_sleep_before_terminate))
         print("Terminating current Lambda Labs instance... ")
         terminate_lambdalabs_instance()
     
