@@ -28,11 +28,13 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             
             if self.adaptive:
                 pre_adapted_mask_layer = self.get_pre_adapted_mask_layer() # note this is a Tensor, as opposed to self.mask_layer which is an ElementwiseLinear module
-                assert pre_adapted_mask_layer.shape == self.get_mask().data.shape, "pre-adapted defense layer and current defense layer are different shapes"
+                assert pre_adapted_mask_layer.shape == self.get_mask().data.shape, "pre-adapted mask layer and current mask layer are different shapes"
                 self.pre_adapted_mask_layer_norms = torch.linalg.norm(pre_adapted_mask_layer, dim=0).to(self.device) # we only need the norms
 
-                # if a pre-adapted pixel norm is 0, make the same pixel norm 0 in our current model
-                self.get_mask().data[pre_adapted_mask_layer == 0] = 0
+                # # if a pre-adapted pixel norm is 0, make the same pixel norm 0 in our current model
+                # mask = self.get_mask()
+                # mask.data[pre_adapted_mask_layer == 0] = 0
+                # self.set_mask(mask)
 
             if self.config.defense.apply_threshold:
                 try:
@@ -60,6 +62,12 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                 return self.mask_layer.module.weight
             else:
                 return self.mask_layer.weight
+
+        def set_mask(self, new_mask: torch.Tensor): # regardless of if DataParallel or not
+            if isinstance(self.mask_layer, nn.DataParallel):
+                self.mask_layer.module.weight.data = new_mask
+            else:
+                self.mask_layer.weight.data = new_mask
                 
 
         def post_batch(self):
@@ -133,7 +141,7 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             current_w_norms = torch.linalg.norm(current_w_first, dim=0) # (x_dim, y_dim)
             below_threshold = current_w_norms <= self.threshold  # (x_dim, y_dim)
             new_w_first = current_w_first * ~below_threshold # (n_channels, x_dim, y_dim) x (x_dim, y_dim) = (n_channels, x_dim, y_dim)
-            self.get_mask().data = new_w_first
+            self.set_mask(new_w_first)
             self.n_features_remaining = below_threshold.numel() - below_threshold.sum()
 
         def get_feature_norms(self):
