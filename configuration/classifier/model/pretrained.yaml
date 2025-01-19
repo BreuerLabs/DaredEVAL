@@ -13,5 +13,5 @@ hyper:
   batch_size: 128
   patience: 100
   beta2: 0.999
-  milestones: [75, 90]
+  milestones: [80]
   gamma: 0.1 # factor by which lr changes at each milestone for MultiStepLR
