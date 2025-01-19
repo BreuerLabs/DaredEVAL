@@ -11,7 +11,6 @@ git pull
 echo "Installing required packages..."
 sudo apt -y install python3.11-venv python3.11-dev
 python3.11 -m venv venv
-source ./venv/bin/activate
 
 echo "Installing Python dependencies..."
 python -m pip install --upgrade pip
