@@ -18,3 +18,4 @@ lasso:
 mask_init: 0.5 # needs to be a float I think
 plot_mask: True
 load_only_mask: False
+use_frozen_custom_mask: False # else give local path to mask (not connected to wandb yet)

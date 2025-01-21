@@ -19,6 +19,12 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
             super(DropLayerClassifier, self).__init__(config)
             self.mask_layer = self.init_mask_layer()
 
+            try:
+                self.use_frozen_custom_mask = self.config.defense.use_frozen_custom_mask
+            except Exception as e:
+                print("Warning: config.defense.use_frozen_custom_mask not in struct. Default setting to False.")
+                self.use_frozen_custom_mask = False
+            
             # if using adaptive group lasso, load pre-adapted defense layer weights
             try:
                 self.adaptive = config.defense.lasso.adaptive
@@ -36,16 +42,19 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                 # mask.data[pre_adapted_mask_layer == 0] = 0
                 # self.set_mask(mask)
 
+            # some configuration stuff to make thresholding work
             if self.config.defense.apply_threshold:
                 try:
                     self.initial_threshold = self.config.defense.lasso.initial_threshold
                     self.change_threshold_epoch = self.config.defense.lasso.change_threshold_epoch
                 except Exception as e:
-                    print("Warning: initial_threshold not found in struct, default setting to 1e-6")
-                    print("Warning: change_threshold_epoch not found in struct, default setting to 10")
+                    print("Warning: initial_threshold or change_threshold_epoch not found in struct, default setting to 1e-6 and 10 respectively")
+                    self.initial_threshold = 1e-6
+                    self.change_threshold_epoch = 10
             
                 self.threshold = self.initial_threshold
             
+            # mask configuration stuff
                 
         def init_mask_layer(self):
             if self.config.model.flatten:
@@ -161,17 +170,22 @@ def apply_drop_layer_defense(config, model:AbstractClassifier):
                 assert 0 == 1, f"feature_idxs[0] is type {type(feature_idxs[0])}, not int or list"
                 
         def train_model(self, train_loader, val_loader):
+            freeze_mask = False
             if self.config.defense.load_only_mask:
                 self.model = self.init_model() # replace the loaded model with an unloaded model
-                if isinstance(self.mask_layer, nn.DataParallel):
-                    for param in self.mask_layer.module.parameters(): # freeze the mask layer during training
-                        param.requires_grad = False
-                else:
-                    for param in self.mask_layer.parameters():
-                        param.requires_grad = False
+                freeze_mask = True
+            
+            elif self.use_frozen_custom_mask:
+                custom_mask = torch.load(self.use_frozen_custom_mask) # load custom mask from path name given
+                self.set_mask(custom_mask)
+                freeze_mask = True
+            
+            if freeze_mask:
+                for param in self.mask_layer.parameters(): # freeze the mask layer during training
+                    param.requires_grad = False
 
             if torch.cuda.device_count() > 1:
-                self.mask_layer = nn.DataParallel(self.mask_layer) # self.model will be put on DataParallel in super train_model call
+                self.mask_layer = nn.DataParallel(self.mask_layer) # self.model will be put on DataParallel in super train_model call, so we just need to put the mask_layer on DataParallel here
 
             super(DropLayerClassifier, self).train_model(train_loader, val_loader)
 

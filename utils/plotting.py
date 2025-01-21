@@ -2,7 +2,10 @@ import matplotlib.pyplot as plt
 import torch
 
 def plot_tensor(tensor, save_name):
-    arr = tensor.numpy().transpose(1,2,0)
+    if len(tensor.shape) == 3: # assume this is of form (C, H, W)
+        arr = tensor.numpy().transpose(1,2,0)
+    else:
+        arr = tensor.numpy()
     plt.imshow(arr)
     plt.axis('off')
     plot_path = f"plots/{save_name}.png"
