@@ -8,11 +8,10 @@ evaluation_model:
   # architecture: inception-v3 # architecture of evaluation model
   # weights: classifiers/saved_models/soft-wood-101.pth # link to weight file
 
-# From the pnp repo
 candidates:
   num_candidates: 10
   candidate_search:
-    search_space_size: 1000
+    search_space_size: 50
     center_crop: null
     # resize: 224 #! This is removed because it depends on dataset not on attack 
     horizontal_flip: true

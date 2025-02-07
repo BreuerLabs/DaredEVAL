@@ -69,6 +69,7 @@ def get_config(entity, project, run_id):
     
     return target_config, run.name
     
+    
 def get_weights(entity, project, run_id, save_as = None):
 
     api = wandb.Api()
