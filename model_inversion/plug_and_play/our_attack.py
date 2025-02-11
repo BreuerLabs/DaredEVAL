@@ -228,6 +228,7 @@ def attack(config, target_dataset, target_model, evaluation_model, target_config
         target_config=target_config,
         targets=targets,
         device=device,
+        gpu_devices=gpu_devices,
         idx_to_class=idx_to_class,
         batch_size=batch_size,
         batch_size_single=batch_size_single,

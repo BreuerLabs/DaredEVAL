@@ -159,7 +159,7 @@ def log_final_images(imgs, predictions, max_confidences, target_confidences,
 
 def final_wandb_logging(avg_correct_conf, avg_total_conf, acc_top1, acc_top5,
                         avg_dist_facenet, avg_dist_eval, fid_score, precision,
-                        recall, density, coverage, final_targets):
+                        recall, density, coverage, targets, final_targets):
     wandb.save('attacks/gradient_based.py')
     wandb.run.summary['correct_avg_conf'] = avg_correct_conf
     wandb.run.summary['total_avg_conf'] = avg_total_conf
@@ -174,5 +174,6 @@ def final_wandb_logging(avg_correct_conf, avg_total_conf, acc_top1, acc_top5,
     wandb.run.summary['coverage'] = coverage
 
     wandb.run.summary['final_targets'] = final_targets
+    wandb.run.summary['targets'] = targets
 
     wandb.finish()

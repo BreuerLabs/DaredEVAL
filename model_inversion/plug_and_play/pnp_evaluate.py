@@ -40,22 +40,20 @@ def pnp_evaluate(evaluation_model,
                 target_config,
                 targets,
                 device,
+                gpu_devices,
                 idx_to_class,
                 batch_size,
                 batch_size_single,
                 run_id,
                 target_dataset,
                 rtpt=None):
-    # Set devices
-    torch.set_num_threads(24)
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    gpu_devices = [i for i in range(torch.cuda.device_count())]
    
     ####################################
     #         Attack Accuracy          #
     ####################################
 
     # Compute attack accuracy with evaluation model on all generated samples
+    torch.set_num_threads(24)
 
     # try:
     if not evaluation_model: #! Only relevant if we delete evaluation_model earlier in script to save memory
@@ -231,12 +229,6 @@ def pnp_evaluate(evaluation_model,
                                               test_transform=None)
         ### 
         
-        # # Compute average feature distance on Inception-v3
-        # evaluate_inception = DistanceEvaluation(evaluation_model_dist,
-        #                                         synthesis, 299, #! TODO: use parameter 
-        #                                         config.attack_center_crop,
-        #                                         target_dataset, config.seed)
-        
         # Compute average feature distance on Inception-v3
         evaluate_inception = DistanceEvaluation(evaluation_model_dist,
                                                 synthesis, 299, #! TODO: use parameter 
@@ -386,5 +378,5 @@ def pnp_evaluate(evaluation_model,
         final_wandb_logging(avg_correct_conf, avg_total_conf, acc_top1,
                             acc_top5, avg_dist_facenet, avg_dist_inception,
                             fid_score, precision, recall, density, coverage,
-                            final_targets)
+                            targets, final_targets)
 
