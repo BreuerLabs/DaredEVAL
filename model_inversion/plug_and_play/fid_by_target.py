@@ -4,7 +4,7 @@ import torch
 from pytorch_fid.inception import InceptionV3
 from Plug_and_Play_Attacks.utils.stylegan import create_image
 from Plug_and_Play_Attacks.metrics.fid_score import FID_Score
-from Plug_and_Play_Attacks.datasets.custom_subset import ClassSubset
+from Plug_and_Play_Attacks.datasets.custom_subset import SingleClassSubset
 
 IMAGE_EXTENSIONS = ('bmp', 'jpg', 'jpeg', 'pgm', 'png', 'ppm',
                     'tif', 'tiff', 'webp')
@@ -19,8 +19,8 @@ class FID_Score_by_target(FID_Score):
         final_targets = self.dataset_2.targets
         target_classes=torch.unique(final_targets).cpu().tolist()
         
-        training_subset_by_target = [ClassSubset(self.dataset_1, target_classes=target_class) for target_class in target_classes]
-        attack_subset_by_target = [ClassSubset(self.dataset_2, target_classes=target_class) for target_class in target_classes]
+        training_subset_by_target = [SingleClassSubset(self.dataset_1, target_classes=target_class) for target_class in target_classes]
+        attack_subset_by_target = [SingleClassSubset(self.dataset_2, target_classes=target_class) for target_class in target_classes]
         
         fid_values = []
         for target_dataset, attack_dataset in zip(training_subset_by_target, attack_subset_by_target):

@@ -14,6 +14,7 @@ import wandb
 from facenet_pytorch import InceptionResnetV1
 from rtpt import RTPT
 from torch.utils.data import TensorDataset
+import matplotlib.pyplot as plt
 
 from Plug_and_Play_Attacks.attacks.final_selection import perform_final_selection
 from Plug_and_Play_Attacks.attacks.optimize import Optimization
@@ -180,7 +181,7 @@ def pnp_evaluate(evaluation_model,
                                    num_workers=8,
                                    gpu_devices=gpu_devices)
         
-        fid_scores, target_classes = fid_evaluation_by_target.compute_fid_by_class()
+        fid_scores, target_classes_unique = fid_evaluation_by_target.compute_fid_by_class()
         
 
         # compute precision, recall, density, coverage #! TODO: Use parameters
@@ -391,4 +392,32 @@ def pnp_evaluate(evaluation_model,
                             acc_top5, avg_dist_facenet, avg_dist_inception,
                             fid_score, precision, recall, density, coverage,
                             targets, final_targets)
-
+        
+        ### Our extra logging of fid by classes
+        wandb.log({"fid_scores": fid_scores,
+                   "target_classes_unique": target_classes_unique})
+        
+        # Create a histogram
+        fid_arr = np.array(fid_scores)
+        
+        plt.figure(figsize=(10, 6))
+        plt.hist(fid_arr, bins=20, edgecolor='black')
+        plt.xlabel('FID Score')
+        plt.ylabel('Frequency')
+        plt.title('Distribution of FID Scores')
+        # Log the plot directly to wandb
+        wandb.log({"FID Histogram": wandb.Image(plt)})
+        
+        
+        # Plot the m 
+        plt.clf()
+        distances_arr = np.array([mean_distances_list[i][1] for i in range(1,len(mean_distances_list))])
+        
+        plt.figure(figsize=(10, 6))
+        plt.hist(distances_arr, bins=20, edgecolor='black')
+        plt.xlabel('Feature Distance')
+        plt.ylabel('Frequency')
+        plt.title('Distribution of Feauture Distances')
+        
+        # Log the plot directly to wandb
+        wandb.log({"Distances Histogram": wandb.Image(plt)})
