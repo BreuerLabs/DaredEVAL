@@ -30,6 +30,7 @@ from data_processing.datasets import get_datasets
 from data_processing.data_augmentation import get_transforms
 from model_inversion.plug_and_play.our_pnp_utils import *
 
+from model_inversion.plug_and_play.fid_by_target import FID_Score_by_target
 
 def pnp_evaluate(evaluation_model,
                 w_optimized_unselected,
@@ -116,8 +117,6 @@ def pnp_evaluate(evaluation_model,
     # except Exception:
     #     print(traceback.format_exc())
 
-
-    
     ####################################
     #    FID Score and GAN Metrics     #
     ####################################
@@ -170,6 +169,19 @@ def pnp_evaluate(evaluation_model,
         print(
             f'FID score computed on {final_w.shape[0]} attack samples and {config.dataset}: {fid_score:.4f}'
         )
+        
+        fid_evaluation_by_target = FID_Score_by_target(training_dataset, 
+                                   attack_dataset,
+                                   device=device,
+                                   crop_size=crop_size,
+                                   generator=synthesis,
+                                   batch_size=batch_size * 3,
+                                   dims=2048,
+                                   num_workers=8,
+                                   gpu_devices=gpu_devices)
+        
+        fid_scores, target_classes = fid_evaluation_by_target.compute_fid_by_class()
+        
 
         # compute precision, recall, density, coverage #! TODO: Use parameters
         prdc = PRCD(training_dataset,
