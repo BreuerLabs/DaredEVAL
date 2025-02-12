@@ -5,16 +5,16 @@ import torchvision.transforms as T
 from rtpt import RTPT
 from tqdm import tqdm
 
-from Plug_and_Play_Attacls.models.classifier import Classifier
-from Plug_and_Play_Attacls.metrics.accuracy import Accuracy
+from Plug_and_Play_Attacks.models.classifier import Classifier
+from Plug_and_Play_Attacks.metrics.accuracy import Accuracy
 
 
 
-from Plug_and_Play_Attacls.datasets.attack_latents import AttackLatents
-from Plug_and_Play_Attacls.datasets.custom_subset import ClassSubset
-from Plug_and_Play_Attacls.datasets.facescrub import FaceScrub
-from Plug_and_Play_Attacls.datasets.celeba import CelebA1000
-from Plug_and_Play_Attacls.utils.stylegan import load_generator
+from Plug_and_Play_Attacks.datasets.attack_latents import AttackLatents
+from Plug_and_Play_Attacks.datasets.custom_subset import ClassSubset
+from Plug_and_Play_Attacks.datasets.facescrub import FaceScrub
+from Plug_and_Play_Attacks.datasets.celeba import CelebA1000
+from Plug_and_Play_Attacks.utils.stylegan import load_generator
 import wandb
 
 
