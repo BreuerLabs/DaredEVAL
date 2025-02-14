@@ -208,6 +208,7 @@ def main(): #! TODO: This has not been modified yet
             y_pred = output.argmax(dim=1)
             num_corr += (y_pred == y).sum()
             num_total += y.shape[0]
+            
     rtpt.step()
     run.summary["extraction_score_test"] = num_corr / num_total
     print(f'Knowledge Extraction Score computed on the test data: {num_corr / num_total:.2f}')

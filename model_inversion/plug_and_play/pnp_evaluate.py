@@ -88,7 +88,7 @@ def pnp_evaluate(evaluation_model,
             wandb.save(filename_precision)
         except:
             pass
-    print(
+    print( 
         f'\nUnfiltered Evaluation of {final_w.shape[0]} images on Inception-v3: \taccuracy@1={acc_top1:4f}',
         f', accuracy@5={acc_top5:4f}, correct_confidence={avg_correct_conf:4f}, total_confidence={avg_total_conf:4f}'
     )
@@ -248,7 +248,7 @@ def pnp_evaluate(evaluation_model,
                                                 config.attack_center_crop,
                                                 training_dataset, config.seed)
         
-        avg_dist_inception, mean_distances_list = evaluate_inception.compute_dist(
+        avg_dist_inception, mean_distances_list_inception = evaluate_inception.compute_dist(
             final_w,
             final_targets,
             batch_size=batch_size_single * 5,
@@ -258,7 +258,7 @@ def pnp_evaluate(evaluation_model,
             try:
                 filename_distance = write_precision_list(
                     f'model_inversion/plug_and_play/results/distance_inceptionv3_list_filtered/{run_id}',
-                    mean_distances_list)
+                    mean_distances_list_inception)
                 wandb.save(filename_distance)
                 
             except:
@@ -304,7 +304,7 @@ def pnp_evaluate(evaluation_model,
                                                     training_dataset_facenet, config.seed)
             
             
-            avg_dist_facenet, mean_distances_list = evaluater_facenet.compute_dist(
+            avg_dist_facenet, mean_distances_list_facenet = evaluater_facenet.compute_dist(
                 final_w,
                 final_targets,
                 batch_size=batch_size_single * 8, #! Hardcoded?
@@ -312,7 +312,7 @@ def pnp_evaluate(evaluation_model,
             if config.logging:
                 filename_distance = write_precision_list(
                     f'model_inversion/plug_and_play/results/distance_facenet_list_filtered/{run_id}',
-                    mean_distances_list)
+                    mean_distances_list_facenet)
                 wandb.save(filename_distance)
 
             print('Mean Distance on FaceNet: ', avg_dist_facenet.cpu().item())
@@ -378,6 +378,7 @@ def pnp_evaluate(evaluation_model,
         facenet = torch.nn.DataParallel(facenet, device_ids=gpu_devices)
         facenet.to(device)
         facenet.eval()
+        
         if target_config.dataset.face_dataset:
             log_nearest_neighbors(log_imgs,
                                   log_targets,
@@ -408,16 +409,30 @@ def pnp_evaluate(evaluation_model,
         # Log the plot directly to wandb
         wandb.log({"FID Histogram": wandb.Image(plt)})
         
-        
         # Plot the m 
         plt.clf()
-        distances_arr = np.array([mean_distances_list[i][1] for i in range(1,len(mean_distances_list))])
+        distances_arr_inception = np.array([mean_distances_list_inception[i][1] for i in range(1,len(mean_distances_list_inception))])
         
         plt.figure(figsize=(10, 6))
-        plt.hist(distances_arr, bins=20, edgecolor='black')
+        plt.hist(distances_arr_inception, bins=20, edgecolor='black')
         plt.xlabel('Feature Distance')
         plt.ylabel('Frequency')
         plt.title('Distribution of Feauture Distances')
         
         # Log the plot directly to wandb
-        wandb.log({"Distances Histogram": wandb.Image(plt)})
+        wandb.log({"Distances Histogram (Inception)": wandb.Image(plt)})
+        
+        if target_config.dataset.face_dataset:
+            plt.clf()
+            distances_arr_facenet = np.array([mean_distances_list_facenet[i][1] for i in range(1,len(mean_distances_list_facenet))])
+            
+            plt.figure(figsize=(10, 6))
+            plt.hist(distances_arr_facenet, bins=20, edgecolor='black')
+            plt.xlabel('Feature Distance')
+            plt.ylabel('Frequency')
+            plt.title('Distribution of Feauture Distances')
+            
+            # Log the plot directly to wandb
+            wandb.log({"Distances Histogram (FaceNet)": wandb.Image(plt)})
+                
+        

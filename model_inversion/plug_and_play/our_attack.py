@@ -218,7 +218,7 @@ def attack(config, target_dataset, target_model, evaluation_model, target_config
         wandb.save(optimized_w_path_selected)
         wandb.config.update({'w_path': optimized_w_path})
 
-    eval_results = pnp_evaluate(
+    pnp_evaluate(
         w_optimized_unselected=w_optimized_unselected,
         final_w=final_w,
         final_targets=final_targets,

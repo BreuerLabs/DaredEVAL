@@ -75,8 +75,8 @@ def pnp_evaluate_from_wandb(entity, project, run_id, evaluation_model,
     # Load data
     transform = get_transforms(target_config, train=False)
     target_dataset, _, _ = get_datasets(config=target_config,
-                                                            train_transform=transform,
-                                                            test_transform=None)
+                                        train_transform=transform,
+                                        test_transform=None)
 
     # Load idx to class mappings
     idx_to_class = None
@@ -123,7 +123,7 @@ def pnp_evaluate_from_wandb(entity, project, run_id, evaluation_model,
         
 
     # run evaluation
-    eval_results = pnp_evaluate(
+    pnp_evaluate(
         w_optimized_unselected=w_optimized_unselected,
         final_w=final_w,
         final_targets=final_targets,

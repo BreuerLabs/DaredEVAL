@@ -19,8 +19,8 @@ class FID_Score_by_target(FID_Score):
         final_targets = self.dataset_2.targets
         target_classes=torch.unique(final_targets).cpu().tolist()
         
-        training_subset_by_target = [SingleClassSubset(self.dataset_1, target_classes=target_class) for target_class in target_classes]
-        attack_subset_by_target = [SingleClassSubset(self.dataset_2, target_classes=target_class) for target_class in target_classes]
+        training_subset_by_target = [SingleClassSubset(self.dataset_1, target_class=target_class) for target_class in target_classes]
+        attack_subset_by_target = [SingleClassSubset(self.dataset_2, target_class=target_class) for target_class in target_classes]
         
         fid_values = []
         for target_dataset, attack_dataset in zip(training_subset_by_target, attack_subset_by_target):
