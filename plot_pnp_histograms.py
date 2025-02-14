@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import wandb
 import csv
+import argparse
 
 def read_saved_metrics(filename):
     filename = f"{filename}"
@@ -11,9 +12,16 @@ def read_saved_metrics(filename):
         precision_list = [(float(target), float(distance)) for target, distance in precision_list[1:]] # Convert to floats if necessary
     return precision_list
 
+
+
+# Argument parser for command-line arguments
+parser = argparse.ArgumentParser(description='Plot PNP Histograms')
+parser.add_argument('run_id', type=str, help='The run ID for the wandb run')
+args = parser.parse_args()
+run_id = args.run_id
+
 # Initialize a run using the run ID
 bins = 30
-run_id = '9pzb7rjy'
 api = wandb.Api()
 run = api.run('plug_and_play/' + run_id)
 
