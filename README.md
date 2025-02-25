@@ -1,3 +1,5 @@
+# MI-Eval: Rethinking Defense Application and Evaluation for Model Inversion
+
 ## Configuration with Hydra
 
 This project uses [Hydra](https://hydra.cc/) for managing configurations. The configuration files are located in the `configuration` directory.
