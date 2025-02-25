@@ -8,3 +8,5 @@ defaults:
 LL_terminate_on_end: False
 LL_sleep_before_terminate: 3600 # number of seconds to sleep before terminating
 
+calculate_fisher: False
+
