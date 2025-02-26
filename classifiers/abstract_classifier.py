@@ -4,8 +4,6 @@ import numpy as np
 import wandb
 from tqdm import tqdm
 
-
-
 class AbstractClassifier(nn.Module):
     """ 
     This is an abstract class for the classifiers. It contains the train, forward, predict, save_model, load_model methods. It should not be used directly. 
@@ -24,7 +22,6 @@ class AbstractClassifier(nn.Module):
             self.criterion = nn.MSELoss()
             self.criterionSum = nn.MSELoss(reduction='sum')
            
-
     def init_model(self):
         model = None
         return model
