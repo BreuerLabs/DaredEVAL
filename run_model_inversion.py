@@ -11,11 +11,10 @@ from defenses.get_defense import get_defense
 from data_processing.data_loaders import get_data_loaders
 from data_processing.datasets import get_datasets
 from data_processing.data_augmentation import get_transforms
-from utils.test_cuda import pick_gpu
 from utils.lambdalabs.terminate import terminate_lambdalabs_instance
 
 from Plug_and_Play_Attacks.utils.attack_config_parser import AttackConfigParser
-from model_inversion.plug_and_play.our_attack import attack
+from model_inversion.plug_and_play.attack import attack
 from model_inversion.plug_and_play.modify_to_pnp_repo import model_compatibility_wrapper, convert_configs
 
 
@@ -32,15 +31,6 @@ def run_model_inversion(attack_config):
         
         if use_cuda.lower().strip() == "y":
             attack_config.training.device = 'cuda'
-
-    # if attack_config.training.device == 'cuda':
-    #     try:
-    #         wait_for_gpu = attack_config.wait_for_gpu
-    #     except Exception as e:
-    #         print("Warning: wait_for_gpu not in struct, automatically setting to False")
-    #         wait_for_gpu = False
-        
-    # pick_gpu(wait=wait_for_gpu) # choose an active GPU or sleep until a GPU is active
 
 
     if attack_config.training.wandb.track:
@@ -103,12 +93,6 @@ def run_model_inversion(attack_config):
    
     print("done")
 
-    if attack_config.LL_terminate_on_end:
-        if attack_config.LL_sleep_before_terminate:
-            print("Sleeping before LL termination... ")
-            time.sleep(int(attack_config.LL_sleep_before_terminate))
-        print("Terminating current Lambda Labs instance... ")
-        terminate_lambdalabs_instance()
     
 if __name__ == "__main__":
     run_model_inversion()

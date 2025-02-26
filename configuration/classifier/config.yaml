@@ -5,8 +5,5 @@ defaults:
   - training: default # Yaml file with training specific parameters
   - defense: no_defense # Yaml file with defense specific parameters
 
-LL_terminate_on_end: False
-LL_sleep_before_terminate: 3600 # number of seconds to sleep before terminating
-
-calculate_fisher: False
+calculate_fisher: False # work in progress
 

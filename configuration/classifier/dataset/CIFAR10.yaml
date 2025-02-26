@@ -1,3 +1,4 @@
+# Smaller dataset for testing
 dataset: CIFAR10
 face_dataset: False
 input_size: [3, 32, 32]

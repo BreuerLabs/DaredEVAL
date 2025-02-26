@@ -29,7 +29,7 @@ from Plug_and_Play_Attacks.utils.wandb import *
 
 from data_processing.datasets import get_datasets
 from data_processing.data_augmentation import get_transforms
-from model_inversion.plug_and_play.our_pnp_utils import *
+from model_inversion.plug_and_play.pnp_utils import *
 
 from model_inversion.plug_and_play.fid_by_target import FID_Score_by_target
 
@@ -170,19 +170,7 @@ def pnp_evaluate(evaluation_model,
         print(
             f'FID score computed on {final_w.shape[0]} attack samples and {config.dataset}: {fid_score:.4f}'
         )
-        
-        fid_evaluation_by_target = FID_Score_by_target(training_dataset, 
-                                   attack_dataset,
-                                   device=device,
-                                   crop_size=crop_size,
-                                   generator=synthesis,
-                                   batch_size=batch_size * 3,
-                                   dims=2048,
-                                   num_workers=8,
-                                   gpu_devices=gpu_devices)
-        
-        fid_scores, target_classes_unique = fid_evaluation_by_target.compute_fid_by_class()
-        
+                
 
         # compute precision, recall, density, coverage #! TODO: Use parameters
         prdc = PRCD(training_dataset,
@@ -240,8 +228,8 @@ def pnp_evaluate(evaluation_model,
         training_dataset, _, _ = get_datasets(config=target_config, 
                                               train_transform=target_transform,
                                               test_transform=None)
-        ### 
-        
+
+
         # Compute average feature distance on Inception-v3
         evaluate_inception = DistanceEvaluation(evaluation_model_dist,
                                                 synthesis, 299, #! TODO: use parameter 
@@ -394,30 +382,15 @@ def pnp_evaluate(evaluation_model,
                             fid_score, precision, recall, density, coverage,
                             targets, final_targets)
         
-        ### Our extra logging of fid by classes
-        wandb.log({"fid_scores": fid_scores,
-                   "target_classes_unique": target_classes_unique})
-        
-        # Create a histogram
-        fid_arr = np.array(fid_scores)
-        
-        plt.figure(figsize=(10, 6))
-        plt.hist(fid_arr, bins=20, edgecolor='black')
-        plt.xlabel('FID Score')
-        plt.ylabel('Frequency')
-        plt.title('Distribution of FID Scores')
-        # Log the plot directly to wandb
-        wandb.log({"FID Histogram": wandb.Image(plt)})
         
         # Plot the m 
-        plt.clf()
         distances_arr_inception = np.array([mean_distances_list_inception[i][1] for i in range(1,len(mean_distances_list_inception))])
         
         plt.figure(figsize=(10, 6))
         plt.hist(distances_arr_inception, bins=20, edgecolor='black')
         plt.xlabel('Feature Distance')
         plt.ylabel('Frequency')
-        plt.title('Distribution of Feauture Distances')
+        plt.title('Distribution of Feature Distances (Inception)')
         
         # Log the plot directly to wandb
         wandb.log({"Distances Histogram (Inception)": wandb.Image(plt)})
@@ -430,7 +403,7 @@ def pnp_evaluate(evaluation_model,
             plt.hist(distances_arr_facenet, bins=20, edgecolor='black')
             plt.xlabel('Feature Distance')
             plt.ylabel('Frequency')
-            plt.title('Distribution of Feauture Distances')
+            plt.title('Distribution of Feature Distances (FaceNet)')
             
             # Log the plot directly to wandb
             wandb.log({"Distances Histogram (FaceNet)": wandb.Image(plt)})

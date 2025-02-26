@@ -29,7 +29,7 @@ from Plug_and_Play_Attacks.utils.wandb import *
 from data_processing.datasets import get_datasets
 from data_processing.data_augmentation import get_transforms
 from model_inversion.plug_and_play.pnp_evaluate import pnp_evaluate
-from model_inversion.plug_and_play.our_pnp_utils import *
+from model_inversion.plug_and_play.pnp_utils import *
 
 
 def attack(config, target_dataset, target_model, evaluation_model, target_config, wandb_run = None):

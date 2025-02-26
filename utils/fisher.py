@@ -1,4 +1,5 @@
 # from https://github.com/lephuoccat/Fisher-Information-NAS/blob/main/fisher_distance_cifar.py
+# work in progress
 def diag_fisher(model, data): 
     precision_matrices = {} # why call these precision matrices?
     params = {n: p for n, p in model.named_parameters() if p.requires_grad}

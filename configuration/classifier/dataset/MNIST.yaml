@@ -1,3 +1,4 @@
+# Smaller dataset for testing
 dataset: MNIST
 face_dataset: False
 input_size: [1, 28, 28]

@@ -1,3 +1,4 @@
+# smaller model for testing
 import torch
 import torch.nn as nn
 from classifiers.abstract_classifier import AbstractClassifier

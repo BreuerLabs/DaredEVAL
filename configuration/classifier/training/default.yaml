@@ -5,12 +5,10 @@ device: "cuda"  # Options: "cuda", "mps", "cpu"
 validation_size: 0.2  # Fraction of the training set to use as validation
 dataloader_num_workers: 8
 seed: 42
-save_defense_layer_freq: 10
 wandb:
-  track: True
-  project: "ModelInversion" # where current run will be loaded
-  entity: "BreuerLab"
-  track_features: False # ex. "[[0, 0], [0, 223], [112, 112], [223, 0], [223, 223]]"
+  track: False
+  project: "ProjectName" # where current run will be loaded
+  entity: "EntityName"
   load_from_run_id: False # else give a wandb run id from which to continue training
   run_id: False # set a current wandb run id
   run_name: False

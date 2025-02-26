@@ -1,11 +1,7 @@
 # conf/config.yaml
 defaults:
   - model: plug_and_play_small   # Yaml file describing which model and hyperparameters to use
-  # - dataset: CelebA  # Yaml file with dateset specific parameters
   - training: default # Yaml file with training specific parameters
 
-target_wandb_id: "puyleae6" # The wandb id of the run of the target model. This will then extract the config and model weights from wandb.
+target_wandb_id: "wandb_run_id" # The wandb id of the run of the target model. This will then extract the config and model weights from wandb.
 target_config_path: False #"classifiers/saved_configs/cifardropout.yaml" # The path to a config of a trained target model. Weights with the same name must be in classifiers/saved_models
-wait_for_gpu: False
-LL_terminate_on_end: False
-LL_sleep_before_terminate: 3600 # number of seconds to sleep before terminating
