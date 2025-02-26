@@ -11,7 +11,6 @@ from defenses.get_defense import get_defense
 from data_processing.data_loaders import get_data_loaders
 from data_processing.datasets import get_datasets
 from data_processing.data_augmentation import get_transforms
-from utils.lambdalabs.terminate import terminate_lambdalabs_instance
 
 from Plug_and_Play_Attacks.utils.attack_config_parser import AttackConfigParser
 from model_inversion.plug_and_play.attack import attack
