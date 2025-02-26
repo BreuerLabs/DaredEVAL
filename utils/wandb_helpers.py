@@ -32,10 +32,10 @@ def wandb_init(config):
         )
         
         print(f"wandb initiated with run id: {run.id} and run name: {run.name}")
+        return run
+    
     except Exception as e:
         print(f"\nCould not initiate wandb logger\nError: {e}")
-        
-    return run
         
         
 def get_config(entity, project, run_id):
