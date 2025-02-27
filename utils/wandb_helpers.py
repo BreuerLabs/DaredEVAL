@@ -11,8 +11,7 @@ def wandb_init(config):
             os.environ['WANDB_API_KEY'] = f.read().strip()
     
     except Exception as e:
-        print(f"\nCreate a secret.txt file with you wandb API key {e}")
-        return    
+        raise FileNotFoundError(f"\nCreate a secret.txt file with you wandb API key in main scope: \n{e}") 
     
     print(f"configuration: \n {OmegaConf.to_yaml(config)}")
     # Initiate wandb logger
@@ -32,10 +31,11 @@ def wandb_init(config):
         )
         
         print(f"wandb initiated with run id: {run.id} and run name: {run.name}")
-        return run
-    
+        
     except Exception as e:
-        print(f"\nCould not initiate wandb logger\nError: {e}")
+        raise FileNotFoundError(f"\nCould not initiate wandb logger\nError: {e}")
+        
+    return run
         
         
 def get_config(entity, project, run_id):
