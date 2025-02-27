@@ -2,6 +2,44 @@
 
 MI-Eval is a collection of tools for researching model inversion attacks and defenses for deep facial recognition models.
 
+
+## Table of Contents
+- [Installation and setup](#installation-and-setup)
+- [Usage](#usage)
+
+## Installation and setup
+
+Since this repository relies on other researchers code for defenses and attacks, it clones several other repos into the repository. However, this process has been streamlined using bash scripts. To setup the repo, 
+
+### Steps
+1. Clone the repository
+2. Setup and activate environment. The repository is devolped to Python 3.11. Eg using conda:
+```
+conda create -n ENVIRONMENT_NAME python=3.11
+```
+3. Install dependencies
+```
+pip install -r requirements.txt
+pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
+```
+4. Run bash script for setting up other repositories and downloading pretrained GAN's 
+```
+bash setup_files.bash
+```
+5. Weights and Biases Logging (Optional, but recommended)
+
+
+
+
+
+
+
+
+## Usage
+
+
+
+
 ## Defenses
 | Name | Citation | Implementation |
 |----------|----------|---------|
