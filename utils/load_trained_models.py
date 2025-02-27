@@ -39,23 +39,23 @@ def get_target_config_and_weights(attack_config):
 def get_evaluation_config_and_weights(attack_config):
     ## Get evalutation model weights and config
     # If evalutation a model trained with wandb tracking
-    if attack_config.model.evaluation_model.wandb_id:
+    if attack_config.attack.evaluation_model.wandb_id:
         evaluation_config, run_name = wandb_helpers.get_config(
                                                                 entity   = attack_config.training.wandb.entity,
                                                                 project  = attack_config.training.wandb.evaluation_project,
-                                                                run_id = attack_config.model.evaluation_model.wandb_id,
+                                                                run_id = attack_config.attack.evaluation_model.wandb_id,
                                                                 )
                     
         evaluation_weights_path = wandb_helpers.get_weights(
                                                             entity   = evaluation_config.training.wandb.entity,
                                                             project  = evaluation_config.training.wandb.project,
-                                                            run_id = attack_config.model.evaluation_model.wandb_id,
+                                                            run_id = attack_config.attack.evaluation_model.wandb_id,
                                                             save_as  = evaluation_config.training.save_as)
         
     # If using a local run
-    elif attack_config.model.evaluation_model.config_path:
+    elif attack_config.attack.evaluation_model.config_path:
         try:
-            evaluation_config = OmegaConf.load(attack_config.model.evaluation_model.config_path)
+            evaluation_config = OmegaConf.load(attack_config.attack.evaluation_model.config_path)
             run_name = evaluation_config.training.save_as
             print("Configuration loaded successfully.")
             

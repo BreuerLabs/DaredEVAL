@@ -66,7 +66,7 @@ def run_model_inversion(attack_config):
         wandb.log({"test_loss": test_loss})
         wandb.log({"test_accuracy": test_accuracy})
 
-    if attack_config.model.name == "plug_and_play":
+    if attack_config.attack.name == "plug_and_play":
         
         evaluation_config, evaluation_weights_path = load_trained_models.get_evaluation_config_and_weights(attack_config)
         

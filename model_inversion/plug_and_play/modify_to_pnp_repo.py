@@ -17,7 +17,7 @@ def convert_configs(target_config, attack_config):
     new_dict = {}
     
     
-    new_dict.update(OmegaConf.to_container(attack_config.model, resolve = True))
+    new_dict.update(OmegaConf.to_container(attack_config.attack, resolve = True))
     
     new_dict["dataset"] = target_config.dataset.dataset
     new_dict["seed"] = attack_config.training.seed
