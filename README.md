@@ -15,21 +15,21 @@ This repository is still in alpha. More testing will be done, and additional fea
 Since this repository relies on other researchers code for defenses and attacks, it clones several other repos into the repository. However, this process has been streamlined using bash scripts. To setup the repo, 
 
 ### Steps
-1. Clone the repository
+1. Clone the repository.
 2. Setup and activate environment. The repository is devolped to Python 3.11. Eg using conda:
 ```
 conda create -n ENVIRONMENT_NAME python=3.11
 ```
-3. Install dependencies
+3. Install dependencies.
 ```
 pip install -r requirements.txt
 pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
 ```
-4. Run bash script for setting up other repositories and downloading pretrained GAN's 
+4. Run bash script for setting up other repositories and downloading pretrained GAN's.
 ```
 bash setup_files.bash
 ```
-5. Weights and Biases Logging (Optional, but recommended)
+5. Weights and Biases Logging (Optional, but recommended).
    - Setup Weights and Biases account: https://wandb.ai/site/
    - Create a project.
    - Get the API key and make a file "secret.txt" in the main scope of the repository.
@@ -95,5 +95,3 @@ Attacking classifiers can be done configured similarly:
 ```
 python run_model_inversion.py dataset=FaceScrub attack=plug_and_play target_wandb_id="TARGET_RUN_ID" attack.evaluation_model.wandb_id="EVAL_RUN_ID" training.wandb.track=True
 ```
-
-
