@@ -58,7 +58,10 @@ This section will go present the different defenses, attacks and dataset that th
 
 ### Classifiers
 
-We support a simple MLP and CNN implementation and a range of pretrained classifiers from torchvision including: (ResNet18, Resnet152, Inceptionv3)
+We support a simple MLP and CNN implementation and a range of pretrained classifiers from torchvision including: (ResNet18, Resnet152, Inceptionv3). 
+
+A custom classifier or defenses can also be tested by implementing CustomClassifier in custom_classifier.py and running model=custom in the command line. Parameters for this can be added at will in configuration/classifier/custom.yaml. 
+
 
 ### Datasets
 Most of the datasets are implemented with automatic downloading and processing. 
