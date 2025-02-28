@@ -34,7 +34,7 @@ bash setup_files.bash
    - Create a project.
    - Get the API key and make a file "secret.txt" in the main scope of the repository.
    - Set the entity and project names in the configuration (configuration/classifier/training/default.yaml and configuration/model_inversion/training/default.yaml respectively)
-   - Run scripts with training.wandb.track=True in the command.
+   - Run scripts with training.wandb.track=True in the command or set it as default in the configuration.
    - Enjoy smart and scalable cloud logging for training classifiers and model inversion. 🚀 
 
 ## Features
@@ -75,11 +75,18 @@ Most of the datasets are implemented with automatic downloading and processing.
 (*) There is a bug at the moment with downloading CelebA with gdown (Download img_align_celeba.zip and put in the data/celeba from the link and unzip: https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg)
 
 ## Usage
-The repository utilizes hydra for dynamic hierachical configuration (https://hydra.cc/docs/intro/). 
-
+The repository utilizes hydra for dynamic hierachical configuration (https://hydra.cc/docs/intro/). The default parameters can be changed in the configuration folder or via the hydra CLI syntax.
 
 ### Training Classifiers
-
+It easy to shift between datasets and models in the command line as such:
+```
+python train_classifier.py dataset=CelebA model=pretrained model.architecture="ResNet152" model.hyper.epochs=50 training.wandb.track=True
+```
 
 ### Attacking Classifiers
+Attacking classifiers can be done configured similarly:
+```
+python run_model_inversion.py dataset=FaceScrub attack=plug_and_play target_wandb_id="TARGET_RUN_ID" attack.evaluation_model.wandb_id="EVAL_RUN_ID" training.wandb.track=True
+```
+
 
