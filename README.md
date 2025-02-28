@@ -87,7 +87,7 @@ python train_classifier.py dataset=CelebA model=pretrained model.architecture="R
 To defend classifiers, simply add the defense in the command for training classifiers:
 
 ```
-python train_classifier.py defense=tldmi dataset=CelebA model=pretrained model.architecture="ResNet152" model.hyper.epochs=50 training.wandb.track=True
+python train_classifier.py defense=tldmi dataset=CelebA model=pretrained model.architecture="ResNet18" training.wandb.track=True
 ```
 
 ### Attacking Classifiers
