@@ -83,6 +83,13 @@ It easy to shift between datasets and models in the command line as such:
 python train_classifier.py dataset=CelebA model=pretrained model.architecture="ResNet152" model.hyper.epochs=50 training.wandb.track=True
 ```
 
+### Defending Classifiers
+To defend classifiers, simply add the defense in the command for training classifiers:
+
+```
+python train_classifier.py defense=tldmi dataset=CelebA model=pretrained model.architecture="ResNet152" model.hyper.epochs=50 training.wandb.track=True
+```
+
 ### Attacking Classifiers
 Attacking classifiers can be done configured similarly:
 ```
