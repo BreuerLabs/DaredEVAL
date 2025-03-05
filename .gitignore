@@ -18,3 +18,5 @@ config.yaml
 /Defend_MI
 /venv
 wandb-summary.json
+/configuration/model_inversion/training/local.yaml
+/configuration/classifier/training/local.yaml
