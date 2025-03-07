@@ -66,7 +66,10 @@ class model_compatibility_wrapper(nn.Module):
         return self._model.model if hasattr(self._model, "model") else self._model
         
     def forward(self, x):
-        return self._model.forward(x)
+        if getattr(self._model, "forward_only_logits", None): # some models have forward calls that return multiple outputs, we just want the logits
+            return self._model.forward_only_logits(x)
+        else:
+            return self._model.forward(x)
 
     def fit(self, train_loader, val_loader):
         return self._model.train_model(train_loader, val_loader)

@@ -32,10 +32,7 @@ class PreTrainedClassifier(AbstractClassifier):
                 # exchange the last layer to match the desired numbers of classes
                 model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
 
-            # for use with bido defense, which needs access before the final fc layer
-            self.feature_extractor = nn.Sequential(*list(model.children())[:-1])
-            self.fc = nn.Linear(self.zdim, self.config.dataset.n_classes) #! we have two .fc's right now, we should fix this eventually but I think it works atm
-        
+
         elif 'inception' in arch:
             weights = inception.Inception_V3_Weights.DEFAULT if pretrained else None
             model = inception.inception_v3(weights=weights,
@@ -49,14 +46,7 @@ class PreTrainedClassifier(AbstractClassifier):
 
         return model
     
-    def embed_img(self, x): # only for models defended with bido
-        z = self.feature_extractor(x) #! removed the repeat(1,3,1,1) thing
-        z = z.reshape(z.size(0), z.size(1)) #! this line does seem to be necessary
-        return z
-    
-    def z_to_logits(self, z):
-        logits = self.fc(z)
-        return logits
+
     
     # Only used when training inception models
     def get_inception_loss(self, inception_output, target):
