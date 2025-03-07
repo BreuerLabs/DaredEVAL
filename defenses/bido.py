@@ -15,6 +15,9 @@ def apply_bido_defense(config, model:AbstractClassifier):
             self.fc_layer = self.model.fc
             self.model.fc = nn.Identity() # removes final classification layer
 
+            if not config.dataset.val_drop_last: # val_drop_last must be True because of how BiDO's test_HSIC function is implemented, this is possible to fix but hasn't been done yet
+                raise ValueError("Validation set must have val_drop_last=True for BiDO defense")
+
 
         def train_model(self, train_loader, val_loader):
             if torch.cuda.device_count() > 1:
