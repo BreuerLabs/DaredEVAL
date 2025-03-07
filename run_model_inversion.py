@@ -56,6 +56,9 @@ def run_model_inversion(attack_config):
     # Load model weights
     target_model.load_model(target_weights_path)
 
+    train_loss, train_accuracy = target_model.evaluate(train_loader)
+    print("train_loss", train_loss)
+    print("train_accuracy", train_accuracy)
     test_loss, test_accuracy = target_model.evaluate(test_loader)
     print("test_loss", test_loss)
     print("test_accuracy", test_accuracy)
