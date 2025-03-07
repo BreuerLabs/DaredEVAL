@@ -69,7 +69,7 @@ Most of the datasets are implemented with automatic downloading and processing.
 | Name | Size | Resolution | Downloading |
 |----------|----------|---------|---------|
 | Facescrub     | 141,130 |  High-Res  | Automatic  |
-| Standord Dogs | 20,580  |  High-Res  | Automatic  |
+| Stanford Dogs | 20,580  |  High-Res  | Automatic  |
 | CelebA        | 202,599 |  High-Res  | Automatic* |
 | CIFAR10       | 60.000  |  Low-Res   | Automatic  |
 | MNIST         | 60.000  |  Low-Res   | Automatic  |
