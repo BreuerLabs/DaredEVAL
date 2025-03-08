@@ -57,7 +57,7 @@ This codebase supports a wide range of model inversion defenses, attacks, and da
 | IF-GMI * | High-Res | [Qiu et al. 2024](https://arxiv.org/abs/2407.13863) | [Github](https://github.com/final-solution/IF-GMI) | if_gmi
 | KED-MI * | High-Res | [Chen et al. 2021](https://arxiv.org/abs/2010.04092) | [Github](https://github.com/SCccc21/Knowledge-Enriched-DMI) | ked_mi
 
-We thank the authors of the above papers and codebases for making their code publicly available.
+We thank the authors of the above papers for making their code publicly available.
 
 ### Classifiers
 
