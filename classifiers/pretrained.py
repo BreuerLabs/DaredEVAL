@@ -22,7 +22,7 @@ class PreTrainedClassifier(AbstractClassifier):
             if arch == 'resnet152':
                 weights = resnet.ResNet152_Weights.DEFAULT if pretrained else None
                 model = resnet.resnet152(weights=weights)
-                self.zdim = 2048 # output dimension of self.feature_extractor below
+                self.zdim = 2048
             elif arch == 'resnet18':
                 weights = resnet.ResNet18_Weights.DEFAULT if pretrained else None
                 model = resnet.resnet18(weights=weights)
