@@ -12,7 +12,7 @@ This repository is still in alpha. Features that are still in development will b
 
 ## Installation and setup
 
-This repository uses original authors' code where possible for defense and attack implementations; as such, it clones several other repos into the repository. However, this process has been streamlined using bash scripts.
+This repository uses original authors' code where possible for defense and attack implementations; as such, it clones several other repos into the repository. This process has been streamlined using the `setup_files.bash` script below.
 
 ### Steps
 1. Clone the repository.
