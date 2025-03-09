@@ -28,7 +28,6 @@ def apply_label_smoothing_defense(config, model:AbstractClassifier):
                 self.ls_scheduler = None
             self.epoch = 0
 
-        
         def train_one_epoch(self, train_loader):
             if self.ls_scheduler: # update label smoothing value before each epoch
                 self.epoch += 1
@@ -41,8 +40,8 @@ def apply_label_smoothing_defense(config, model:AbstractClassifier):
             return train_loss
 
     label_smoothing_defended_model = LabelSmoothing(config)
-
     return label_smoothing_defended_model
+
 
 class CrossEntropyLoss(nn.Module):
 

@@ -13,20 +13,22 @@ def apply_gaussian_noise_defense(config, model:AbstractClassifier):
         def __init__(self, config):
             super(GaussianNoise, self).__init__(config)
 
+            # remove final classification layer
             if hasattr(self.model, "fc"):
                 self.fc_layer = self.model.fc
-                last_layer_in_features = self.model.fc.in_features
-                self.model.fc = nn.Identity() # removes final classification layer
+                self.model.fc = nn.Identity()
             elif hasattr(self.model, "classifier"):
                 self.fc_layer = self.model.classifier
-                last_layer_in_features = self.model.classifier.in_features
-                self.model.classifier = nn.Identity() # removes final classification layer
-            else:
-                raise ValueError("Cannot recognize the classification layer of the model")
+                self.model.classifier = nn.Identity()
+            elif config.model.name == "CNN" or config.model.name == "MLP":
+                print("Warning: Defense has not been tested with the 'CNN' and 'MLP' models")
+                self.fc_layer = list(self.model.children())[-1]
+                self.model = nn.Sequential(*list(self.model.children())[:-1])
+            else:  
+                raise ValueError("Cannot recognize the classification layer of the model. If not using 'CNN' or 'MLP', \
+                    make sure the classification layer is named either 'fc' or 'classifier'")
             
-
-            self.noise_layer = NoiseLayer(shape=last_layer_in_features, stddev=0, seed=self.config.training.seed) # no noise to start
-
+            self.noise_layer = NoiseLayer(shape=self.fc_layer.in_features, stddev=0, seed=self.config.training.seed) # no noise to start
 
         def forward(self, x):
             z = self.model(x)
@@ -68,7 +70,6 @@ def apply_gaussian_noise_defense(config, model:AbstractClassifier):
         
             torch.save(state, path)
             
-
         def load_model(self, file_path, map_location = None):
             if map_location is None:
                 state = torch.load(file_path, weights_only=True)
@@ -91,7 +92,6 @@ def apply_gaussian_noise_defense(config, model:AbstractClassifier):
                 return self.noise_layer
 
     gaussian_noise_defended_model = GaussianNoise(config)
-
     return gaussian_noise_defended_model
 
 

@@ -31,7 +31,5 @@ def apply_RoLSS_defense(config, model:AbstractClassifier):
             
             self.model = skip_defended_model # replace our previously loaded model
 
-
     RoLSS_defended_model = RoLSS(config)
-
     return RoLSS_defended_model
