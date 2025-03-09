@@ -33,6 +33,7 @@ Using our structure, we have already implemented a wide range of model inversion
 | TL-DMI     | [Ho et al. 2024](https://arxiv.org/abs/2405.05588) | [Github](https://github.com/hosytuyen/TL-DMI) | tldmi
 | Neg-LS     | [Struppek et al. 2024](https://arxiv.org/abs/2310.06549)   | [Github](https://github.com/LukasStruppek/Plug-and-Play-Attacks) | label_smoothing
 | RoLSS      | [Hao et al. 2024](https://link.springer.com/chapter/10.1007/978-3-031-73004-7_9) | [Github](https://github.com/Pillowkoh/RoLSS/) | rolss
+| Gaussian-Noise (basic) | [Chaudhuri et al. 2024](https://arxiv.org/abs/2404.02866) | [[Github](https://github.com/facebookresearch/hcrbounds)] | gaussian_noise
 | BiDO       | [Peng et al. 2022](https://arxiv.org/abs/2206.05483)   | [Github](https://github.com/AlanPeng0897/Defend_MI) | bido
 | MID        | [Wang et al. 2020](https://arxiv.org/abs/2009.05241) | [Github](https://github.com/Jiachen-T-Wang/mi-defense) | mid
 
