@@ -62,20 +62,24 @@ The datasets are implemented with automatic downloading and processing for ease 
 |----------|----------|---------|---------|
 | Facescrub     | 141,130 |  High-Res  | Automatic  |
 | Stanford Dogs | 20,580  |  High-Res  | Automatic  |
-| CelebA        | 202,599 |  High-Res  | Automatic* |
+| CelebA        | 202,599 |  High-Res  | Automatic** |
 | CIFAR10       | 60.000  |  Low-Res   | Automatic  |
 | MNIST         | 60.000  |  Low-Res   | Automatic  |
 | FashionMNIST  | 60.000  |  Low-Res   | Automatic  |
 
-(*) There is a torchvision bug (link?) at the moment with downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
+(**) There is a torchvision bug (link?) at the moment with downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
 
-### Attack Metrics and Analysis Tools
+### Attack Metrics
 | Name | Example Usage | Description |
 | -------- | -------- | ------------------ |
 | AttackAcc@1 | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Accuracy of an Inception evaluation model in correctly classifying faces produced by the attack |
 | AttackAcc@5 | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Same as above, with top5-accuracy |
-| $\delta_{face}$ | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Average L2 distance to nearest target image, in the FaceNet evaluation model feature space |
-| $\delta_{eval}$ | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Same as above, but instead in Inception evaluation model feature space |
+| Average $\delta_{face}$ | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Average L2 distance to nearest training data image in the target class, averaged over all target classes, in the FaceNet evaluation model feature space |
+| Average $\delta_{eval}$ | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Same as above, but instead in Inception evaluation model feature space |
+| Per-class $\delta_{face}$ | Novel | Histogram of average L2 distances to nearest training data image in the target class, for each target class, in the FaceNet evaluation model feature space |
+| Per-class $\delta_{eval}$ | Novel | Same as above, but instead in Inception evaluation model feature space
+| FID | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Frechet Inception Distance between Inception feature distributions of training data from the target class and their corresponding reconstructions |
+| Knowledge Extraction Score * | [Struppek et al. 2024](https://arxiv.org/abs/2310.06549) | Classification accuracy of a surrogate model trained on the reconstructed images |
 
 
 ## Installation and setup
