@@ -50,7 +50,7 @@ We thank the authors of the above papers for making their code publicly availabl
 
 ### Classifiers
 
-We support a range of pretrained classifiers from torchvision, including ResNet18, ResNet152, and Inceptionv3. We also provide a simple MLP and CNN implementation for low-resolution, small datasets.
+We support a range of pretrained classifiers from torchvision, including the ResNet, DenseNet, ResNeXt, and ResNeSt families, as well as Inceptionv3. We also provide a simple MLP and CNN implementation for low-resolution, small datasets.
 
 A custom classifier can also be tested by implementing `CustomClassifier` in `custom_classifier.py` and running `model=custom` in the command line. Parameters for this can be added easily in `configuration/classifier/custom.yaml`. 
 
@@ -67,7 +67,7 @@ The datasets are implemented with automatic downloading and processing for ease 
 | MNIST         | 60.000  |  Low-Res   | Automatic  |
 | FashionMNIST  | 60.000  |  Low-Res   | Automatic  |
 
-(**) There is a torchvision bug ([link](https://github.com/pytorch/vision/issues/8204#issuecomment-1935737815)) at the moment with downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
+** There is a torchvision bug ([link](https://github.com/pytorch/vision/issues/8204#issuecomment-1935737815)) at the moment with downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
 
 ### Attack Metrics
 | Name | Example Usage | Description |
