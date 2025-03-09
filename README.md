@@ -124,16 +124,16 @@ python train_classifier.py dataset=CelebA model=pretrained model.architecture="R
 To defend classifiers, simply add the defense in the command for training classifiers:
 
 ```
-python train_classifier.py defense=tldmi dataset=CelebA model=pretrained model.architecture="ResNet18" training.wandb.track=True
+python train_classifier.py defense=tldmi defense.freeze_layers=7 dataset=FaceScrub model=pretrained model.architecture="ResNet18" training.wandb.track=True
 ```
-All the available configurable parameters for training and defending classifiers can be found in the `.yaml` files located in `configuration/classifier/`.
+All the available configurable parameters and default values for training and defending classifiers can be found in the `.yaml` files located in `configuration/classifier/`.
 
 ### Attacking Classifiers
-Attacking classifiers can be done configured similarly:
+Attacking classifiers can be configured similarly:
 ```
-python run_model_inversion.py dataset=FaceScrub attack=plug_and_play target_wandb_id="TARGET_RUN_ID" attack.evaluation_model.wandb_id="EVAL_RUN_ID" training.wandb.track=True
+python run_model_inversion.py attack=plug_and_play target_wandb_id="TARGET_RUN_ID" attack.evaluation_model.wandb_id="EVAL_RUN_ID" training.wandb.track=True
 ```
-All the available configurable parameters for attacking trained classifiers can be found in the `.yaml` files located in `configuration/model_inversion/`.
+All the available configurable parameters and default values for attacking trained classifiers can be found in the `.yaml` files located in `configuration/model_inversion/`.
 
 
 
