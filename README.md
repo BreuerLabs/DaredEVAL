@@ -26,7 +26,7 @@ The following are part of our Hydra configuration for training classifiers:
 * models (e.g. `model=cnn` or `model=pretrained model.architecture=resnet18 model.hyper.lr=0.0001`)
 * target model training (e.g. `training.wandb.track=True training.device=cuda`)
 * defenses (e.g. `defense=bido defense.b1=0.1 defense.b2=0.05` or `defense=tldmi defense.freeze_layers=6`)
-Using our structure, we have already implemented a wide range of model inversion defenses, attacks, target classifiers, and datasets for quick evaluation of SOTA methods (Features that are still in development will be marked by `*`):
+Using our structure, we have already implemented a wide range of model inversion defenses, attacks, target classifiers, and datasets for quick evaluation of SOTA methods (Features that are still in development are marked by `*`):
 
 ### Defenses
 | Name | Citation | Implementation | Command (defense=) | 
