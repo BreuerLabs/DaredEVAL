@@ -1,44 +1,24 @@
-# MI-Eval: Re-thinking Defense Application and Evaluation for Model Inversion
+*“We don’t manually re-code backprop or rewrite accuracy metrics every time we train a new model, so why are we still re-hacking training data privacy evaluations?”*
 
-MI-Eval is a collection of tools for researching model inversion attacks and defenses for deep classification models.
+Testing whether a model leaks its training data is essential to ML security. Yet researchers still test vulnerabilities and apply defenses using custom one-off scripts, low-level PyTorch hacking, and crudely aggregated privacy metrics that miss important leaks. This is slow, fragmented, theoretically misaligned, and empirically incomparable across datasets and defenses, and it’s holding back progress in the field.
 
-### Disclaimer
-This repository is still in alpha. Features that are still in development will be marked by `*`.
+# ReconKit: A Declarative Paradigm for Model Inversion Evaluation
+**ReconKit** is a new tool that enables us to concisely and elegantly describe any defense, apply it to any PyTorch model, then rigorously evaluate how it leaks training data information without writing a new ad-hoc codebase each time.
+
+The core idea is straightforward: Defenses are implemented as functions that take in an "undefended" PyTorch model and output a new "defended" PyTorch model that inherits from the undefended model. The implementation of this function then amounts to simply overwriting the specific methods of the model that are affected by the defense, isolating the essential features of the defense and saving valuable coding time. The defense is then added to our hierarchical configuration structure using Hydra, so that running the defense can be as simple as
+```python train_classifier.py model=<MODEL> dataset=<DATASET> defense=<NEW-DEFENSE>```
+Under the hood, ReconKit runs structured empirical evaluations and delivers a rich and reproducible set of vulnerability measures that make rigorous leakage comparisons possible. This means:
+- Abundant and clear apples-to-apples evaluations across models, datasets, and defenses;
+- A unified and consistent way to describe and compare defenses’ essential features;
+- Reproducibility at scale and privacy insights that generalize.
 
 ## Table of Contents
-- [Installation and setup](#installation-and-setup)
 - [Features](#features)
+- [Installation and setup](#installation-and-setup)
 - [Usage](#usage)
 
-## Installation and setup
-
-This repository uses original authors' code where possible for defense and attack implementations; as such, it clones several other repos into the repository. This process has been streamlined using the `setup_files.bash` script below.
-
-### Steps
-1. Clone the repository.
-2. Setup and activate your Python environment. The repository is developed for use with Python 3.11. For example, using conda:
-```
-conda create -n ENVIRONMENT_NAME python=3.11
-```
-3. Install dependencies.
-```
-pip install -r requirements.txt
-pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
-```
-4. Run bash script for setting up other repositories and downloading pretrained GAN's.
-```
-bash setup_files.bash
-```
-5. Weights and Biases Logging (Optional, but recommended).
-   - Setup a [Weights and Biases](https://wandb.ai/site/) account
-   - Create a project
-   - Create a [wandb API key](https://docs.wandb.ai/quickstart/), make a file called `secret.txt` in the main scope of the repository, and paste the API key there.
-   - Set the entity and project names in the configuration (`configuration/classifier/training/default.yaml` and `configuration/model_inversion/training/default.yaml` respectively)
-   - Run scripts with `training.wandb.track=True` in the command line, or set it as default in the configuration.
-   - Enjoy smart and scalable cloud logging for training classifiers and model inversion. 🚀 
-
 ## Features
-This codebase supports a wide range of model inversion defenses, attacks, and datasets. To see some examples, this [wandb report](https://api.wandb.ai/links/BreuerLab/rbbr8jqr) contains results from running a Plug-and-Play attack on various model defenses, with some additional insights into the training of target models.
+Using our structure, we have already implemented a wide range of model inversion defenses, attacks, target classifiers, and datasets for quick evaluation of SOTA methods.
 
 ### Defenses
 | Name | Citation | Implementation | Command (defense=) | 
@@ -80,6 +60,35 @@ Most of the datasets are implemented with automatic downloading and processing.
 
 (*) There is a torchvision bug (link?) at the moment with downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
 
+## Installation and setup
+
+This repository uses original authors' code where possible for defense and attack implementations; as such, it clones several other repos into the repository. This process has been streamlined using the `setup_files.bash` script below.
+
+### Steps
+1. Clone the repository.
+2. Setup and activate your Python environment. The repository is developed for use with Python 3.11. For example, using conda:
+```
+conda create -n ENVIRONMENT_NAME python=3.11
+```
+3. Install dependencies.
+```
+pip install -r requirements.txt
+pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
+```
+4. Run bash script for setting up other repositories and downloading pretrained GAN's.
+```
+bash setup_files.bash
+```
+5. Weights and Biases Logging (Optional, but recommended).
+   - Setup a [Weights and Biases](https://wandb.ai/site/) account
+   - Create a project
+   - Create a [wandb API key](https://docs.wandb.ai/quickstart/), make a file called `secret.txt` in the main scope of the repository, and paste the API key there.
+   - Set the entity and project names in the configuration (`configuration/classifier/training/default.yaml` and `configuration/model_inversion/training/default.yaml` respectively)
+   - Run scripts with `training.wandb.track=True` in the command line, or set it as default in the configuration.
+   - Enjoy smart and scalable cloud logging for training classifiers and model inversion. 🚀 
+
+
+
 ## Usage
 The repository utilizes [Hydra](https://hydra.cc/docs/intro/) for dynamic hierachical configuration. The default configuration values can be changed in the configuration folder or via the Hydra CLI syntax.
 
@@ -101,3 +110,6 @@ Attacking classifiers can be done configured similarly:
 ```
 python run_model_inversion.py dataset=FaceScrub attack=plug_and_play target_wandb_id="TARGET_RUN_ID" attack.evaluation_model.wandb_id="EVAL_RUN_ID" training.wandb.track=True
 ```
+
+### Disclaimer
+This repository is still in alpha. Features that are still in development will be marked by `*`.
