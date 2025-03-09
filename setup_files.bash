@@ -6,6 +6,7 @@ set -e
 # Step 1: Filesystem setup
 echo "Cloning required repositories..."
 git clone https://github.com/ShailenSmith/Defend_MI.git
+git clone https://github.com/ShailenSmith/RoLSS.git
 git clone https://github.com/RasmusTorp/Plug_and_Play_Attacks.git
 git clone https://github.com/NVlabs/stylegan2-ada-pytorch.git
 
