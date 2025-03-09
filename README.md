@@ -34,7 +34,7 @@ Using our structure, we have already implemented a wide range of model inversion
 | TL-DMI     | [Ho et al. 2024](https://arxiv.org/abs/2405.05588) | [Github](https://github.com/hosytuyen/TL-DMI) | tldmi
 | Neg-LS     | [Struppek et al. 2024](https://arxiv.org/abs/2310.06549)   | [Github](https://github.com/LukasStruppek/Plug-and-Play-Attacks) | label_smoothing
 | RoLSS      | [Hao et al. 2024](https://link.springer.com/chapter/10.1007/978-3-031-73004-7_9) | [Github](https://github.com/Pillowkoh/RoLSS/) | rolss
-| Gaussian-Noise (basic) | [Chaudhuri et al. 2024](https://arxiv.org/abs/2404.02866) | [[Github](https://github.com/facebookresearch/hcrbounds)] | gaussian_noise
+| Gaussian-Noise (basic) | [Chaudhuri et al. 2024](https://arxiv.org/abs/2404.02866) | [Github](https://github.com/facebookresearch/hcrbounds) | gaussian_noise
 | BiDO       | [Peng et al. 2022](https://arxiv.org/abs/2206.05483)   | [Github](https://github.com/AlanPeng0897/Defend_MI) | bido
 | MID        | [Wang et al. 2020](https://arxiv.org/abs/2009.05241) | [Github](https://github.com/Jiachen-T-Wang/mi-defense) | mid
 
@@ -68,6 +68,15 @@ The datasets are implemented with automatic downloading and processing for ease 
 | FashionMNIST  | 60.000  |  Low-Res   | Automatic  |
 
 (*) There is a torchvision bug (link?) at the moment with downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
+
+### Attack Metrics and Analysis Tools
+| Name | Example Usage | Description |
+| -------- | -------- | ------------------ |
+| AttackAcc@1 | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Accuracy of an Inception evaluation model in correctly classifying faces produced by the attack |
+| AttackAcc@5 | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Same as above, with top5-accuracy |
+| $\delta_{face}$ | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Average L2 distance to nearest target image, in the FaceNet evaluation model feature space |
+| $\delta_{eval}$ | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Same as above, but instead in Inception evaluation model feature space |
+
 
 ## Installation and setup
 
