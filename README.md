@@ -23,7 +23,7 @@ Under the hood, ReconKit runs structured empirical evaluations and delivers a ri
 The following are part of our Hydra configuration for training classifiers:
 * models (e.g. `model=cnn` or `model=pretrained model.architecture=resnet18 model.hyper.lr=0.0001`)
 * target model training (e.g. `training.wandb.track=True training.device=cuda`)
-* defenses (e.g. `defense=bido defense.b1=0.1 defense.b2=0.05` or `defense=tldmi defense.freeze_layers=6`)
+* defenses (e.g. `defense=bido defense.a1=0.1 defense.a2=0.05` or `defense=tldmi defense.freeze_layers=6`)
 
 Using our structure, we have already implemented a wide range of model inversion defenses, attacks, target classifiers, and datasets for quick evaluation of SOTA methods.
 * Note that as this repository is still in alpha, some features shown are still in development -- these will be marked by `*`:
@@ -39,7 +39,7 @@ Using our structure, we have already implemented a wide range of model inversion
 | MID        | [Wang et al. 2020](https://arxiv.org/abs/2009.05241) | [Github](https://github.com/Jiachen-T-Wang/mi-defense) | mid
 
 ### Attacks
-| Name | Resolution | Citation | Implementation | Command (attack=) | 
+| Name | Resolution | Paper | Implementation | Command (attack=) | 
 |----------|----------|---------|---------| ---------|
 | PPA          | High-Res | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | [Github](https://github.com/LukasStruppek/Plug-and-Play-Attacks) | plug_and_play
 | PLG-MI * | High-Res | [Yuan et al. 2023](https://arxiv.org/abs/2302.09814)   | [Github](https://github.com/LetheSec/PLG-MI-Attack) | plg_mi
@@ -50,9 +50,9 @@ We thank the authors of the above papers for making their code publicly availabl
 
 ### Classifiers
 
-We support a simple MLP and CNN implementation, as well as a range of pretrained classifiers from torchvision, including ResNet18, ResNet152, and Inceptionv3. 
+We support a range of pretrained classifiers from torchvision, including ResNet18, ResNet152, and Inceptionv3. We also provide a simple MLP and CNN implementation for low-resolution, small datasets.
 
-A custom classifier or defenses can also be tested by implementing `CustomClassifier` in `custom_classifier.py` and running `model=custom` in the command line. Parameters for this can be added easily in `configuration/classifier/custom.yaml`. 
+A custom classifier can also be tested by implementing `CustomClassifier` in `custom_classifier.py` and running `model=custom` in the command line. Parameters for this can be added easily in `configuration/classifier/custom.yaml`. 
 
 
 ### Datasets
@@ -122,11 +122,14 @@ To defend classifiers, simply add the defense in the command for training classi
 ```
 python train_classifier.py defense=tldmi dataset=CelebA model=pretrained model.architecture="ResNet18" training.wandb.track=True
 ```
+All the available configurable parameters for training and defending classifiers can be found in the `.yaml` files located in `configuration/classifier/`.
 
 ### Attacking Classifiers
 Attacking classifiers can be done configured similarly:
 ```
 python run_model_inversion.py dataset=FaceScrub attack=plug_and_play target_wandb_id="TARGET_RUN_ID" attack.evaluation_model.wandb_id="EVAL_RUN_ID" training.wandb.track=True
 ```
+All the available configurable parameters for attacking trained classifiers can be found in the `.yaml` files located in `configuration/model_inversion/`.
+
 
 
