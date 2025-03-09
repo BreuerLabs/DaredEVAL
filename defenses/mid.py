@@ -18,7 +18,12 @@ def apply_MID_defense(config, model:AbstractClassifier):
             self.k = self.feat_dim // 2
             self.n_classes = config.dataset.n_classes
             
-            self.model.fc = nn.Identity() # removes final classification layer
+            if hasattr(self.model, "fc"):
+                self.model.fc = nn.Identity()
+            elif hasattr(self.model, "classifier"):
+                self.model.classifier = nn.Identity()
+            else:
+                raise ValueError("Cannot recognize the classification layer of the model")
             
             self.st_layer = nn.Linear(self.feat_dim, self.k * 2)
             self.fc_layer = nn.Linear(self.k, self.n_classes)

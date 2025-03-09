@@ -13,11 +13,22 @@ def apply_gaussian_noise_defense(config, model:AbstractClassifier):
         def __init__(self, config):
             super(GaussianNoise, self).__init__(config)
 
-            self.fc_layer = self.model.fc
-            self.noise_layer = NoiseLayer(shape=self.model.fc.in_features, stddev=0, seed=self.config.training.seed) # no noise to start
-            self.model.fc = nn.Identity() # removes final classification layer
+            if hasattr(self.model, "fc"):
+                self.fc_layer = self.model.fc
+                last_layer_in_features = self.model.fc.in_features
+                self.model.fc = nn.Identity() # removes final classification layer
+            elif hasattr(self.model, "classifier"):
+                self.fc_layer = self.model.classifier
+                last_layer_in_features = self.model.classifier.in_features
+                self.model.classifier = nn.Identity() # removes final classification layer
+            else:
+                raise ValueError("Cannot recognize the classification layer of the model")
+            
 
-        def forward(self, x): # adapted from DefendMI/BiDO/model.py
+            self.noise_layer = NoiseLayer(shape=last_layer_in_features, stddev=0, seed=self.config.training.seed) # no noise to start
+
+
+        def forward(self, x):
             z = self.model(x)
             z_noised = self.noise_layer(z)
             logits = self.fc_layer(z_noised)

@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
-from classifiers.abstract_classifier import AbstractClassifier
 import torchvision
 from torchvision import transforms
 from torchvision.models import densenet, inception, resnet
+
+from classifiers.abstract_classifier import AbstractClassifier
 
 class PreTrainedClassifier(AbstractClassifier):
     
@@ -12,26 +13,96 @@ class PreTrainedClassifier(AbstractClassifier):
         self.config = config
         self.model = self.init_model()
         
-    def init_model(self):
+    def init_model(self): # adapted from _build_model() in Plug-and-Play-Attacks/models/classifier.py
         super(PreTrainedClassifier, self).init_model()
         self.n_channels = self.config.dataset.input_size[0]
 
-        arch = self.config.model.architecture.lower()
+        arch = self.config.model.architecture.lower().replace('-',
+                                                             '').replace('_',
+                                                                        '').strip()
         pretrained = self.config.model.pretrained
         if 'resnet' in arch:
-            if arch == 'resnet152':
-                weights = resnet.ResNet152_Weights.DEFAULT if pretrained else None
-                model = resnet.resnet152(weights=weights)
-                self.zdim = 2048
-            elif arch == 'resnet18':
+            if arch == 'resnet18':
                 weights = resnet.ResNet18_Weights.DEFAULT if pretrained else None
                 model = resnet.resnet18(weights=weights)
-                self.zdim = 512
+            elif arch == 'resnet34':
+                weights = resnet.ResNet34_Weights.DEFAULT if pretrained else None
+                model = resnet.resnet34(weights=weights)
+            elif arch == 'resnet50':
+                weights = resnet.ResNet50_Weights.DEFAULT if pretrained else None
+                model = resnet.resnet50(weights=weights)
+            elif arch == 'resnet101':
+                weights = resnet.ResNet101_Weights.DEFAULT if pretrained else None
+                model = resnet.resnet101(weights=weights)
+            elif arch == 'resnet152':
+                weights = resnet.ResNet152_Weights.DEFAULT if pretrained else None
+                model = resnet.resnet152(weights=weights)
+            else:
+                raise RuntimeError(
+                    f'No ResNet with the name {arch} available'
+                )
+
 
             if self.config.dataset.n_classes != model.fc.out_features:
                 # exchange the last layer to match the desired numbers of classes
                 model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
 
+        elif 'densenet' in arch:
+            if arch == 'densenet121':
+                weights = densenet.DenseNet121_Weights.DEFAULT if pretrained else None
+                model = densenet.densenet121(weights=weights)
+            elif arch == 'densenet161':
+                weights = densenet.DenseNet161_Weights.DEFAULT if pretrained else None
+                model = densenet.densenet161(weights=weights)
+            elif arch == 'densenet169':
+                weights = densenet.DenseNet169_Weights.DEFAULT if pretrained else None
+                model = densenet.densenet169(weights=weights)
+            elif arch == 'densenet201':
+                weights = densenet.DenseNet201_Weights.DEFAULT if pretrained else None
+                model = densenet.densenet201(weights=weights)
+            else:
+                raise RuntimeError(
+                    f'No DenseNet with the name {arch} available'
+                )
+
+            if self.config.dataset.n_classes != model.classifier.out_features:
+                # exchange the last layer to match the desired numbers of classes
+                model.classifier = nn.Linear(model.classifier.in_features, self.config.dataset.n_classes)
+
+        elif 'resnest' in arch:
+            torch.hub.list('zhanghang1989/ResNeSt', force_reload=True)
+            if arch == 'resnest50':
+                model = torch.hub.load('zhanghang1989/ResNeSt', 'resnest50', pretrained=pretrained)
+            elif arch == 'resnest101':
+                model = torch.hub.load('zhanghang1989/ResNeSt', 'resnest101', pretrained=pretrained)
+            elif arch == 'resnest200':
+                model = torch.hub.load('zhanghang1989/ResNeSt', 'resnest200', pretrained=pretrained)
+            elif arch == 'resnest269':
+                model = torch.hub.load('zhanghang1989/ResNeSt', 'resnest269', pretrained=pretrained)
+            else:
+                raise RuntimeError(
+                    f'No ResNeSt with the name {arch} available'
+                )
+            
+            if self.config.dataset.n_classes != model.fc.out_features:
+                # exchange the last layer to match the desired numbers of classes
+                model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
+
+        elif 'resnext' in arch:
+            if arch == 'resnext50':
+                weights = resnet.ResNeXt50_32X4D_Weights.DEFAULT if pretrained else None
+                model = resnet.resnext50_32x4d(weights=weights)
+            elif arch == 'resnext101':
+                weights = resnet.ResNeXt101_32X8D_Weights.DEFAULT if pretrained else None
+                model = resnet.resnext101_32x8d(weights=weights)
+            else:
+                raise RuntimeError(
+                    f'No ResNeXt with the name {arch} available'
+                )
+            
+            if self.config.dataset.n_classes != model.fc.out_features:
+                # exchange the last layer to match the desired numbers of classes
+                model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
 
         elif 'inception' in arch:
             weights = inception.Inception_V3_Weights.DEFAULT if pretrained else None
