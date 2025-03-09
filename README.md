@@ -67,7 +67,7 @@ The datasets are implemented with automatic downloading and processing for ease 
 | MNIST         | 60.000  |  Low-Res   | Automatic  |
 | FashionMNIST  | 60.000  |  Low-Res   | Automatic  |
 
-(**) There is a torchvision bug (link?) at the moment with downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
+(**) There is a torchvision bug ([link](https://github.com/pytorch/vision/issues/8204#issuecomment-1935737815)) at the moment with downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
 
 ### Attack Metrics
 | Name | Example Usage | Description |
@@ -80,7 +80,6 @@ The datasets are implemented with automatic downloading and processing for ease 
 | Per-class $\delta_{eval}$ | Novel | Same as above, but instead in Inception evaluation model feature space
 | FID | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Frechet Inception Distance between Inception feature distributions of training data from the target class and their corresponding reconstructions |
 | Knowledge Extraction Score * | [Struppek et al. 2024](https://arxiv.org/abs/2310.06549) | Classification accuracy of a surrogate model trained on the reconstructed images |
-
 
 ## Installation and setup
 
@@ -108,8 +107,6 @@ bash setup_files.bash
    - Set the entity and project names in the configuration (`configuration/classifier/training/default.yaml` and `configuration/model_inversion/training/default.yaml` respectively)
    - Run scripts with `training.wandb.track=True` in the command line, or set it as default in the configuration.
    - Enjoy smart and scalable cloud logging for training classifiers and model inversion. 🚀 
-
-
 
 ## Usage
 The repository utilizes [Hydra](https://hydra.cc/docs/intro/) for dynamic hierachical configuration. The default configuration values can be changed in the configuration folder or via the Hydra CLI syntax.
