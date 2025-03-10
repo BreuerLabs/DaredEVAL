@@ -7,8 +7,8 @@
 Testing whether a model **leaks its training data** is essential to **ML security**. Yet researchers still test vulnerabilities and apply defenses using custom one-off scripts, low-level PyTorch hacking, and crudely aggregated privacy metrics that miss important leaks. This is slow, fragmented, theoretically misaligned, and empirically incomparable across datasets and defenses, and it’s holding back progress in the field.
 
 ![Main-GIF](assets/0s-and-1s.gif) ![Main-GIF](assets/0s-and-1s.gif)
-# **daredEval**: *A Declarative Paradigm for Training Data Reconstruction \& Model Inversion Evaluation*  
-# **daredEval**: *A Declarative Paradigm for <u>[Da]</u>ta <u>[Re]</u>construction <u>[D]</u>efense <u>[Eval]</u>uation*  
+[comment]: <> (# **daredEval**: *A Declarative Paradigm for Training Data Reconstruction \& Model Inversion Evaluation*  
+[comment]: <> (# **daredEval**: *A Declarative Paradigm for <u>[Da]</u>ta <u>[Re]</u>construction <u>[D]</u>efense <u>[Eval]</u>uation*  
 # **`daredEval`**: *A Declarative Paradigm for `Da`ta `Re`construction `D`efense `Eval`uation*
 
 **daredEval** is a new tool that enables us to **concisely and elegantly describe** any defense, **apply it** to any PyTorch model, then **rigorously evaluate** how it leaks training data information **without writing a new ad-hoc codebase each time**.
