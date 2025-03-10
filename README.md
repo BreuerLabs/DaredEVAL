@@ -26,7 +26,7 @@ Under the hood, **DaredEVAL runs structured empirical evaluations** and delivers
 **DaredEVAL** is:
 - Streamlined: Focus on what's important and skip boilerplate;
 - Comprehensive;
-- Integrated with Weights and Biases (W&B), HuggingFace, Hydra, etc.
+- Integrated with Weights and Biases (W&B), Hydra, etc.
 - Scalable and maintainable.
 
 ### Table of Contents
