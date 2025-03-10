@@ -9,7 +9,7 @@ The core idea is simple: "Code defenses the way you reason about defenses:"
 - Add your PyTorch model (or pick any standard one);
 - Just tell DAREDEVAL what aspect your defense modifies (e.g., modifies the loss function; or, noises the gradients, or something else);
 - Run one command line: ```python train_classifier.py model=<MODEL> dataset=<DATASET> defense=<NEW-DEFENSE> ```
-- DAREDEVAL takes care of the rest:
+- DAREDEVAL takes care of the rest.
 
 [comment]: <> (Defenses are implemented as functions that take in an "undefended" PyTorch model and output a new "defended" PyTorch model that inherits from the undefended model. The implementation of this function then amounts to simply overwriting the specific methods of the model that are affected by the defense, isolating the essential features of the defense and saving valuable coding time. The defense is then added to our hierarchical configuration structure using Hydra, so that running the defense can be as simple as)
 
