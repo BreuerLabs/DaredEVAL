@@ -124,7 +124,7 @@ bash setup_files.bash
 #### Training Classifiers
 Train a model with any of our models and datasets easily, such as with the following command:
 ```
-python train_classifier.py dataset=CelebA model=pretrained model.architecture="ResNet152" model.hyper.epochs=50 training.wandb.track=True
+python train_classifier.py dataset=FaceScrub model=pretrained model.architecture="ResNet152" model.hyper.epochs=50 training.wandb.track=True
 ```
 
 #### Defending Classifiers
