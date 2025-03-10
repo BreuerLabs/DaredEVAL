@@ -18,8 +18,6 @@ Testing whether a model **leaks its training data** is **essential to ML securit
 - **Run a single command**:  ```bash python train_classifier.py model=<MODEL> dataset=<DATASET> defense=<MY-NEW-DEFENSE>```
 - **DaredEVAL adds your defense takes care of the rest.**  
 
-[comment]: <> (Defenses are implemented as functions that take in an "undefended" PyTorch model and output a new "defended" PyTorch model that inherits from the undefended model. The implementation of this function then amounts to simply overwriting the specific methods of the model that are affected by the defense, isolating the essential features of the defense and saving valuable coding time. The defense is then added to our hierarchical configuration structure using Hydra, so that running the defense can be as simple as)
-
 Under the hood, **DaredEVAL runs structured empirical evaluations** and delivers a **rich and reproducible set of vulnerability measures** that make rigorous leakage comparisons possible. This means:
 - Abundant and clear **apples-to-apples evaluations** across defenses, models, and datasets;
 - A **unified and consistent way to describe and compare defenses’** essential features;
@@ -33,11 +31,11 @@ Under the hood, **DaredEVAL runs structured empirical evaluations** and delivers
 
 ### Table of Contents
 - [Features](#features)
-- [Installation and 5-Minute Quickstart](#5mqs)
+- [5-Minute Quickstart](#5mqs)
 - [More Details](#details)
 
 ### Features
-ReconKit supports a wide range of model inversion defenses, attacks, target classifiers, and datasets for quick evaluation of SOTA methods:
+DaredEVAL supports a wide range of model inversion defenses, attacks, target classifiers, and datasets for quick evaluation of SOTA methods:
 
 #### Defenses
 | Name | Citation | Implementation | Command (defense=) | 
@@ -76,11 +74,11 @@ The datasets are implemented with automatic downloading and processing for ease 
 | Facescrub     | 141,130 |  High-Res  | Automatic  |
 | Stanford Dogs | 20,580  |  High-Res  | Automatic  |
 | CelebA        | 202,599 |  High-Res  | Automatic** |
-| CIFAR10       | 60.000  |  Low-Res   | Automatic  |
-| MNIST         | 60.000  |  Low-Res   | Automatic  |
-| FashionMNIST  | 60.000  |  Low-Res   | Automatic  |
+| CIFAR10       | 60,000  |  Low-Res   | Automatic  |
+| MNIST         | 60,000  |  Low-Res   | Automatic  |
+| FashionMNIST  | 60,000  |  Low-Res   | Automatic  |
 
-** There is a torchvision bug ([link](https://github.com/pytorch/vision/issues/8204#issuecomment-1935737815)) at the moment with downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
+** There is a [torchvision bug](https://github.com/pytorch/vision/issues/8204#issuecomment-1935737815) at the moment when downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
 
 #### Attack Metrics
 | Name                      | Novel? | Description |
@@ -96,7 +94,7 @@ The datasets are implemented with automatic downloading and processing for ease 
 
 \* in development
 
-### 5 Minute Quick Start <a name="5mqs"></a>
+### 5-Minute Quickstart <a name="5mqs"></a>
 
 Get started running a wide range of defenses and attacks in minutes, following the steps below.
 
