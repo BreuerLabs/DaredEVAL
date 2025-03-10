@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 class AbstractClassifier(nn.Module):
     """ 
-    This is an abstract class for the classifiers. It contains the train, forward, predict, save_model, load_model methods. It should not be used directly. 
+    This is an abstract class for the classifiers. It contains the train, forward, predict, save_model, load_model methods, among others. It should not be used directly. 
     """
     
     def __init__(self, config):
@@ -49,15 +49,9 @@ class AbstractClassifier(nn.Module):
             self.optimizer.step()
             self.train_step += 1
 
-            # AbstractClassifiers overwrite this method with anything that needs to be done before the next batch is read
-            self.post_batch()
-
         train_loss = total_loss / loss_calculated
-
         return train_loss
 
-    def post_batch(self):
-        pass
     
     def train_model(self, train_loader, val_loader):
         
@@ -66,7 +60,6 @@ class AbstractClassifier(nn.Module):
             print(f"Using {torch.cuda.device_count()} GPUs!")
             self.model = nn.DataParallel(self.model)
     
-        
         if self.config.training.save_as:
             self.save_as = self.config.training.save_as + ".pth"
         elif self.config.training.wandb.track:
@@ -79,20 +72,22 @@ class AbstractClassifier(nn.Module):
                                               lr=self.config.model.hyper.lr,
                                               betas=(0.9, self.config.model.hyper.beta2),
                                               )
+        else:
+            raise ValueError(f"Optimizer {self.config.model.optimizer} not recognized")
 
         if self.config.model.lr_scheduler == "MultiStepLR": 
             self.lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer,
                                                              milestones=self.config.model.hyper.milestones,
                                                              gamma=self.config.model.hyper.gamma,
                                                              )
+        else:
+            raise ValueError(f"Learning rate scheduler {self.config.model.lr_scheduler} not recognized")
 
         self.train_step = 0
-
-        self.to(self.device)
-        
         best_loss = np.inf
         no_improve_epochs = 0
 
+        self.to(self.device)
         print("\nTraining using ", self.device)
         
         for epoch in tqdm(range(self.config.model.hyper.epochs), desc="Training", total=self.config.model.hyper.epochs):         
@@ -137,16 +132,9 @@ class AbstractClassifier(nn.Module):
             if self.config.model.lr_scheduler:
                 self.lr_scheduler.step()
 
-            self.post_epoch(epoch)
                  
         # Load the best model
         self.load_model(f"classifiers/saved_models/{self.save_as}", map_location=self.device)
-    
-    def pre_train(self):
-        pass
-    
-    def post_epoch(self, epoch):
-        pass
 
     
     def evaluate(self, loader):
@@ -175,17 +163,20 @@ class AbstractClassifier(nn.Module):
         
         return avg_loss, accuracy
 
+
     def get_loss(self, output, target): # calculate loss 
-        
         loss = self.criterionSum(output, target)
         return loss
+
 
     def forward(self, x):
         return self.model(x)
 
+
     def predict(self, X):
         return torch.argmax(self.forward(X), dim=1)
-    
+
+
     def save_model(self, name):
         path = f"classifiers/saved_models/{name}"
         if isinstance(self.model, nn.DataParallel): # self.model is on DataParallel, need to only save self.model.module

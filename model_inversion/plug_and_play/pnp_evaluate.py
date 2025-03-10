@@ -376,13 +376,7 @@ def pnp_evaluate(evaluation_model,
                                   img_size=160,
                                   seed=config.seed)
 
-        # Final logging
-        final_wandb_logging(avg_correct_conf, avg_total_conf, acc_top1,
-                            acc_top5, avg_dist_facenet, avg_dist_inception,
-                            fid_score, precision, recall, density, coverage,
-                            targets, final_targets)
-        
-        
+
         # Plot the m 
         distances_arr_inception = np.array([mean_distances_list_inception[i][1] for i in range(1,len(mean_distances_list_inception))])
         
@@ -408,4 +402,12 @@ def pnp_evaluate(evaluation_model,
             # Log the plot directly to wandb
             wandb.log({"Distances Histogram (FaceNet)": wandb.Image(plt)})
                 
+
+        # Final logging
+        final_wandb_logging(avg_correct_conf, avg_total_conf, acc_top1,
+                            acc_top5, avg_dist_facenet, avg_dist_inception,
+                            fid_score, precision, recall, density, coverage,
+                            targets, final_targets)
+        
+
         

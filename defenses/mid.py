@@ -18,7 +18,16 @@ def apply_MID_defense(config, model:AbstractClassifier):
             self.k = self.feat_dim // 2
             self.n_classes = config.dataset.n_classes
             
-            self.model.fc = nn.Identity() # removes final classification layer
+            # remove final classification layer
+            if hasattr(self.model, "fc"):
+                self.model.fc = nn.Identity()
+            elif hasattr(self.model, "classifier"):
+                self.model.classifier = nn.Identity()
+            elif config.model.name == "CNN" or config.model.name == "MLP":
+                print("Warning: Defense has not been tested with the 'CNN' and 'MLP' models")
+                self.model = nn.Sequential(*list(self.model.children())[:-1])
+            else:  
+                raise ValueError("Cannot recognize the classification layer of the model. Make sure the last layer is named 'fc' or 'classifier'")
             
             self.st_layer = nn.Linear(self.feat_dim, self.k * 2)
             self.fc_layer = nn.Linear(self.k, self.n_classes)
@@ -41,7 +50,42 @@ def apply_MID_defense(config, model:AbstractClassifier):
             iden = iden.view(-1, 1)
         
             return [feature, mu, std, out]
+
+        def forward_only_logits(self, x):
+            ___, ___, ___, out = self(x)
+            return out
         
+        def save_model(self, name):
+            path = f"classifiers/saved_models/{name}"
+            if isinstance(self.model, nn.DataParallel): # self.model, self.st_layer, and self.fc_layer are on DataParallel
+                state = {
+                    "model": self.model.module.state_dict(),
+                    "st_layer": self.st_layer.module.state_dict(),
+                    "fc_layer": self.fc_layer.module.state_dict(),
+                }
+            else:
+                state= {
+                    "model": self.model.state_dict(),
+                    "st_layer": self.st_layer.state_dict(),
+                    "fc_layer": self.fc_layer.state_dict(),
+                }
+            torch.save(state, path)
+
+        def load_model(self, file_path, map_location = None):
+            if map_location is None:
+                state = torch.load(file_path, weights_only=True)
+            else:
+                state = torch.load(file_path, map_location=map_location, weights_only=True)  
+
+            if isinstance(self.model, nn.DataParallel):
+                self.model.module.load_state_dict(state['model'])
+                self.st_layer.module.load_state_dict(state['st_layer'])
+                self.fc_layer.module.load_state_dict(state['fc_layer'])
+            else:
+                self.model.load_state_dict(state['model'])
+                self.st_layer.load_state_dict(state['st_layer'])
+                self.fc_layer.load_state_dict(state['fc_layer'])
+
         def predict(self, x):
             feature, mu, std, out = self(x)
             
@@ -49,18 +93,12 @@ def apply_MID_defense(config, model:AbstractClassifier):
         
             return out
 
-        def debug_forward(self, dataloader):
-            self.to(self.device)
-            dataset = dataloader.dataset
-            x, y = dataset[0]
-            x = x.to(self.device)
-            
-            x = x.unsqueeze(0)
-            
-            feature, mu, std, out = self(x)
-            
-            return [feature, mu, std, out]
-        
+        def train_model(self, train_loader, val_loader):
+            if torch.cuda.device_count() > 1:
+                self.st_layer = nn.DataParallel(self.st_layer) # self.model will be put on DataParallel in super train_model call, so we just need to put the st_layer on DataParallel here
+                self.fc_layer = nn.DataParallel(self.fc_layer) # self.model will be put on DataParallel in super train_model call, so we just need to put the fc_layer on DataParallel here
+
+            return super(MID, self).train_model(train_loader, val_loader)
         
         def get_loss(self, output, target):
             ___, mu, std, out_prob = output
@@ -98,7 +136,18 @@ def apply_MID_defense(config, model:AbstractClassifier):
             accuracy = correct / total_instances
             
             return avg_loss, accuracy
+
+        def debug_forward(self, dataloader):
+            self.to(self.device)
+            dataset = dataloader.dataset
+            x, y = dataset[0]
+            x = x.to(self.device)
+            
+            x = x.unsqueeze(0)
+            
+            feature, mu, std, out = self(x)
+            
+            return [feature, mu, std, out]
             
     protected_model = MID(config)
-    
     return protected_model

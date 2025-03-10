@@ -15,13 +15,7 @@ def get_data_loaders(config):
                                                             test_transform=test_trainsform)
 
     num_workers = config.training.dataloader_num_workers
-
-    try:
-        val_drop_last = config.dataset.val_drop_last
-
-    except Exception as e:
-        print("Warning: val_drop_last not in struct, automatically setting to False")
-        val_drop_last = False
+    val_drop_last = config.dataset.val_drop_last
 
     train_loader = torch.utils.data.DataLoader(train_dataset,
                                             batch_size=config.model.hyper.batch_size,
