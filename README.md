@@ -20,7 +20,7 @@ Under the hood, ReconKit runs structured empirical evaluations and delivers a ri
 
 ## Table of Contents
 - [Features](#features)
-- [Installation-and-5-minute quickstart](#installation-and-5-minute-quickstart)
+- [Installation-and-5-Minute Quickstart](#installation-and-5-minute-quickstart)
 - [Usage](#usage)
 
 ## Features
