@@ -25,10 +25,9 @@ Under the hood, **daredEval runs structured empirical evaluations** and delivers
 - R**eproducibility at scale** and **privacy insights that generalize**.
 
 **daredEval** is:
-- **Streamlined: Focus on what's important and skip boilerplate;**
-- **Comprehensive;**
-- **Fast;**
-- **Scalable;**
+- Streamlined: Focus on what's important and skip boilerplate;**
+- Comprehensive;
+- Scalable.
 
 ### Table of Contents
 - [Features](#features)
