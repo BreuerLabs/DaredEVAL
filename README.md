@@ -24,6 +24,12 @@ Under the hood, **daredEval runs structured empirical evaluations** and delivers
 - A **unified and consistent way to describe and compare defenses’** essential features;
 - R**eproducibility at scale** and **privacy insights that generalize**.
 
+**daredEval** is:
+- **Streamlined: Focus on what's important and skip boilerplate;**
+- **Comprehensive;**
+- **Fast;**
+- **Scalable;**
+
 ### Table of Contents
 - [Features](#features)
 - [Installation and 5-Minute Quickstart](#5mqs)
