@@ -22,7 +22,7 @@ Testing whether a model **leaks its training data** is **essential to ML securit
 Under the hood, **daredEval runs structured empirical evaluations** and delivers a **rich and reproducible set of vulnerability measures** that make rigorous leakage comparisons possible. This means:
 - Abundant and clear **apples-to-apples evaluations** across defenses, models, and datasets;
 - A **unified and consistent way to describe and compare defenses’** essential features;
-- R**eproducibility at scale** and **privacy insights that generalize**.
+- **Reproducibility at scale** and **privacy insights that generalize**.
 
 **daredEval** is:
 - Streamlined: Focus on what's important and skip boilerplate;
