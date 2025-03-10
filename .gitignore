@@ -8,6 +8,9 @@
 .pt
 
 secret.txt
+
+/lca_results
+
 /utils/lambdalabs/lambdalabs_api_key.txt
 *.DS_Store
 .DS_store
