@@ -13,7 +13,7 @@ Testing whether a model **leaks its training data** is essential to **ML securit
 
 ### Core Idea: *Code Defenses the Way You Reason About Defenses*  
 - **Add your PyTorch model** (or pick any standard one);
-- **Declare just what your defense modifies** (e.g., how it changes the loss function, adds gradient noise, modifies architecture);
+- **Declare *just* what your defense modifies** (e.g., how it changes the loss function, adds gradient noise, modifies architecture);
 - **Run a single command**:  ```bash python train_classifier.py model=<MODEL> dataset=<DATASET> defense=<MY-NEW-DEFENSE>```
 - **daredEval adds your defense takes care of the rest.**  
 
