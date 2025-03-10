@@ -4,7 +4,7 @@ from defenses.mid import apply_MID_defense
 from defenses.tldmi import apply_TLDMI_defense
 from defenses.gaussian_noise import apply_gaussian_noise_defense
 from defenses.rolss import apply_RoLSS_defense
-
+from defenses.sparse import apply_sparse_defense
 
 def get_defense(config, model):
     
@@ -27,6 +27,9 @@ def get_defense(config, model):
 
     elif defense_name == "rolss":
         model = apply_RoLSS_defense(config, model)
+
+    elif defense_name == "sparse":
+        model = apply_sparse_defense(config, model)
 
     elif defense_name == "no_defense":
         pass # model stays as is
