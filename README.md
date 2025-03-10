@@ -9,7 +9,7 @@ Testing whether a model **leaks its training data** is **essential to ML securit
 ![Main-GIF](assets/0s-and-1s.gif) ![Main-GIF](assets/0s-and-1s.gif)
 # **`daredEval`**: *A Declarative Paradigm for training `Da`ta `Re`construction `D`efense `Eval`uation*
 
-**daredEval** is a new tool that enables us to **concisely and elegantly describe** any defense, **apply it** to any PyTorch model, then **rigorously evaluate** how it leaks training data information **without writing a new ad-hoc codebase each time**.
+**daredEval** is a new tool that enables us to **concisely and elegantly describe** any model inversion/training data reconstruction defense, **apply it** to any PyTorch model, then **rigorously evaluate** how it leaks training data information **without writing a new ad-hoc codebase each time**.
 
 ### Core Idea: *Code Defenses the Way You Reason About Defenses*  
 - **Add your PyTorch model** (or pick any standard one);
