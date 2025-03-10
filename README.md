@@ -5,10 +5,9 @@ Testing whether a model leaks its training data is essential to ML security. Yet
 # DAREDEVAL: A Declarative Paradigm for Model Inversion Evaluation
 **ReconKit** is a new tool that enables us to concisely and elegantly describe any defense, apply it to any PyTorch model, then rigorously evaluate how it leaks training data information without writing a new ad-hoc codebase each time.
 
-The core idea is simple:
-  
+The core idea is simple: "Code defenses the way you reason about defenses:"
 -    Add your PyTorch model (or pick any standard one);
--    Just tell DAREDEVAL how your defense modifies it (e.g., modifies the loss function; or, noises the gradients, or something else);
+-    Just tell DAREDEVAL what aspect your defense modifies (e.g., modifies the loss function; or, noises the gradients, or something else);
 -   DAREDEVAL takes care of the rest:
 
 [comment]: <> (Defenses are implemented as functions that take in an "undefended" PyTorch model and output a new "defended" PyTorch model that inherits from the undefended model. The implementation of this function then amounts to simply overwriting the specific methods of the model that are affected by the defense, isolating the essential features of the defense and saving valuable coding time. The defense is then added to our hierarchical configuration structure using Hydra, so that running the defense can be as simple as)
