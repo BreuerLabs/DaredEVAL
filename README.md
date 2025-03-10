@@ -27,7 +27,8 @@ Under the hood, **daredEval runs structured empirical evaluations** and delivers
 **daredEval** is:
 - Streamlined: Focus on what's important and skip boilerplate;
 - Comprehensive;
-- Scalable.
+- Integrated with Weights and Biases, HuggingFace, Hydra, etc.
+- Scalable and maintainable.
 
 ### Table of Contents
 - [Features](#features)
