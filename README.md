@@ -1,23 +1,28 @@
 *“We don’t manually re-code backprop or rewrite accuracy metrics every time we train a new model, so why are we still re-hacking training data privacy evaluations?”*
 
-Testing whether a model leaks its training data is essential to ML security. Yet researchers still test vulnerabilities and apply defenses using custom one-off scripts, low-level PyTorch hacking, and crudely aggregated privacy metrics that miss important leaks. This is slow, fragmented, theoretically misaligned, and empirically incomparable across datasets and defenses, and it’s holding back progress in the field.
+Testing whether a model **leaks its training data** is essential to **ML security**. Yet researchers still test vulnerabilities and apply defenses using custom one-off scripts, low-level PyTorch hacking, and crudely aggregated privacy metrics that miss important leaks. This is slow, fragmented, theoretically misaligned, and empirically incomparable across datasets and defenses, and it’s holding back progress in the field.
 
 ![Main-GIF](assets/0s-and-1s.gif) ![Main-GIF](assets/0s-and-1s.gif)
-# DAREDEVAL: A Declarative Paradigm for Model Inversion Evaluation
-**DAREDEVAL** is a new tool that enables us to concisely and elegantly describe any defense, apply it to any PyTorch model, then rigorously evaluate how it leaks training data information without writing a new ad-hoc codebase each time.
+# daredEval: A Declarative Paradigm for Model Inversion Evaluation
+**daredEval** is a new tool that enables us to **concisely and elegantly describe** any defense, **apply it** to any PyTorch model, then **rigorously evaluate** how it leaks training data information **without writing a new ad-hoc codebase each time**.
 
-The core idea is simple: "Code defenses the way you reason about defenses:"
-- Add your PyTorch model (or pick any standard one);
-- Just tell DAREDEVAL what aspect your defense modifies (e.g., modifies the loss function; or, noises the gradients, or something else);
-- Run one command line: ```python train_classifier.py model=<MODEL> dataset=<DATASET> defense=<NEW-DEFENSE> ```
-- DAREDEVAL takes care of the rest.
+## **Core Idea: Code Defenses the Way You Reason About Defenses**  
+- **Add your PyTorch model** (or pick any standard one).  
+- **Declare what your defense modifies** (e.g., **loss function, gradient noise, architecture**).  
+- **Run a single command**:  
+
+  ```bash
+  python train_classifier.py model=<MODEL> dataset=<DATASET> defense=<NEW-DEFENSE>
+  ```
+
+- **daredEval takes care of the rest.**  
 
 [comment]: <> (Defenses are implemented as functions that take in an "undefended" PyTorch model and output a new "defended" PyTorch model that inherits from the undefended model. The implementation of this function then amounts to simply overwriting the specific methods of the model that are affected by the defense, isolating the essential features of the defense and saving valuable coding time. The defense is then added to our hierarchical configuration structure using Hydra, so that running the defense can be as simple as)
 
-Under the hood, ReconKit runs structured empirical evaluations and delivers a rich and reproducible set of vulnerability measures that make rigorous leakage comparisons possible. This means:
-- Abundant and clear apples-to-apples evaluations across models, datasets, and defenses;
-- A unified and consistent way to describe and compare defenses’ essential features;
-- Reproducibility at scale and privacy insights that generalize.
+Under the hood, **daredEval runs structured empirical evaluations** and delivers a **rich and reproducible set of vulnerability measures** that make rigorous leakage comparisons possible. This means:
+- Abundant and clear **apples-to-apples evaluations** across models, datasets, and defenses;
+- A **unified and consistent way to describe and compare defenses’** essential features;
+- R**eproducibility at scale** and **privacy insights that generalize**.
 
 ## Table of Contents
 - [Features](#features)
