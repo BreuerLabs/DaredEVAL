@@ -6,7 +6,6 @@
 
 Testing whether a model **leaks its training data** is **essential to ML security**. Yet researchers still test vulnerabilities and apply defenses using custom one-off scripts, low-level PyTorch hacking, and crudely aggregated privacy metrics that miss important leaks. This is slow, fragmented, theoretically misaligned, and empirically incomparable across datasets and defenses, and it’s holding back progress in the field.
 
-![example-gif](assets/0s-and-1s.gif)
 ![daredEval-gif](assets/daredEval-gif-98mb.gif)
 
 # **`daredEval`**:  *A Declarative Paradigm for Training `Da`ta `Re`construction `D`efense `Eval`uation*
