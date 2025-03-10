@@ -20,7 +20,7 @@ Under the hood, ReconKit runs structured empirical evaluations and delivers a ri
 
 ## Table of Contents
 - [Features](#features)
-- [Installation and setup](#installation-and-5-minute quickstart)
+- [installation-and-5-minute quickstart](#installation-and-5-minute-quickstart)
 - [Usage](#usage)
 
 ## Features
@@ -85,7 +85,7 @@ The datasets are implemented with automatic downloading and processing for ease 
 | FID | [Struppek et al. 2022](https://proceedings.mlr.press/v162/struppek22a.html) | Frechet Inception Distance between Inception feature distributions of training data from the target class and their corresponding reconstructions |
 | Knowledge Extraction Score * | [Struppek et al. 2024](https://arxiv.org/abs/2310.06549) | Classification accuracy of a surrogate model trained on the reconstructed images |
 
-## Installation and setup
+## Installation and 5-minute quickstart
 
 This repository uses original authors' code where possible for defense and attack implementations; as such, it clones several other repos into the repository. This process has been streamlined using the `setup_files.bash` script below.
 
