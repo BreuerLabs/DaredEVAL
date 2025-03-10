@@ -29,6 +29,12 @@ Under the hood, **DaredEVAL runs structured empirical evaluations** and delivers
 - Integrated with Weights and Biases (W&B), Hydra, etc.
 - Scalable and maintainable.
 
+### Authors
+Created by Breuer Labs
+- [Adam Breuer](https://www.adambreuer.com/)
+- [Shailen Smith](https://shailensmith.github.io/)
+- [Rasmus Torp](https://github.com/RasmusTorp)
+
 ### Table of Contents
 - [Features](#features)
 - [5-Minute Quickstart](#5mqs)
