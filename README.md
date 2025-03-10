@@ -11,7 +11,7 @@ Testing whether a model **leaks its training data** is essential to **ML securit
 
 **daredEval** is a new tool that enables us to **concisely and elegantly describe** any defense, **apply it** to any PyTorch model, then **rigorously evaluate** how it leaks training data information **without writing a new ad-hoc codebase each time**.
 
-### **Core Idea: *Code Defenses the Way You Reason About Defenses* **  
+### Core Idea: *Code Defenses the Way You Reason About Defenses*  
 - **Add your PyTorch model** (or pick any standard one);
 - **Declare just what your defense modifies** (e.g., how it changes the loss function, adds gradient noise, modifies architecture);
 - **Run a single command**:  ```bash python train_classifier.py model=<MODEL> dataset=<DATASET> defense=<MY-NEW-DEFENSE>```
