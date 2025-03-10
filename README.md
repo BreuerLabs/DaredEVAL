@@ -1,6 +1,10 @@
 
 *"We don’t manually re-code backprop or rewrite accuracy metrics every time we train a new model, so why are we still re-hacking training data privacy evaluations?"*
 
+---
+*"We don’t manually re-code backprop or rewrite accuracy metrics every time we train a new model, so why are we still re-hacking training data privacy evaluations?"*
+---
+
 
 Testing whether a model **leaks its training data** is essential to **ML security**. Yet researchers still test vulnerabilities and apply defenses using custom one-off scripts, low-level PyTorch hacking, and crudely aggregated privacy metrics that miss important leaks. This is slow, fragmented, theoretically misaligned, and empirically incomparable across datasets and defenses, and it’s holding back progress in the field.
 
