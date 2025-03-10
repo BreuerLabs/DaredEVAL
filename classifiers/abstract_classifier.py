@@ -75,7 +75,11 @@ class AbstractClassifier(nn.Module):
         else:
             raise ValueError(f"Optimizer {self.config.model.optimizer} not recognized")
 
-        if self.config.model.lr_scheduler == "MultiStepLR": 
+        
+        if not self.config.model.lr_scheduler:
+            self.lr_scheduler = None
+        
+        elif self.config.model.lr_scheduler == "MultiStepLR": 
             self.lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer,
                                                              milestones=self.config.model.hyper.milestones,
                                                              gamma=self.config.model.hyper.gamma,
