@@ -6,26 +6,26 @@
 
 Testing whether a model **leaks its training data** is **essential to ML security**. Yet researchers still test vulnerabilities and apply defenses using custom one-off scripts, low-level PyTorch hacking, and crudely aggregated privacy metrics that miss important leaks. This is slow, fragmented, theoretically misaligned, and empirically incomparable across datasets and defenses, and it’s holding back progress in the field.
 
-![daredEval-gif](assets/daredEval-gif-98mb.gif)
+![DaredEVAL-gif](assets/daredEval-gif-98mb.gif)
 
-# **`daredEVAL`**:  *A Declarative Paradigm for Training `Da`ta `Re`construction `D`efense `EVAL`uation*
+# **`DaredEVAL`**:  *A Declarative Paradigm for Training `Da`ta `Re`construction `D`efense `EVAL`uation*
 
-**daredEVAL** is a new tool that enables us to **concisely and elegantly describe** any model inversion/training data reconstruction defense, **apply it** to any PyTorch model, then **rigorously evaluate** how it leaks training data information **without writing a new ad-hoc codebase each time**.
+**DaredEVAL** is a new tool that enables us to **concisely and elegantly describe** any model inversion/training data reconstruction defense, **apply it** to any PyTorch model, then **rigorously evaluate** how it leaks training data information **without writing a new ad-hoc codebase each time**.
 
 ### Core Idea: *Code Defenses the Way You Reason About Defenses*  
 - **Add your PyTorch model** (or pick any standard one);
 - **Declare *just* what your defense modifies** (e.g., how it changes the loss function, adds gradient noise, modifies architecture);
 - **Run a single command**:  ```bash python train_classifier.py model=<MODEL> dataset=<DATASET> defense=<MY-NEW-DEFENSE>```
-- **daredEVAL adds your defense takes care of the rest.**  
+- **DaredEVAL adds your defense takes care of the rest.**  
 
 [comment]: <> (Defenses are implemented as functions that take in an "undefended" PyTorch model and output a new "defended" PyTorch model that inherits from the undefended model. The implementation of this function then amounts to simply overwriting the specific methods of the model that are affected by the defense, isolating the essential features of the defense and saving valuable coding time. The defense is then added to our hierarchical configuration structure using Hydra, so that running the defense can be as simple as)
 
-Under the hood, **daredEVAL runs structured empirical evaluations** and delivers a **rich and reproducible set of vulnerability measures** that make rigorous leakage comparisons possible. This means:
+Under the hood, **DaredEVAL runs structured empirical evaluations** and delivers a **rich and reproducible set of vulnerability measures** that make rigorous leakage comparisons possible. This means:
 - Abundant and clear **apples-to-apples evaluations** across defenses, models, and datasets;
 - A **unified and consistent way to describe and compare defenses’** essential features;
 - **Reproducibility at scale** and **privacy insights that generalize**.
 
-**daredEVAL** is:
+**DaredEVAL** is:
 - Streamlined: Focus on what's important and skip boilerplate;
 - Comprehensive;
 - Integrated with Weights and Biases (W&B), HuggingFace, Hydra, etc.
