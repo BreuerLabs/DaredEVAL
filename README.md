@@ -20,7 +20,7 @@ Testing whether a model **leaks its training data** is **essential to ML securit
 [comment]: <> (Defenses are implemented as functions that take in an "undefended" PyTorch model and output a new "defended" PyTorch model that inherits from the undefended model. The implementation of this function then amounts to simply overwriting the specific methods of the model that are affected by the defense, isolating the essential features of the defense and saving valuable coding time. The defense is then added to our hierarchical configuration structure using Hydra, so that running the defense can be as simple as)
 
 Under the hood, **daredEval runs structured empirical evaluations** and delivers a **rich and reproducible set of vulnerability measures** that make rigorous leakage comparisons possible. This means:
-- Abundant and clear **apples-to-apples evaluations** across models, datasets, and defenses;
+- Abundant and clear **apples-to-apples evaluations** across defenses, models, and datasets;
 - A **unified and consistent way to describe and compare defenses’** essential features;
 - R**eproducibility at scale** and **privacy insights that generalize**.
 
