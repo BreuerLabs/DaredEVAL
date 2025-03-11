@@ -380,11 +380,15 @@ def pnp_evaluate(evaluation_model,
         # Plot the m 
         distances_arr_inception = np.array([mean_distances_list_inception[i][1] for i in range(1,len(mean_distances_list_inception))])
         
-        plt.figure(figsize=(10, 6))
-        plt.hist(distances_arr_inception, bins=20, edgecolor='black')
-        plt.xlabel('Feature Distance')
-        plt.ylabel('Frequency')
-        plt.title('Distribution of Feature Distances (Inception)')
+        bins = 20
+        plt = plot_histogram(distances_arr_inception, bins, 'Distribution of Feature Distances (Inception)', 
+               'Feature Distance', 'Frequency', color='lightcoral')
+        
+        # plt.figure(figsize=(10, 6))
+        # plt.hist(distances_arr_inception, bins=20, edgecolor='black')
+        # plt.xlabel('Feature Distance')
+        # plt.ylabel('Frequency')
+        # plt.title('Distribution of Feature Distances (Inception)')
         
         # Log the plot directly to wandb
         wandb.log({"Distances Histogram (Inception)": wandb.Image(plt)})
@@ -393,11 +397,14 @@ def pnp_evaluate(evaluation_model,
             plt.clf()
             distances_arr_facenet = np.array([mean_distances_list_facenet[i][1] for i in range(1,len(mean_distances_list_facenet))])
             
-            plt.figure(figsize=(10, 6))
-            plt.hist(distances_arr_facenet, bins=20, edgecolor='black')
-            plt.xlabel('Feature Distance')
-            plt.ylabel('Frequency')
-            plt.title('Distribution of Feature Distances (FaceNet)')
+            plt = plot_histogram(distances_arr_facenet, bins, 'Distribution of Feature Distances (FaceNet)',
+                                 'Feature Distance', 'Frequency', color='skyblue')
+            
+            # plt.figure(figsize=(10, 6))
+            # plt.hist(distances_arr_facenet, bins=20, edgecolor='black')
+            # plt.xlabel('Feature Distance')
+            # plt.ylabel('Frequency')
+            # plt.title('Distribution of Feature Distances (FaceNet)')
             
             # Log the plot directly to wandb
             wandb.log({"Distances Histogram (FaceNet)": wandb.Image(plt)})
@@ -410,4 +417,12 @@ def pnp_evaluate(evaluation_model,
                             targets, final_targets)
         
 
-        
+def plot_histogram(data, bins, title, xlabel, ylabel, color):
+    plt.figure(figsize=(10, 6))
+    plt.hist(data, bins=bins, edgecolor='black', color=color, alpha=0.8)
+    plt.xlabel(xlabel, fontsize=14)
+    plt.ylabel(ylabel, fontsize=14)
+    plt.title(title, fontsize=16)
+    plt.grid(True, linestyle='--', alpha=0.8)
+    plt.tight_layout()
+    return plt
