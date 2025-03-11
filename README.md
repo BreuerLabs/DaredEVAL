@@ -16,7 +16,7 @@ Testing whether a model **leaks its training data** is **essential to ML securit
 - **Add your PyTorch model** (or pick any standard one);
 - **Declare *just* what your defense modifies** (e.g., how it changes the loss function, adds gradient noise, modifies architecture);
 - **Run a single command**:  ```bash python train_classifier.py model=<MODEL> dataset=<DATASET> defense=<MY-NEW-DEFENSE>```
-- **DaredEVAL adds your defense takes care of the rest.**  
+- **DaredEVAL adds your defense and takes care of the rest.**  
 
 Under the hood, **DaredEVAL runs structured empirical evaluations** and delivers a **rich and reproducible set of vulnerability measures** that make rigorous leakage comparisons possible. This means:
 - Abundant and clear **apples-to-apples evaluations** across defenses, models, and datasets;
