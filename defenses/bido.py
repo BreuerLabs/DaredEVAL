@@ -12,28 +12,28 @@ def apply_bido_defense(config, model:AbstractClassifier):
         def __init__(self, config):
             super(BiDOClassifier, self).__init__(config)
 
-            # remove final classification layer
-            if hasattr(self.model, "fc"):
-                self.fc_layer = self.model.fc
-                self.model.fc = nn.Identity()
-            elif hasattr(self.model, "classifier"):
-                self.fc_layer = self.model.classifier
-                self.model.classifier = nn.Identity()
-            elif config.model.name == "CNN" or config.model.name == "MLP":
-                print("Warning: Defense has not been tested well with the 'CNN' and 'MLP' models")
-                self.fc_layer = list(self.model.children())[-1]
-                self.model = nn.Sequential(*list(self.model.children())[:-1])
-            else:  
-                raise ValueError("Cannot recognize the classification layer of the model. Make sure the last layer is named 'fc' or 'classifier'")
+            # # remove final classification layer
+            # if hasattr(self.model, "fc"):
+            #     self.fc_layer = self.model.fc
+            #     self.model.fc = nn.Identity()
+            # elif hasattr(self.model, "classifier"):
+            #     self.fc_layer = self.model.classifier
+            #     self.model.classifier = nn.Identity()
+            # elif config.model.name == "CNN" or config.model.name == "MLP":
+            #     print("Warning: Defense has not been tested well with the 'CNN' and 'MLP' models")
+            #     self.fc_layer = list(self.model.children())[-1]
+            #     self.model = nn.Sequential(*list(self.model.children())[:-1])
+            # else:  
+            #     raise ValueError("Cannot recognize the classification layer of the model. Make sure the last layer is named 'fc' or 'classifier'")
 
             if not config.dataset.val_drop_last: # drop_last must be True in the validation set dataloader because of how BiDO's test_HSIC function is implemented, this is possible to fix but hasn't been done yet
                 raise ValueError("dataset.val_drop_last=False is not currently supported for BiDO defense. Please set 'dataset.val_drop_last=True' on the command line.")
 
-        def train_model(self, train_loader, val_loader):
-            if torch.cuda.device_count() > 1:
-                self.fc_layer = nn.DataParallel(self.fc_layer) # self.model will be put on DataParallel in super train_model call, so we just need to put the fc_layer on DataParallel here
+        # def train_model(self, train_loader, val_loader):
+        #     if torch.cuda.device_count() > 1:
+        #         # self.fc_layer = nn.DataParallel(self.fc_layer) # self.model will be put on DataParallel in super train_model call, so we just need to put the fc_layer on DataParallel here
 
-            return super(BiDOClassifier, self).train_model(train_loader, val_loader)
+        #     return super(BiDOClassifier, self).train_model(train_loader, val_loader)
 
         def train_one_epoch(self, train_loader): # adapted from DefendMI/BiDO/train_HSIC.py
             train_loss, train_perc_accuracy = engine.train_HSIC(self,
@@ -63,8 +63,8 @@ def apply_bido_defense(config, model:AbstractClassifier):
             return loss, perc_accuracy/100 # convert accuracy from percentage to decimal
 
         def forward(self, x): # adapted from DefendMI/BiDO/model.py
-            z = self.model(x)
-            logits = self.fc_layer(z)
+            z = self.feature_extractor(x)
+            logits = self.classification_layer(z)
             return z, logits
 
         def forward_only_logits(self, x): # necessary for compatibility with attacks
