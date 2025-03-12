@@ -202,14 +202,17 @@ def pnp_evaluate(evaluation_model,
         if not evaluation_model:
             evaluation_model_dist = config.create_evaluation_model() #! TODO: Replace this
             
-        evaluation_model_dist = evaluation_model
-        
-        if isinstance(evaluation_model_dist, torch.nn.DataParallel):
-            evaluation_model_dist.module.fc = torch.nn.Sequential()  # This is the fix 
+        if isinstance(evaluation_model, torch.nn.DataParallel):
+            evaluation_model_dist = evaluation_model.module.model.feature_extractor
         else:
-            evaluation_model_dist.model.fc = torch.nn.Sequential() # This doesn't work
-            evaluation_model_dist = torch.nn.DataParallel(evaluation_model_dist,
-                                                      device_ids=gpu_devices)
+            evaluation_model_dist = evaluation_model.model.feature_extractor
+        
+        # if isinstance(evaluation_model_dist, torch.nn.DataParallel):
+        #     evaluation_model_dist.module.model.fc = torch.nn.Sequential()  # This is the fix 
+        # else:
+        #     evaluation_model_dist.model.fc = torch.nn.Sequential() # This doesn't work
+        #     evaluation_model_dist = torch.nn.DataParallel(evaluation_model_dist,
+        #                                               device_ids=gpu_devices)
         
         evaluation_model_dist.to(device)
         evaluation_model_dist.eval()

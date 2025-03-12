@@ -8,7 +8,7 @@ class CustomClassifier(AbstractClassifier, nn.Module):
     def __init__(self, config):
         super(MyClassifier, self).__init__(config)
         self.config = config
-        self.model = self.init_model()
+        self.feature_extractor, self.classification_layer = self.init_model()
 
     def init_model(self):
         raise NotImplementedError("Implement the init_model method in your custom classifier")

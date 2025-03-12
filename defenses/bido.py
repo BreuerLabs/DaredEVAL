@@ -12,19 +12,6 @@ def apply_bido_defense(config, model:AbstractClassifier):
         def __init__(self, config):
             super(BiDOClassifier, self).__init__(config)
 
-            # # remove final classification layer
-            # if hasattr(self.model, "fc"):
-            #     self.fc_layer = self.model.fc
-            #     self.model.fc = nn.Identity()
-            # elif hasattr(self.model, "classifier"):
-            #     self.fc_layer = self.model.classifier
-            #     self.model.classifier = nn.Identity()
-            # elif config.model.name == "CNN" or config.model.name == "MLP":
-            #     print("Warning: Defense has not been tested well with the 'CNN' and 'MLP' models")
-            #     self.fc_layer = list(self.model.children())[-1]
-            #     self.model = nn.Sequential(*list(self.model.children())[:-1])
-            # else:  
-            #     raise ValueError("Cannot recognize the classification layer of the model. Make sure the last layer is named 'fc' or 'classifier'")
 
             if not config.dataset.val_drop_last: # drop_last must be True in the validation set dataloader because of how BiDO's test_HSIC function is implemented, this is possible to fix but hasn't been done yet
                 raise ValueError("dataset.val_drop_last=False is not currently supported for BiDO defense. Please set 'dataset.val_drop_last=True' on the command line.")
@@ -71,32 +58,32 @@ def apply_bido_defense(config, model:AbstractClassifier):
             _, logits = self(x)
             return logits
 
-        def save_model(self, name):
-            path = f"classifiers/saved_models/{name}"
-            if isinstance(self.model, nn.DataParallel): # self.model, and self.fc_layer are on DataParallel
-                state = {
-                    "model": self.model.module.state_dict(),
-                    "fc_layer": self.fc_layer.module.state_dict(),
-                }
-            else:
-                state= {
-                    "model": self.model.state_dict(),
-                    "fc_layer": self.fc_layer.state_dict(),
-                }
-            torch.save(state, path)
+        # def save_model(self, name):
+        #     path = f"classifiers/saved_models/{name}"
+        #     if isinstance(self.model, nn.DataParallel): # self.model, and self.fc_layer are on DataParallel
+        #         state = {
+        #             "model": self.model.module.state_dict(),
+        #             "fc_layer": self.fc_layer.module.state_dict(),
+        #         }
+        #     else:
+        #         state= {
+        #             "model": self.model.state_dict(),
+        #             "fc_layer": self.fc_layer.state_dict(),
+        #         }
+        #     torch.save(state, path)
 
-        def load_model(self, file_path, map_location = None):
-            if map_location is None:
-                state = torch.load(file_path, weights_only=True)
-            else:
-                state = torch.load(file_path, map_location=map_location, weights_only=True)  
+        # def load_model(self, file_path, map_location = None):
+        #     if map_location is None:
+        #         state = torch.load(file_path, weights_only=True)
+        #     else:
+        #         state = torch.load(file_path, map_location=map_location, weights_only=True)  
 
-            if isinstance(self.model, nn.DataParallel):
-                self.model.module.load_state_dict(state['model'])
-                self.fc_layer.module.load_state_dict(state['fc_layer'])
-            else:
-                self.model.load_state_dict(state['model'])
-                self.fc_layer.load_state_dict(state['fc_layer'])
+        #     if isinstance(self.model, nn.DataParallel):
+        #         self.model.module.load_state_dict(state['model'])
+        #         self.fc_layer.module.load_state_dict(state['fc_layer'])
+        #     else:
+        #         self.model.load_state_dict(state['model'])
+        #         self.fc_layer.load_state_dict(state['fc_layer'])
         
     bido_defended_model = BiDOClassifier(config)
     return bido_defended_model

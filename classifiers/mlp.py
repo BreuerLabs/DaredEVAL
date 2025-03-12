@@ -19,8 +19,8 @@ class FullyConnectedBlock(nn.Module):
 class MLP(AbstractClassifier, nn.Module):
     def __init__(self, config):
         super(MLP, self).__init__(config)
-        self.config = config
-        self.model = self.init_model()
+        # self.config = config
+        # self.feature_extractor, self.classification_layer = self.init_model()
         
     def init_model(self):
         super(MLP, self).init_model() # AbstractClassifier's init_model will return an ElementwiseLinear layer if drop_layer=True inself.config
@@ -36,10 +36,10 @@ class MLP(AbstractClassifier, nn.Module):
 
         modules = [first_layer,
                    *middle_layers,
-                   last_layer
                    ]
 
-        model = nn.Sequential(*modules)
+        feature_extractor = nn.Sequential(*modules)
+        classification_layer = last_layer
 
-        return model
+        return feature_extractor, classification_layer
 

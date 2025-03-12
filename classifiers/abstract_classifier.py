@@ -209,7 +209,7 @@ class AbstractClassifier(nn.Module):
         else:
             state = torch.load(file_path, map_location=map_location, weights_only=True)
         
-        if isinstance(self.model, nn.DataParallel):
+        if isinstance(self.feature_extractor, nn.DataParallel):
             self.feature_extractor.module.load_state_dict(state['feature_extractor'])
             self.classification_layer.module.load_state_dict(state['classification_layer'])
         else:
