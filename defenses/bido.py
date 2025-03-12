@@ -20,14 +20,14 @@ def apply_bido_defense(config, model:AbstractClassifier):
                 self.fc_layer = self.model.classifier
                 self.model.classifier = nn.Identity()
             elif config.model.name == "CNN" or config.model.name == "MLP":
-                print("Warning: Defense has not been tested with the 'CNN' and 'MLP' models")
+                print("Warning: Defense has not been tested well with the 'CNN' and 'MLP' models")
                 self.fc_layer = list(self.model.children())[-1]
                 self.model = nn.Sequential(*list(self.model.children())[:-1])
             else:  
                 raise ValueError("Cannot recognize the classification layer of the model. Make sure the last layer is named 'fc' or 'classifier'")
 
-            if not config.dataset.val_drop_last: # val_drop_last must be True because of how BiDO's test_HSIC function is implemented, this is possible to fix but hasn't been done yet
-                raise ValueError("Validation set must have val_drop_last=True for BiDO defense")
+            if not config.dataset.val_drop_last: # drop_last must be True in the validation set dataloader because of how BiDO's test_HSIC function is implemented, this is possible to fix but hasn't been done yet
+                raise ValueError("dataset.val_drop_last=False is not currently supported for BiDO defense. Please set 'dataset.val_drop_last=True' on the command line.")
 
         def train_model(self, train_loader, val_loader):
             if torch.cuda.device_count() > 1:
@@ -36,7 +36,7 @@ def apply_bido_defense(config, model:AbstractClassifier):
             return super(BiDOClassifier, self).train_model(train_loader, val_loader)
 
         def train_one_epoch(self, train_loader): # adapted from DefendMI/BiDO/train_HSIC.py
-            train_loss, train_perc_acc = engine.train_HSIC(self,
+            train_loss, train_perc_accuracy = engine.train_HSIC(self,
                                                       self.criterion.cuda(),
                                                       self.optimizer,
                                                       train_loader,
@@ -49,7 +49,7 @@ def apply_bido_defense(config, model:AbstractClassifier):
             return train_loss
         
         def evaluate(self, loader):
-            self.to(self.device) #! not sure if this line is necessary
+            self.to(self.device)
             loss, perc_accuracy = engine.test_HSIC(self,
                                               self.criterion.cuda(),
                                               loader,
@@ -67,7 +67,7 @@ def apply_bido_defense(config, model:AbstractClassifier):
             logits = self.fc_layer(z)
             return z, logits
 
-        def forward_only_logits(self, x):
+        def forward_only_logits(self, x): # necessary for compatibility with attacks
             _, logits = self(x)
             return logits
 
