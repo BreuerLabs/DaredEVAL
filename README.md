@@ -115,6 +115,7 @@ conda create -n ENVIRONMENT_NAME python=3.11
 ```
 pip install -r requirements.txt
 pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121
+pip install git+https://github.com/lanl/lca-pytorch.git
 ```
 4. Run bash script for setting up other repositories and downloading pretrained GAN's.
 ```
