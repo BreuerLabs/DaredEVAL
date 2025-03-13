@@ -159,6 +159,8 @@ The repository utilizes [Hydra](https://hydra.cc/docs/intro/) for dynamic hierac
 #### Defense Application via Overwriting
 Defenses are implemented as functions that take in an "undefended" PyTorch model and output a new "defended" PyTorch model that inherits from the undefended model. The implementation of this function then amounts to simply overwriting the specific methods of the model that are affected by the defense, isolating the essential features of the defense and saving valuable coding time. The defense is then added to our hierarchical configuration structure using Hydra, so that training a model with defense X simply amounts to adding `defense=X` to the command line.
 
+For more detailed instructions on adding your own custom defense, see [Adding your own defenses](defenses/README.md) in the `defenses` folder.
+
 
 
 
