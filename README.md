@@ -52,7 +52,7 @@ DaredEVAL supports a wide range of model inversion defenses, attacks, target cla
 | Gaussian-Noise | see e.g. [Chaudhuri et al. 2024](https://arxiv.org/abs/2404.02866) | [Github](https://github.com/facebookresearch/hcrbounds) | gaussian_noise
 | BiDO       | [Peng et al. 2022](https://arxiv.org/abs/2206.05483)   | [Github](https://github.com/AlanPeng0897/Defend_MI) | bido
 | MID        | [Wang et al. 2020](https://arxiv.org/abs/2009.05241) | [Github](https://github.com/Jiachen-T-Wang/mi-defense) | mid
-| Sparse-Standard | [V. Dibbo et al. 2024](https://arxiv.org/abs/2403.14772) | [Github](https://github.com/SayantonDibbo/SCA/tree/main/Sparse%20Coding) | sparse
+| Sparse-Standard | [Dibbo et al. 2024](https://arxiv.org/abs/2403.14772) | [Github](https://github.com/SayantonDibbo/SCA/tree/main/Sparse%20Coding) | sparse
 
 #### Attacks
 | Name | Resolution | Paper | Implementation | Command (attack=) | 
