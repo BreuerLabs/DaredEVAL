@@ -13,29 +13,29 @@ def apply_MID_defense(config, model:AbstractClassifier):
             
         def __init__(self, config):
             super(MID, self).__init__(config)            
-            list_of_layers = list(self.model.children())
-            last_layer = list_of_layers[-1]
+            # list_of_layers = list(self.feature_extractor.children())
+            last_layer = self.classification_layer
             # self.feat_dim = 512 * 2 * 2
             self.feat_dim = last_layer.in_features
             self.k = self.feat_dim // 2
             self.n_classes = config.dataset.n_classes
             
-            # remove final classification layer
-            if hasattr(self.model, "fc"):
-                self.model.fc = nn.Identity()
-            elif hasattr(self.model, "classifier"):
-                self.model.classifier = nn.Identity()
-            elif config.model.name == "CNN" or config.model.name == "MLP":
-                print("Warning: Defense has not been tested with the 'CNN' and 'MLP' models")
-                self.model = nn.Sequential(*list(self.model.children())[:-1])
-            else:  
-                raise ValueError("Cannot recognize the classification layer of the model. Make sure the last layer is named 'fc' or 'classifier'")
+            # # remove final classification layer
+            # if hasattr(self.model, "fc"):
+            #     self.model.fc = nn.Identity()
+            # elif hasattr(self.model, "classifier"):
+            #     self.model.classifier = nn.Identity()
+            # elif config.model.name == "CNN" or config.model.name == "MLP":
+            #     print("Warning: Defense has not been tested with the 'CNN' and 'MLP' models")
+            #     self.model = nn.Sequential(*list(self.model.children())[:-1])
+            # else:  
+            #     raise ValueError("Cannot recognize the classification layer of the model. Make sure the last layer is named 'fc' or 'classifier'")
             
             self.st_layer = nn.Linear(self.feat_dim, self.k * 2)
-            self.fc_layer = nn.Linear(self.k, self.n_classes)
+            self.classification_layer = nn.Linear(self.k, self.n_classes)
             
         def forward(self, x, mode="train"):
-            feature = self.model(x)
+            feature = self.feature_extractor(x)
 
             feature = feature.view(feature.size(0), -1)
             
@@ -46,7 +46,7 @@ def apply_MID_defense(config, model:AbstractClassifier):
             std = F.softplus(std-5, beta=1) #! Parameters?
             eps = torch.FloatTensor(std.size()).normal_().to(self.device)
             res = mu + std * eps
-            out = self.fc_layer(res)
+            out = self.classification_layer(res)
             
             __, iden = torch.max(out, dim=1)
             iden = iden.view(-1, 1)
@@ -59,17 +59,17 @@ def apply_MID_defense(config, model:AbstractClassifier):
         
         def save_model(self, name):
             path = f"classifiers/saved_models/{name}"
-            if isinstance(self.model, nn.DataParallel): # self.model, self.st_layer, and self.fc_layer are on DataParallel
+            if isinstance(self.feature_extractor, nn.DataParallel): # self.feature_extractor, self.st_layer, and self.classification_layer are on DataParallel
                 state = {
-                    "model": self.model.module.state_dict(),
+                    "feature_extractor": self.feature_extractor.module.state_dict(),
                     "st_layer": self.st_layer.module.state_dict(),
-                    "fc_layer": self.fc_layer.module.state_dict(),
+                    "classification_layer": self.classification_layer.module.state_dict(),
                 }
             else:
                 state= {
-                    "model": self.model.state_dict(),
+                    "feature_extractor": self.feature_extractor.state_dict(),
                     "st_layer": self.st_layer.state_dict(),
-                    "fc_layer": self.fc_layer.state_dict(),
+                    "classification_layer": self.classification_layer.state_dict(),
                 }
             torch.save(state, path)
 
@@ -79,14 +79,14 @@ def apply_MID_defense(config, model:AbstractClassifier):
             else:
                 state = torch.load(file_path, map_location=map_location, weights_only=True)  
 
-            if isinstance(self.model, nn.DataParallel):
-                self.model.module.load_state_dict(state['model'])
+            if isinstance(self.feature_extractor, nn.DataParallel):
+                self.feature_extractor.module.load_state_dict(state['feature_extractor'])
                 self.st_layer.module.load_state_dict(state['st_layer'])
-                self.fc_layer.module.load_state_dict(state['fc_layer'])
+                self.classification_layer.module.load_state_dict(state['classification_layer'])
             else:
-                self.model.load_state_dict(state['model'])
+                self.feature_extractor.load_state_dict(state['feature_extractor'])
                 self.st_layer.load_state_dict(state['st_layer'])
-                self.fc_layer.load_state_dict(state['fc_layer'])
+                self.classification_layer.load_state_dict(state['classification_layer'])
 
         def predict(self, x):
             feature, mu, std, out = self(x)
@@ -97,8 +97,7 @@ def apply_MID_defense(config, model:AbstractClassifier):
 
         def train_model(self, train_loader, val_loader):
             if torch.cuda.device_count() > 1:
-                self.st_layer = nn.DataParallel(self.st_layer) # self.model will be put on DataParallel in super train_model call, so we just need to put the st_layer on DataParallel here
-                self.fc_layer = nn.DataParallel(self.fc_layer) # self.model will be put on DataParallel in super train_model call, so we just need to put the fc_layer on DataParallel here
+                self.st_layer = nn.DataParallel(self.st_layer) # self.feature_extractor will be put on DataParallel in super train_model call, so we just need to put the st_layer on DataParallel here
 
             return super(MID, self).train_model(train_loader, val_loader)
         
@@ -106,9 +105,9 @@ def apply_MID_defense(config, model:AbstractClassifier):
             ___, mu, std, out_prob = output
             cross_loss = self.criterionSum(out_prob, target)
             info_loss = - 0.5 * (1 + 2 * std.log() - mu.pow(2) - std.pow(2)).sum(dim=1).sum()
-            if self.config.training.wandb.track and self.train_step % 50 == 0:
-                if self.train_step >= 50:
-                    wandb.log({"info_loss": info_loss.item()})
+            # if self.config.training.wandb.track and self.train_step % 50 == 0:
+            #     if self.train_step >= 50:
+            #         wandb.log({"info_loss": info_loss.item()})
             loss = cross_loss + self.config.defense.beta * info_loss
         
             return loss
