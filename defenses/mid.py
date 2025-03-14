@@ -105,9 +105,9 @@ def apply_MID_defense(config, model:AbstractClassifier):
             ___, mu, std, out_prob = output
             cross_loss = self.criterionSum(out_prob, target)
             info_loss = - 0.5 * (1 + 2 * std.log() - mu.pow(2) - std.pow(2)).sum(dim=1).sum()
-            if self.config.training.wandb.track and self.train_step % 50 == 0:
-                if self.train_step >= 50:
-                    wandb.log({"info_loss": info_loss.item()})
+            # if self.config.training.wandb.track and self.train_step % 50 == 0:
+            #     if self.train_step >= 50:
+            #         wandb.log({"info_loss": info_loss.item()})
             loss = cross_loss + self.config.defense.beta * info_loss
         
             return loss

@@ -366,7 +366,7 @@ def pnp_evaluate(evaluation_model,
 
         # Use FaceNet only for facial images
         facenet = InceptionResnetV1(pretrained='vggface2')
-        facenet = torch.nn.DataParallel(facenet, device_ids=gpu_devices)
+        # facenet = torch.nn.DataParallel(facenet, device_ids=gpu_devices) #! Putting FaceNet on DataParallel currently causes "NCCL Error 3: internal error", not sure why
         facenet.to(device)
         facenet.eval()
         

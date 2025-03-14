@@ -1,13 +1,19 @@
 from RoLSS.models.torchvision.models import resnet, densenet # use the version of resnet provided by the RoLSS authors that is altered to include the skip connection
 
 from classifiers.abstract_classifier import AbstractClassifier
+from classifiers.pretrained import PreTrainedClassifier
 
 def apply_RoLSS_defense(config, model:AbstractClassifier):
-    
+
+    if not isinstance(model, PreTrainedClassifier):
+        raise ValueError("RoLSS is only currently supported for PreTrainedClassifiers. Supported architectures: resnet18, resnet34, resnet50, resnet101, resnet152, resnext50, resnext101")
+
     class RoLSS(model.__class__):
         
         def __init__(self, config):
             super(RoLSS, self).__init__(config)
+
+        def init_model(self):
 
             # load the model again, this time with the skip parameter
             arch = config.model.architecture.lower()
@@ -31,8 +37,8 @@ def apply_RoLSS_defense(config, model:AbstractClassifier):
                     weights = resnet.ResNet152_Weights.DEFAULT if pretrained else None
                     skip_defended_feature_extractor = resnet.resnet152(weights=weights, skip=config.defense.skip)
                 
-                skip_defended_feature_extractor.fc = self.model.fc
-                skip_defended_feature_extractor.
+                classification_layer = skip_defended_feature_extractor.fc
+                skip_defended_feature_extractor.fc = nn.Identity()
 
             #! densenet has a bug that is not yet fixed for RoLSS defense
             # elif 'densenet' in arch:
@@ -61,7 +67,7 @@ def apply_RoLSS_defense(config, model:AbstractClassifier):
             
             else:
                 raise RuntimeError(
-                    f'Model with the name {arch} not currently supported for RoLSS defense'
+                    f'Model with the name {arch} not currently supported for RoLSS defense. Supported architectures: resnet18, resnet34, resnet50, resnet101, resnet152, resnext50, resnext101'
                 )
             
             self.model = skip_defended_feature_extractor # replace our previously loaded model

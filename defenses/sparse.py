@@ -38,6 +38,34 @@ def apply_sparse_defense(config, model:AbstractClassifier):
             x = self.sparse_layer(x)
             x = super(SparseDefense, self).forward(x)
             return x
+
+        def save_model(self, name):
+            path = f"classifiers/saved_models/{name}"
+            if isinstance(self.feature_extractor, nn.DataParallel):
+                state = {
+                    "feature_extractor": self.feature_extractor.module.state_dict(),
+                    "classification_layer": self.classification_layer.module.state_dict(),
+                    "sparse_layer": self.sparse_layer.module.state_dict()
+                }
+            else:
+                state = {
+                    "feature_extractor": self.feature_extractor.state_dict(),
+                    "classification_layer": self.classification_layer.state_dict(),
+                    "sparse_layer": self.sparse_layer.state_dict()
+                }
+            torch.save(state, path)
+        
+        def load_model(self, name):
+            path = f"classifiers/saved_models/{name}"
+            state = torch.load(path)
+            if isinstance(self.feature_extractor, nn.DataParallel):
+                self.feature_extractor.module.load_state_dict(state["feature_extractor"])
+                self.classification_layer.module.load_state_dict(state["classification_layer"])
+                self.sparse_layer.module.load_state_dict(state["sparse_layer"])
+            else:
+                self.feature_extractor.load_state_dict(state["feature_extractor"])
+                self.classification_layer.load_state_dict(state["classification_layer"])
+                self.sparse_layer.load_state_dict(state["sparse_layer"])
     
     sparse_defended_model = SparseDefense(config)
     
