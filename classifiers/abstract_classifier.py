@@ -208,6 +208,20 @@ class AbstractClassifier(nn.Module):
             state = torch.load(file_path, weights_only=True)
         else:
             state = torch.load(file_path, map_location=map_location, weights_only=True)
+
+        if 'model' in state.keys(): # fix old state dicts so that they match new AbstractClassifier format
+            classification_layer_state = {}
+            classification_layer_state['weight'] = state['model']['fc.weight']
+            classification_layer_state['bias'] = state['model']['fc.bias']
+            del state['model']['fc.weight']
+            del state['model']['fc.bias']
+            state['feature_extractor'] = state.pop('model')
+            state['classification_layer'] = classification_layer_state
+
+        if state['classification_layer']['weight'].shape[0] != self.config.dataset.n_classes: # needed for backcompatibility with loaded Inception models
+            state['classification_layer']['weight'] = state['classification_layer']['weight'][:self.config.dataset.n_classes]
+            state['classification_layer']['bias'] = state['classification_layer']['bias'][:self.config.dataset.n_classes]
+
         
         if isinstance(self.feature_extractor, nn.DataParallel):
             self.feature_extractor.module.load_state_dict(state['feature_extractor'])
