@@ -199,8 +199,8 @@ def pnp_evaluate(evaluation_model,
         
     try:
         # Load Inception-v3 evaluation model and remove final layer
-        if not evaluation_model:
-            evaluation_model_dist = config.create_evaluation_model() #! TODO: Replace this
+        # if not evaluation_model:
+        #     evaluation_model_dist = config.create_evaluation_model() #! TODO: Replace this
             
         if isinstance(evaluation_model, torch.nn.DataParallel):
             evaluation_model_dist = evaluation_model.module.model.feature_extractor
