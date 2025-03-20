@@ -1,25 +1,14 @@
 name: "IF-GMI"
-stylegan_model: "stylegan2-ada-pytorch/ffhq.pth"
+stylegan_model: "stylegan2-ada-pytorch/ffhq.pkl"
 
 evaluation_model:
   wandb_id: "EvalModelRunID" # The wandb id of the run of the evaluation model. This will then extract the config and model weights from wandb.
   config_path: False #"classifiers/saved_configs/cifardropout.yaml" # The path to a config of a trained evaluation model. Weights with the same name must be in classifiers/saved_models
 
-# target_model:
-#   architecture: densenet169 # architecture of target model
-#   num_classes: 530 # number of output neurons
-#   weights: pretrained/densenet169_facescrub.pt # link to weight file
-# evaluation_model:
-#   architecture: inception-v3 # architecture of evaluation model
-#   num_classes: 530 # number of output neurons
-#   weights: pretrained/inception_v3_facescrub.pt # link to weight file
-
 logging: True
 logging_images: True
-# name: FaceScrub-10
-# stylegan_model: stylegan2_intermediate/ffhq_G.pth # Path to StyleGAN2 weight.
 seed: 42 # Seed used for splitting the datasets and initialize the attack.
-# dataset: facescrub # Target dataset, select one of [facescrub, celeba_identities, stanford_dogs_cropped, stanford_dogs_uncropped].
+
 result_path: "model_inversion/if_gmi/results"
 
 candidates:
