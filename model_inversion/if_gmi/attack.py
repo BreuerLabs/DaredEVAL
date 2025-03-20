@@ -158,18 +158,19 @@ def attack(config, target_dataset, target_model, evaluation_model, target_config
     # Load Inception-v3 evaluation model and remove final layer
     # evaluation_model_dist, _ = config.create_evaluation_model()
 
-    evaluation_model_dist = copy.deepcopy(evaluation_model)
-    
-    
-    # evaluation_model_dist.model.fc = torch.nn.Sequential()
-    
-    if isinstance(evaluation_model_dist, torch.nn.DataParallel):
-        evaluation_model_dist.module.model.fc = torch.nn.Sequential()  # This is the fix 
+    # evaluation_model_dist = copy.deepcopy(evaluation_model)
+    # if isinstance(evaluation_model_dist, torch.nn.DataParallel):
+    #     evaluation_model_dist.module.model.fc = torch.nn.Sequential()  # This is the fix 
+    # else:
+    #     evaluation_model_dist.model.fc = torch.nn.Sequential() # This doesn't work
+    #     evaluation_model_dist = torch.nn.DataParallel(evaluation_model_dist,
+    #                                                 device_ids=gpu_devices)
+        
+    if isinstance(evaluation_model, torch.nn.DataParallel):
+        evaluation_model_dist = evaluation_model.module.model.feature_extractor
     else:
-        evaluation_model_dist.model.fc = torch.nn.Sequential() # This doesn't work
-        evaluation_model_dist = torch.nn.DataParallel(evaluation_model_dist,
-                                                    device_ids=gpu_devices)
-    
+        evaluation_model_dist = evaluation_model.model.feature_extractor
+
     evaluation_model_dist.to(device)
     evaluation_model_dist.eval()
 
