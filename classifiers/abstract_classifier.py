@@ -21,10 +21,14 @@ class AbstractClassifier(nn.Module):
         if config.model.criterion == "MSE":
             self.criterion = nn.MSELoss()
             self.criterionSum = nn.MSELoss(reduction='sum')
+        
+        self.feature_extractor, self.classification_layer = self.init_model()
+    
            
     def init_model(self):
-        model = None
-        return model
+        feature_extractor = None
+        classification_layer = None
+        return feature_extractor, classification_layer
     
     def train_one_epoch(self, train_loader):
         
@@ -58,7 +62,8 @@ class AbstractClassifier(nn.Module):
         # Distribute model on GPU's
         if torch.cuda.device_count() > 1:
             print(f"Using {torch.cuda.device_count()} GPUs!")
-            self.model = nn.DataParallel(self.model)
+            self.feature_extractor = nn.DataParallel(self.feature_extractor)
+            self.classification_layer = nn.DataParallel(self.classification_layer)
     
         if self.config.training.save_as:
             self.save_as = self.config.training.save_as + ".pth"
@@ -174,7 +179,9 @@ class AbstractClassifier(nn.Module):
 
 
     def forward(self, x):
-        return self.model(x)
+        z = self.feature_extractor(x)
+        logits = self.classification_layer(z)
+        return logits
 
 
     def predict(self, X):
@@ -183,13 +190,15 @@ class AbstractClassifier(nn.Module):
 
     def save_model(self, name):
         path = f"classifiers/saved_models/{name}"
-        if isinstance(self.model, nn.DataParallel): # self.model is on DataParallel, need to only save self.model.module
+        if isinstance(self.feature_extractor, nn.DataParallel): # self.feature_extractor is on DataParallel, need to only save self.feature_extractor.module
             state = {
-                    "model": self.model.module.state_dict(),
+                    "feature_extractor": self.feature_extractor.module.state_dict(),
+                    "classification_layer": self.classification_layer.module.state_dict(),
                 }
         else:
             state= {
-                "model": self.model.state_dict(),
+                "feature_extractor": self.feature_extractor.state_dict(),
+                "classification_layer": self.classification_layer.state_dict(),
             }
         torch.save(state, path)
 
@@ -199,8 +208,24 @@ class AbstractClassifier(nn.Module):
             state = torch.load(file_path, weights_only=True)
         else:
             state = torch.load(file_path, map_location=map_location, weights_only=True)
+
+        if 'model' in state.keys(): # fix old state dicts so that they match new AbstractClassifier format
+            classification_layer_state = {}
+            classification_layer_state['weight'] = state['model']['fc.weight']
+            classification_layer_state['bias'] = state['model']['fc.bias']
+            del state['model']['fc.weight']
+            del state['model']['fc.bias']
+            state['feature_extractor'] = state.pop('model')
+            state['classification_layer'] = classification_layer_state
+
+        if state['classification_layer']['weight'].shape[0] != self.config.dataset.n_classes: # needed for backcompatibility with loaded Inception models
+            state['classification_layer']['weight'] = state['classification_layer']['weight'][:self.config.dataset.n_classes]
+            state['classification_layer']['bias'] = state['classification_layer']['bias'][:self.config.dataset.n_classes]
+
         
-        if isinstance(self.model, nn.DataParallel):
-            self.model.module.load_state_dict(state['model'])
+        if isinstance(self.feature_extractor, nn.DataParallel):
+            self.feature_extractor.module.load_state_dict(state['feature_extractor'])
+            self.classification_layer.module.load_state_dict(state['classification_layer'])
         else:
-            self.model.load_state_dict(state['model'])
+            self.feature_extractor.load_state_dict(state['feature_extractor'])
+            self.classification_layer.load_state_dict(state['classification_layer'])

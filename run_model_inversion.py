@@ -68,10 +68,12 @@ def run_model_inversion(attack_config):
     # print("test_accuracy", test_accuracy)
 
     # print()
-    
-    # if attack_config.training.wandb.track:
-    #     wandb.log({"test_loss": test_loss})
-    #     wandb.log({"test_accuracy": test_accuracy})
+
+    if attack_config.training.wandb.track:
+        wandb.log({"train_loss": train_loss})
+        wandb.log({"train_accuracy": train_accuracy})
+        wandb.log({"test_loss": test_loss})
+        wandb.log({"test_accuracy": test_accuracy})
 
     if attack_config.attack.name == "plug_and_play":
         
