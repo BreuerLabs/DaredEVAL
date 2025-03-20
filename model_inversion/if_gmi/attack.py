@@ -39,6 +39,7 @@ from data_processing.data_augmentation import get_transforms
 
 import wandb
 
+from IF_GMI.pkl2pth import change
 
 def attack(config, target_dataset, target_model, evaluation_model, target_config, wandb_run = None):
     ####################################
@@ -82,6 +83,19 @@ def attack(config, target_dataset, target_model, evaluation_model, target_config
         idx_to_class = KeyDict()
 
     # Load pre-trained StyleGan2 generator
+    
+    stylegan_name = os.path.basename(config.stylegan_model)
+    stylegan_filetype = os.path.splitext(stylegan_name)[-1]
+    
+    if stylegan_filetype == ".pkl":
+        new_path = os.path.splitext(config.stylegan_model)[0] + ".pth"
+        
+        if not os.path.exists(new_path):
+            change(config.stylegan_model, new_path)
+        
+        config._config['stylegan_model']=new_path
+    
+    
     G = load_generator(config.stylegan_model)
     num_ws = G.num_ws
 
