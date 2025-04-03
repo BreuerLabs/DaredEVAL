@@ -4,15 +4,7 @@ import numpy as np
 import yaml
 
 from omegaconf import OmegaConf
-# from pnp_repo.models import base_model
-# from classifiers.abstract_classifier import AbstractClassifier
 
-
-#! TODO: 
-def convert_train_config(config):
-    pass
-
-#! TODO: 
 def convert_configs(target_config, attack_config):
     new_dict = {}
     
@@ -40,7 +32,6 @@ def convert_configs(target_config, attack_config):
     # config_obj = AttackConfigParser()
     
     return save_as + ".yaml"
-
 
 class model_compatibility_wrapper(nn.Module):
     def __init__(self, model, target_config):

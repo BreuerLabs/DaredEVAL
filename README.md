@@ -161,6 +161,3 @@ Defenses are implemented as functions that take in an "undefended" PyTorch model
 
 For more detailed instructions on adding your own custom defense, see [Adding your own defenses](defenses/) in the `defenses` folder.
 
-
-
-

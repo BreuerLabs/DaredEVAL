@@ -12,10 +12,14 @@ from data_processing.data_loaders import get_data_loaders
 from data_processing.datasets import get_datasets
 from data_processing.data_augmentation import get_transforms
 
-from Plug_and_Play_Attacks.utils.attack_config_parser import AttackConfigParser
-from model_inversion.plug_and_play.attack import attack
-from model_inversion.plug_and_play.modify_to_pnp_repo import model_compatibility_wrapper, convert_configs
+import Plug_and_Play_Attacks.utils.attack_config_parser as ppa_config_parser
 
+from model_inversion.plug_and_play.modify_to_pnp_repo import model_compatibility_wrapper, convert_configs
+import model_inversion.plug_and_play.attack as ppa
+
+import IF_GMI.utils.attack_config_parser as if_gmi_config_parser
+import model_inversion.if_gmi.attack as if_gmi
+import model_inversion.if_gmi.modify_to_repo as if_gmi_modify
 
 from utils import wandb_helpers, load_trained_models
 
@@ -63,9 +67,9 @@ def run_model_inversion(attack_config):
     print("test_loss", test_loss)
     print("test_accuracy", test_accuracy)
 
-    print()
-    
     if attack_config.training.wandb.track:
+        wandb.log({"train_loss": train_loss})
+        wandb.log({"train_accuracy": train_accuracy})
         wandb.log({"test_loss": test_loss})
         wandb.log({"test_accuracy": test_accuracy})
 
@@ -82,9 +86,9 @@ def run_model_inversion(attack_config):
         evaluation_model = model_compatibility_wrapper(model = evaluation_model, target_config = evaluation_config)
         
         new_attack_config_path = convert_configs(target_config, attack_config)
-        new_attack_config = AttackConfigParser(new_attack_config_path)
+        new_attack_config = ppa_config_parser.AttackConfigParser(new_attack_config_path)
         
-        attack(
+        ppa.attack(
             config = new_attack_config,
             target_dataset = train_dataset,
             target_model = target_model,
@@ -92,6 +96,30 @@ def run_model_inversion(attack_config):
             target_config = target_config,
             wandb_run = wandb_run,
             )
+   
+    if attack_config.attack.name == "IF-GMI":
+        evaluation_config, evaluation_weights_path = load_trained_models.get_evaluation_config_and_weights(attack_config)
+        
+        # Load evaluation model
+        evaluation_model = get_model(evaluation_config)
+        evaluation_model.load_model(evaluation_weights_path)
+        
+        # Convert to plug and play compatibility 
+        target_model = model_compatibility_wrapper(model = target_model, target_config = target_config)
+        evaluation_model = model_compatibility_wrapper(model = evaluation_model, target_config = evaluation_config)
+        
+        new_attack_config_path = if_gmi_modify.convert_configs(target_config, attack_config)
+        new_attack_config = if_gmi_config_parser.AttackConfigParser(new_attack_config_path)
+        
+        if_gmi.attack(
+            config = new_attack_config,
+            target_dataset = train_dataset,
+            target_model = target_model,
+            evaluation_model = evaluation_model,
+            target_config = target_config,
+            wandb_run = wandb_run)
+        
+   
    
     print("done")
 

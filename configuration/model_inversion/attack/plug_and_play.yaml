@@ -1,7 +1,7 @@
 name: "plug_and_play"
 stylegan_model: "stylegan2-ada-pytorch/ffhq.pkl"
 
-evaluation_model:
+evaluation_model: # Give either the wandb id of a run or the path to a config of a trained evaluation model.
   wandb_id: "EvalModelRunID" # The wandb id of the run of the evaluation model. This will then extract the config and model weights from wandb.
   config_path: False #"classifiers/saved_configs/cifardropout.yaml" # The path to a config of a trained evaluation model. Weights with the same name must be in classifiers/saved_models
 

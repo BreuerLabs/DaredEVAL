@@ -28,8 +28,8 @@ class ConvBlock(nn.Module):
 class CNN(AbstractClassifier, nn.Module):
     def __init__(self, config):
         super(CNN, self).__init__(config)
-        self.config = config
-        self.model = self.init_model()
+        # self.config = config
+        # self.feature_extractor, self.classification_layer = self.init_model()
 
 
     def init_model(self):
@@ -53,15 +53,16 @@ class CNN(AbstractClassifier, nn.Module):
         # Calculate the output size after the convolutional layers
         conv_output_size = self.config.model.hyper.n_neurons * 2**self.config.model.hyper.n_depth * input_height * input_width
 
-        model = nn.Sequential(
+        feature_extractor = nn.Sequential(
             first_conv,
             *conv_layers,
             nn.Flatten(),
             nn.Linear(conv_output_size , self.config.model.hyper.linear_output_size), 
             nn.ReLU(),
             nn.Dropout(self.config.model.hyper.dropout),
-            nn.Linear(self.config.model.hyper.linear_output_size, self.config.dataset.n_classes)
             )
 
-        return model
+        classification_layer = nn.Linear(self.config.model.hyper.linear_output_size, self.config.dataset.n_classes)
+
+        return feature_extractor, classification_layer
     

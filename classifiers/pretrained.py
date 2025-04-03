@@ -10,8 +10,6 @@ class PreTrainedClassifier(AbstractClassifier):
     
     def __init__(self, config):
         super(PreTrainedClassifier, self).__init__(config)
-        self.config = config
-        self.model = self.init_model()
         
     def init_model(self): # adapted from _build_model() in Plug-and-Play-Attacks/models/classifier.py
         super(PreTrainedClassifier, self).init_model()
@@ -42,10 +40,12 @@ class PreTrainedClassifier(AbstractClassifier):
                     f'No ResNet with the name {arch} available'
                 )
 
-
             if self.config.dataset.n_classes != model.fc.out_features:
                 # exchange the last layer to match the desired numbers of classes
                 model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
+
+            classification_layer = model.fc
+            model.fc = nn.Identity()
 
         elif 'densenet' in arch:
             if arch == 'densenet121':
@@ -69,6 +69,10 @@ class PreTrainedClassifier(AbstractClassifier):
                 # exchange the last layer to match the desired numbers of classes
                 model.classifier = nn.Linear(model.classifier.in_features, self.config.dataset.n_classes)
 
+            classification_layer = model.classifier
+            model.classifier = nn.Identity()
+
+
         elif 'resnest' in arch:
             torch.hub.list('zhanghang1989/ResNeSt', force_reload=True)
             if arch == 'resnest50':
@@ -88,6 +92,9 @@ class PreTrainedClassifier(AbstractClassifier):
                 # exchange the last layer to match the desired numbers of classes
                 model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
 
+            classification_layer = model.fc
+            model.fc = nn.Identity()
+
         elif 'resnext' in arch:
             if arch == 'resnext50':
                 weights = resnet.ResNeXt50_32X4D_Weights.DEFAULT if pretrained else None
@@ -104,36 +111,63 @@ class PreTrainedClassifier(AbstractClassifier):
                 # exchange the last layer to match the desired numbers of classes
                 model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
 
+            classification_layer = model.fc
+            model.fc = nn.Identity()
+
         elif 'inception' in arch:
             weights = inception.Inception_V3_Weights.DEFAULT if pretrained else None
             model = inception.inception_v3(weights=weights,
                                            aux_logits=True,
                                            init_weights=False)   
+
+            if self.config.dataset.n_classes != model.fc.out_features:
+                # exchange the last layer to match the desired numbers of classes
+                model.fc = nn.Linear(model.fc.in_features, self.config.dataset.n_classes)
+            
+            classification_layer = model.fc
+            model.fc = nn.Identity()
             
         else:
             raise RuntimeError(
                 f'No model with the name {arch} available'
             )
 
-        return model
+        return model, classification_layer
     
+    def forward(self, x):
+        if isinstance(self.feature_extractor, inception.Inception3):
+            if self.training:
+                z, aux_logits = self.feature_extractor(x)
+                logits = self.classification_layer(z)
+                return logits, aux_logits
+            else:
+                z = self.feature_extractor(x)
+                logits = self.classification_layer(z)
+                return logits
+        
+        else:
+            z = self.feature_extractor(x)
+            logits = self.classification_layer(z)
+            return logits
 
     
     # Only used when training inception models
     def get_inception_loss(self, inception_output, target):
-        output, aux_logits = inception_output
-            
-        aux_loss = torch.tensor(0.0, device=self.device)
-    
-        aux_loss += self.criterionSum(aux_logits, target) #! does this need to be criterionSum instead of criterion too?
-    
-        loss = self.criterionSum(output, target) + aux_loss
+        
+        if self.training:
+            logits, aux_logits = inception_output
+            aux_loss = torch.tensor(0.0, device=self.device)
+            aux_loss += self.criterionSum(aux_logits, target) #! does this need to be criterionSum instead of criterion too?
+            loss = self.criterionSum(logits, target) + aux_loss
+        else:
+            logits = inception_output
+            loss = self.criterionSum(logits, target)
         
         return loss
     
     def get_loss(self, output, target): # overwritten from AbstractClassifier
 
-        if isinstance(output, inception.InceptionOutputs):
+        if isinstance(self.feature_extractor, inception.Inception3):
             loss = self.get_inception_loss(output, target)
 
         else:
