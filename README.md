@@ -121,7 +121,7 @@ pip install git+https://github.com/lanl/lca-pytorch.git
 ```
 bash setup_files.bash
 ```
-5. Weights and Biases Logging (Optional, but recommended).
+5. Weights and Biases Logging.
    - Setup a [Weights and Biases](https://wandb.ai/site/) account
    - Create a project
    - Create a [wandb API key](https://docs.wandb.ai/quickstart/), make a file called `secret.txt` in the main scope of the repository, and paste the API key there.
