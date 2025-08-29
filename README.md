@@ -76,14 +76,14 @@ A custom classifier can also be tested by implementing `CustomClassifier` in `cu
 #### Datasets
 The datasets are implemented with automatic downloading and processing for ease of use. 
 
-| Name | Size | Resolution | Downloading |
-|----------|----------|---------|---------|
-| Facescrub     | 141,130 |  High-Res  | Automatic  |
-| Stanford Dogs | 20,580  |  High-Res  | Automatic  |
-| CelebA        | 202,599 |  High-Res  | Automatic** |
-| CIFAR10       | 60,000  |  Low-Res   | Automatic  |
-| MNIST         | 60,000  |  Low-Res   | Automatic  |
-| FashionMNIST  | 60,000  |  Low-Res   | Automatic  |
+| Name | Resolution | Downloading |
+|----------|---------|---------|
+| Facescrub       |  High-Res  | Automatic  |
+| Stanford Dogs   |  High-Res  | Automatic  |
+| CelebA          |  High-Res  | Automatic** |
+| CIFAR10         |  Low-Res   | Automatic  |
+| MNIST           |  Low-Res   | Automatic  |
+| FashionMNIST    |  Low-Res   | Automatic  |
 
 ** There is a [torchvision bug](https://github.com/pytorch/vision/issues/8204#issuecomment-1935737815) at the moment when downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
 
