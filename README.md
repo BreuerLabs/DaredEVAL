@@ -81,25 +81,17 @@ The datasets are implemented with automatic downloading and processing for ease 
 | Facescrub       |  High-Res  | Automatic  |
 | Stanford Dogs   |  High-Res  | Automatic  |
 | CelebA          |  High-Res  | Automatic** |
-| CIFAR10         |  Low-Res   | Automatic  |
-| MNIST           |  Low-Res   | Automatic  |
-| FashionMNIST    |  Low-Res   | Automatic  |
 
-** There is a [torchvision bug](https://github.com/pytorch/vision/issues/8204#issuecomment-1935737815) at the moment when downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip.
+** There is a [torchvision bug](https://github.com/pytorch/vision/issues/8204#issuecomment-1935737815) at the moment when downloading CelebA with gdown; this requires the `img_align_celeba.zip` file to be downloaded manually. To do this, download `img_align_celeba.zip` from [this link](https://drive.google.com/drive/folders/0B7EVK8r0v71pWEZsZE9oNnFzTm8?resourcekey=0-5BR16BdXnb8hVj6CNHKzLg), place the .zip folder in `data/celeba`, and unzip. We use the HD-CelebA-Cropper (https://github.com/LynnHo/HD-CelebA-Cropper) to improve the quality of the data. 
 
-#### Attack Metrics
-| Name                      | Novel? | Description |
-|---------------------------|:--------:|-------------|
-| AttackAcc@1              |        | Accuracy of an Inception evaluation model in correctly classifying faces produced by the attack |
-| AttackAcc@5              |        | Same as above, with top-5 accuracy |
-| Average $\delta_{face}$  |        | Average L2 distance to nearest training data image in the target class, averaged over all target classes, in the FaceNet evaluation model feature space |
-| Average $\delta_{eval}$  |        | Same as above, but instead in Inception evaluation model feature space |
-| Per-class $\delta_{face}$ | ✅     | Histogram of average L2 distances to nearest training data image in the target class, for each target class, in the FaceNet evaluation model feature space |
-| Per-class $\delta_{eval}$ | ✅     | Same as above, but instead in Inception evaluation model feature space |
-| FID                      |        | Frechet Inception Distance between Inception feature distributions of training data from the target class and their corresponding reconstructions |
-| Knowledge Extraction Score * |    | Classification accuracy of a surrogate model trained on the reconstructed images |
+#### MIA Metrics
+| Name                      | Description |
+|--------------------------|-------------|
+| AttackAcc@1                     | Accuracy of an Inception evaluation model in correctly classifying faces produced by the attack |
+| AttackAcc@5                   | Same as above, with top-5 accuracy |
+| Average $\delta_{face}$        | Average L2 distance to nearest training data image in the target class, averaged over all target classes, in the FaceNet evaluation model feature space |
+| Average $\delta_{eval}$       | Same as above, but instead in Inception evaluation model feature space (used for Stanford dogs dataset where the vggface embeddings are meaningless)|
 
-\* in development
 
 ### 5-Minute Quickstart <a name="5mqs"></a>
 
